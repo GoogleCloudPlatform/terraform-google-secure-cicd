@@ -1,0 +1,507 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Pipeline Setup
+#   Maven cache to reduce calls to Maven Central
+# test (in parallel)
+#   Static Code Analysis: PMD/Checkstyle/Python-equiv
+#   Secrets Scanner: secrets scanner
+#   License checking: ???
+#   Automated tests: Java/Python
+# Build
+#   Docker build
+# After Build
+#   Artifact Structure Test: Container structure test
+#   Image Vulnerabilities: CVE scanner
+# Security Testing Gate
+#   Attestation
+
+timeout: "3600s" # 1 hour
+tags:
+  - "bank-of-anthos"
+  - "shift-left"
+substitutions:
+  _ATTESTOR_NAME: "security-attestor"
+options:
+  # Use higher CPU machines so the caching and build steps are faster.
+  machineType: 'N1_HIGHCPU_32'
+  substitution_option: 'ALLOW_LOOSE'
+artifacts:
+  objects:
+    location: gs://$_CACHE_BUCKET_NAME/artifacts
+    paths:
+      - 'build-artifacts.json'
+# availableSecrets:
+#   secretManager:
+#   - versionName: "projects/${PROJECT_ID}/secrets/gsr-key/versions/1"
+#     env: 'GSR_SECRET'
+steps:
+# Secrets Scanner (TODO: Switch to Talisman)
+- name: golang:1.15-buster
+  id: test-source-secrets
+  entrypoint: 'bash'
+  args:
+  - '-xe'
+  - '-c'
+  - |
+    go get -u github.com/ezekg/git-hound
+    git-hound -config policies/githound.yaml sniff > githound-output.txt
+    cat githound-output.txt
+  waitFor: ['-']
+# Pull in cache for Maven, PIP and Skaffold
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: maven-cache-pull
+  entrypoint: 'gsutil'
+  args:
+  - '-m'
+  - 'rsync'
+  - '-r'
+  - 'gs://$_CACHE_BUCKET_NAME/cache/.m2'
+  - '/cache/.m2'
+  volumes:
+  - path: '/cache/.m2'
+    name: 'm2_cache'
+  waitFor: ['-']
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: pip-cache-pull
+  entrypoint: 'gsutil'
+  args:
+  - '-m'
+  - 'rsync'
+  - '-r'
+  - 'gs://$_CACHE_BUCKET_NAME/cache/.cache/pip/wheels'
+  - '/.cache/pip/wheels'
+  volumes:
+  - path: '/.cache/pip/wheels'
+    name: 'pip_cache'
+  waitFor: ['-']
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: kaniko-cache-pull
+  entrypoint: 'gsutil'
+  args:
+  - '-m'
+  - 'rsync'
+  - '-r'
+  - 'gs://$_CACHE_BUCKET_NAME/cache/.skaffold'
+  - '/.skaffold'
+  volumes:
+  - path: '/.skaffold'
+    name: 'skaffold_cache'
+  waitFor: ['-']
+# Static Code Analysis
+- name: maven:3-openjdk-11
+  id: test-static-analysis-java-pmd
+  entrypoint: mvn
+  args: ['pmd:pmd']
+  volumes:
+  - path: '/cache/.m2'
+    name: 'm2_cache'
+  env:
+  - MAVEN_OPTS=-Dmaven.repo.local=/cache/.m2
+  waitFor: ['maven-cache-pull']
+- name: maven:3-openjdk-11
+  id: test-static-analysis-java-checkstyle
+  entrypoint: mvn
+  args: ['checkstyle:check']
+  volumes:
+  - path: '/cache/.m2'
+    name: 'm2_cache'
+  env:
+  - MAVEN_OPTS=-Dmaven.repo.local=/cache/.m2
+  waitFor: ['maven-cache-pull']
+- name: python:3.7
+  id: test-static-analysis-pylint
+  entrypoint: 'bash'
+  args:
+  - '-xe'
+  - '-c'
+  - |
+    pip install pylint
+    pip list
+    pylint --rcfile=./.pylintrc ./src/*/*.py --exit-zero
+  env:
+  - XDG_CACHE_HOME=/.cache # pip/wheel will come with cache
+  volumes:
+  - path: '/.cache/pip/wheels'
+    name: 'pip_cache'
+  waitFor: ['pip-cache-pull']
+
+# Unit Tests (Java then Python)
+- name: maven:3-openjdk-11
+  id: test-unit-test-java
+  entrypoint: mvn
+  args: ['test']
+  volumes:
+  - path: '/cache/.m2'
+    name: 'm2_cache'
+  env:
+  - MAVEN_OPTS=-Dmaven.repo.local=/cache/.m2
+  waitFor: ['maven-cache-pull']
+- name: python:3.7
+  id: test-unit-test-python
+  entrypoint: 'bash'
+  args:
+  - '-xe'
+  - '-c'
+  - |
+    for SERVICE in "contacts" "userservice"; do
+      echo "testing $$SERVICE..."
+      # save current working dir to memory and cd to src/$$SERVICE
+      pushd src/$$SERVICE
+        # Adding date seconds+milliseconds to avoid overlap of concurrent runs
+        DATE_SLUG="$(date +%s%3N)"
+        python3 -m venv $$HOME/venv-$$SERVICE-$$DATE_SLUG
+        source $$HOME/venv-$$SERVICE-$$DATE_SLUG/bin/activate
+        pip install --upgrade pip # upgrade PIP
+        pip install -r requirements.txt
+        python -m pytest -v -p no:warnings
+        deactivate
+      # return to previously saved path
+      popd
+    done
+  env:
+  - XDG_CACHE_HOME=/.cache # pip/wheel will come with cache
+  volumes:
+  - path: '/.cache/pip/wheels'
+    name: 'pip_cache'
+  waitFor: ['pip-cache-pull']
+
+# Code Coverage
+- name: maven:3-openjdk-11
+  id: test-code-coverage-java
+  entrypoint: 'bash'
+  args:
+  - '-xe'
+  - '-c'
+  - |
+    # What to do with the numbers???
+    for SERVICE in "balancereader" "ledgerwriter" "transactionhistory"; do
+      echo "checking $$SERVICE..."
+      # save current working dir to memory and cd to src/$$SERVICE
+      pushd src/$$SERVICE
+        mvn test jacoco:report
+        echo "Coverage for $$SERVICE:"
+        awk -F, \
+        '{ instructions += $$4 + $$5; covered += $$5 } END \
+        { print covered, "/", instructions, " instructions covered"; \
+        print int(100*covered/instructions), "% covered" }' \
+        target/site/jacoco/jacoco.csv
+      # return to previously saved path
+      popd
+    done
+  volumes:
+  - path: '/cache/.m2'
+    name: 'm2_cache'
+  env:
+  - MAVEN_OPTS=-Dmaven.repo.local=/cache/.m2
+  waitFor: ['maven-cache-pull']
+- name: python:3.7
+  id: test-code-coverage-python
+  entrypoint: 'bash'
+  args:
+  - '-xe'
+  - '-c'
+  - |
+    for SERVICE in "contacts" "userservice"; do
+      echo "testing $$SERVICE..."
+      # save current working dir to memory and cd to src/$$SERVICE
+      pushd src/$$SERVICE
+        # Adding date seconds+milliseconds to avoid overlap of concurrent runs
+        DATE_SLUG="$(date +%s%3N)"
+        python3 -m venv $$HOME/venv-$$SERVICE-$$DATE_SLUG
+        source $$HOME/venv-$$SERVICE-$$DATE_SLUG/bin/activate
+        pip install --upgrade pip # upgrade PIP
+        pip install -r requirements.txt
+        python -m pytest --cov=./ tests/
+        deactivate
+      # return to previously saved path
+      popd
+    done
+  env:
+  - XDG_CACHE_HOME=/.cache # pip/wheel will come with cache
+  volumes:
+  - path: '/.cache/pip/wheels'
+    name: 'pip_cache'
+  waitFor: ['pip-cache-pull']
+
+###############################  Build Containers ###########################
+
+# Create build-installation-image
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "build-images"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      ./mvnw validate
+      # Replace gcr.io/bank-of-anthos to current project in skaffold.yaml
+      sed -i "s|gcr.io/bank-of-anthos|$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY|g" skaffold.yaml
+      skaffold config set --global local-cluster false
+      skaffold build --default-repo=$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json
+      sed -i "s|:latest||g" /artifacts/build-artifacts.json # remove the "latest" tag (complicates things later)
+      cp /artifacts/build-artifacts.json ./build-artifacts.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
+      while read p; do
+        echo "$p"
+      done < /artifacts/build-artifacts.json
+  env:
+  - MAVEN_OPTS=-Dmaven.repo.local=/cache/.m2
+  - XDG_CACHE_HOME=/.cache # pip/wheel will come with cache
+  volumes:
+  - path: '/artifacts'
+    name: 'artifacts'
+  - path: '/.skaffold/'
+    name: 'skaffold_cache'
+  - path: '/cache/.m2'
+    name: 'm2_cache'
+  - path: '/.cache/pip/wheels'
+    name: 'pip_cache'
+
+############################### Push maven caches back to GCS ###############
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: maven-cache-push
+  entrypoint: 'gsutil'
+  args:
+  - '-m'
+  - 'rsync'
+  - '-r'
+  - '/cache/.m2'
+  - 'gs://$_CACHE_BUCKET_NAME/cache/.m2/'
+  volumes:
+  - path: '/cache/.m2'
+    name: 'm2_cache'
+  waitFor: ['build-images']
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: skaffold-cache-push
+  entrypoint: 'gsutil'
+  args:
+  - '-m'
+  - 'rsync'
+  - '-r'
+  - '/.skaffold'
+  - 'gs://$_CACHE_BUCKET_NAME/cache/.skaffold'
+  volumes:
+  - path: '/.skaffold'
+    name: 'skaffold_cache'
+  waitFor: ['build-images']
+- name: 'gcr.io/cloud-builders/gsutil'
+  id: pip-cache-push
+  args:
+  - '-m'
+  - 'rsync'
+  - '-r'
+  - '/.cache/pip/wheels'
+  - 'gs://$_CACHE_BUCKET_NAME/cache/.cache/pip/wheels'
+  volumes:
+  - path: '/.cache/pip/wheels'
+    name: 'pip_cache'
+  waitFor: ['build-images']
+
+  ################ Before Deployment Checks ####################
+
+# Create build-installation-image for each of the images
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "before-container-structure"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      exit 0 # SKIP
+      cat <<EOF >>cloudbuild-check-image.yaml
+      substitutions:
+          _IMAGE: "gcr.io/invalid"
+      tags:
+        - "bank-of-anthos"
+        - "shift-left"
+        - "container-structure-test"
+      steps:
+      - name: 'gcr.io/gcp-runtimes/container-structure-test'
+        args: ['test', '--pull', '--image', '%%_IMAGE', '--config', 'policies/container-structure-policy.yaml']
+      EOF
+
+      # ugh, this is an ugly hack, but there does not appear to be a way to drop a single (dollar sign) into a dynamic file
+      sed -i "s|%%|$|g" cloudbuild-check-image.yaml
+
+      # Get all images into an array
+      # IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
+      IMAGE=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts.json))
+      for IMAGE in "$${IMAGES[@]}"; do
+        gcloud builds submit --config cloudbuild-check-image.yaml --substitutions _IMAGE="$${IMAGE}" --project="${PROJECT_ID}" --async
+      done
+
+      # loop on results until all jobs are complete
+      COUNT=0
+      MAX=100
+      COMPLETED="false"
+      while [ "$$COMPLETED" == "false" ]; do
+
+          if [[ $$COUNT -ge $$MAX ]]; then
+              echo "Timeout happened before results were returned"
+              exit 1
+          fi
+
+          RESULT=($(gcloud builds list --ongoing --filter "tags='container-structure-test'" --format="value(ID)"))
+
+          if [[ $${#RESULT[@]} -gt 0 ]]; then
+              echo "$${#RESULT[@]} of $${JOB_TOTAL}, checking again in 5s"
+              COUNT=$$COUNT+1
+              sleep 5s
+          else
+              echo "Done!"
+              COMPLETED="true"
+              break # do I really need a conditional?
+          fi
+      done
+  volumes:
+  - path: '/artifacts'
+    name: 'artifacts'
+  waitFor: ['build-images']
+  # CVE Check
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "before-container-scanner"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      exit 0 # SKIP
+      gcloud config set project ${PROJECT_ID}
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
+      for IMAGE in "$${IMAGES[@]}"; do
+        /signer \
+        -v=10 \
+        -alsologtostderr \
+        -image="$${IMAGE}" \
+        -policy=policies/container-analysis-policy.yaml \
+        -vulnz_timeout=1m \
+        -mode=check-only || error=true
+        if [[ $error == true ]]; then echo "Container Analysis failed due to CVE thresholds being triggered"; exit 1; fi
+      done
+  volumes:
+    - path: '/artifacts'
+      name: 'artifacts'
+  waitFor: ['build-images']
+
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "security-checkpoint"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      exit 0 # SKIP
+      gcloud config set project ${PROJECT_ID}
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
+      # Public Key for attestor
+      PUBLIC_KEY_ID=$(gcloud container binauthz attestors describe ${_ATTESTOR_NAME} \
+        --format='value(userOwnedGrafeasNote.publicKeys[0].id)')
+
+      for IMAGE in "$${IMAGES[@]}"; do
+        HAS_ATTESTATION=$(gcloud container binauthz attestations list \
+            --project="${PROJECT_ID}" \
+            --attestor="projects/${PROJECT_ID}/attestors/security-attestor" \
+            --artifact-url="$${IMAGE}" \
+            --format="value(name)")
+
+        if [ -z $${HAS_ATTESTATION} ]; then
+          echo "Create an attestation for $${IMAGE}}"
+          # signature file/ occurrence
+          gcloud container binauthz create-signature-payload \
+              --artifact-url="$${IMAGE}" > /artifacts/generated_payload.json
+
+          gcloud container binauthz attestations create \
+            --project="${PROJECT_ID}" \
+            --artifact-url="$${IMAGE}" \
+            --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
+            --signature-file=/artifacts/generated_payload.json \
+            --public-key-id="$${PUBLIC_KEY_ID}" \
+            --validate
+          rm -rf /artifacts/generated_payload.json
+      fi
+      done
+  volumes:
+    - path: '/artifacts'
+      name: 'artifacts'
+  waitFor:
+    - 'before-container-structure'
+    - 'before-container-scanner'
+
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "commit-upstream"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      # Clone the DRY repo (using mocked version)
+      gcloud config set project ${PROJECT_ID}
+      PATTERN='^.*\/([a-zA-Z-]+)$$$'
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
+      IMAGE_NAMES=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts.json))
+
+      FOLDERS=("accounts" "frontend" "transactions")
+      # Clone all three repos
+      for folder in "$${FOLDERS[@]}"
+      do
+          gcloud source repos clone $folder --project=${PROJECT_ID}
+      done
+
+      INDEX=0
+      for IMAGE in "$${IMAGE_NAMES[@]}"; do
+
+          [[ $$IMAGE =~ $$PATTERN ]]
+          IMG=$${BASH_REMATCH[1]}
+
+          case $$IMG in
+              frontend|loadgenerator)
+                  pushd frontend > /dev/null # repo folder
+                    GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" GCR="gcr.io/$PROJECT_ID/$${IMG}*" BOA="gcr.io/bank-of-anthos/$${IMG}*" FULL_IMAGE="$${IMAGES[$$INDEX]}" yq eval -i '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == strenv(GAR) or . == strenv(GCR) or . == strenv(BOA))) |= strenv(FULL_IMAGE)' $$IMG.yaml
+                  popd > /dev/null
+                  ;;
+              userservice|contacts)
+                  echo "ACCOUNTS - $${IMAGE}"
+                  pushd accounts > /dev/null # repo folder
+                    GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" GCR="gcr.io/$PROJECT_ID/$${IMG}*" BOA="gcr.io/bank-of-anthos/$${IMG}*" FULL_IMAGE="$${IMAGES[$$INDEX]}" yq eval -i '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == strenv(GAR) or . == strenv(GCR) or . == strenv(BOA))) |= strenv(FULL_IMAGE)' $$IMG.yaml
+                  popd > /dev/null
+                  ;;
+              balancereader|ledgerwriter|transactionhistory)
+                  echo "TRANSACTIONS - $${IMAGE}"
+                  pushd transactions > /dev/null # repo folder
+                    GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" GCR="gcr.io/$PROJECT_ID/$${IMG}*" BOA="gcr.io/bank-of-anthos/$${IMG}*" FULL_IMAGE="$${IMAGES[$$INDEX]}" yq eval -i '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == strenv(GAR) or . == strenv(GCR) or . == strenv(BOA))) |= strenv(FULL_IMAGE)' $$IMG.yaml
+                  popd > /dev/null
+                  ;;
+          esac
+
+          INDEX=$${INDEX}+1
+      done
+
+      # Go into each repo and commit changes
+      for folder in "$${FOLDERS[@]}"
+      do
+          pushd $$folder > /dev/null
+              git config --global user.email "cicd-agent@bank-of-anthos-demo.com"
+              git config --global user.name "Build Agent (automated)"
+              git add .
+              git commit -m 'new deployment of applications'
+              git push origin master
+          popd > /dev/null
+      done
+
+
+  volumes:
+    - path: '/artifacts'
+      name: 'artifacts'
+  waitFor:
+    - 'security-checkpoint'

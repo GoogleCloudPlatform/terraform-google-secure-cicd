@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-control "gsutil" do
-  title "gsutil"
-
-  describe command("gsutil ls -p #{attribute("project_id")}") do
-    its(:exit_status) { should eq 0 }
-    its(:stderr) { should eq "" }
-    its(:stdout) { should match "gs://#{attribute("bucket_name")}" }
-  end
-end
+name: app_cicd
+title: CICD Pipeline
+version: 0.1.0
+attributes:
+  - name: project_id
+    required: true
+    type: string
+  - name: cache_bucket_name
+    required: true
+    type: string
+  - name: build_trigger_name
+    required: true
+    type: string

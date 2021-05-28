@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-resource "google_storage_bucket" "main" {
-  project = var.project_id
-  name    = var.bucket_name
+variable "project_id" {
+  type        = string
+  description = "Project ID for CICD Pipeline Project"
+}
+
+variable "primary_location" {
+  type        = string
+  description = "Region used for key-ring"
 }

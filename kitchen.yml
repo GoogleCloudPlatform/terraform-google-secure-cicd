@@ -13,31 +13,25 @@
 # limitations under the License.
 
 ---
-driver:
-  name: terraform
-
 provisioner:
   name: terraform
 
+platforms:
+  - name: local
+
+transport:
+  name: exec
+  connection_timeout: 60
+
 verifier:
   name: terraform
-
-platforms:
-  - name: default
+  systems:
+    - name: system
+      backend: local
 
 suites:
-  - name: simple_example
+  - name: app_cicd
     driver:
-      root_module_directory: test/fixtures/simple_example/
-    verifier:
-      color: false
-      systems:
-        - name: simple_example local
-          backend: local
-          controls:
-            - gcloud
-            - gsutil
-        - name: simple_example gcp
-          backend: gcp
-          controls:
-            - gcp
+      name: terraform
+      root_module_directory: test/fixtures/app_cicd
+      command_timeout: 1800

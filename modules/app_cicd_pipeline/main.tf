@@ -24,25 +24,18 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-/***********************************************
- Cloud Source Repos
- ***********************************************/
-
 resource "google_sourcerepo_repository" "app_infra_repo" {
   for_each = toset(var.app_cicd_repos)
   project  = var.project_id
   name     = each.key
 }
 
-/***********************************************
- Cache Storage Bucket
- ***********************************************/
-
 resource "google_storage_bucket" "cache_bucket" {
   project                     = var.project_id
   name                        = "${var.project_id}_cloudbuild"
   location                    = var.primary_location
   uniform_bucket_level_access = true
+  force_destroy               = true
   versioning {
     enabled = true
   }
@@ -62,13 +55,9 @@ resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
   depends_on = [google_storage_bucket.cache_bucket]
 }
 
-/***********************************************
- App Repo Cloudbuild Build Trigger
- ***********************************************/
-
 resource "google_cloudbuild_trigger" "boa_build_trigger" {
-  project     = var.project_id
-  description = "${var.boa_build_repo}-trigger."
+  project = var.project_id
+  name    = "${var.boa_build_repo}-trigger"
   trigger_template {
     branch_name = ".*"
     repo_name   = var.boa_build_repo
@@ -81,10 +70,6 @@ resource "google_cloudbuild_trigger" "boa_build_trigger" {
   filename   = var.build_app_yaml
   depends_on = [google_sourcerepo_repository.app_infra_repo]
 }
-
-/***********************************************
- Image Build
- ***********************************************/
 
 resource "null_resource" "cloudbuild_image_builder" {
   triggers = {
@@ -100,10 +85,6 @@ resource "null_resource" "cloudbuild_image_builder" {
   EOT
   }
 }
-
-/***********************************************
- GAR Image Repo
- ***********************************************/
 
 resource "google_artifact_registry_repository" "image_repo" {
   provider      = google-beta

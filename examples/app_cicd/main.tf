@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-terraform {
-  required_version = ">= 0.13"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 3.53"
-    }
-  }
-
-  provider_meta "google" {
-    module_name = "blueprints/terraform/secure-cicd/v0.0.1"
-  }
+module "cicd_pipeline" {
+  source                = "../../modules/app_cicd_pipeline"
+  project_id            = var.project_id
+  app_cicd_repos        = ["bank-of-anthos-source", "root-config-repo", "accounts", "transactions", "frontend"]
+  boa_build_repo        = "bank-of-anthos-source"
+  gar_repo_name_suffix  = "boa-image-repo"
+  primary_location      = "us-central1"
+  attestor_names_prefix = ["build", "quality", "security"]
+  build_app_yaml        = "cloudbuild-build-boa.yaml"
+  build_image_yaml      = "cloudbuild-skaffold-build-image.yaml"
 }
