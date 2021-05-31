@@ -14,27 +14,32 @@
  * limitations under the License.
  */
 
-output "cache_bucket_name" {
-  description = "The name of the storage bucket for cloud build."
-  value       = google_storage_bucket.cache_bucket.name
-}
-
-output "build_trigger_name" {
-  description = "The name of the cloud build trigger for the bank of anthos repo."
-  value       = google_cloudbuild_trigger.boa_build_trigger.name
+output "project_id" {
+  value       = var.project_id
+  description = "The project to run tests against"
 }
 
 output "bin_auth_attestor_names" {
   description = "Names of Attestors"
-  value       = [for attestor_name in var.attestor_names_prefix : module.attestors[attestor_name].attestor]
+  value       = module.cicd_pipeline.bin_auth_attestor_names
 }
 
 output "bin_auth_attestor_project_id" {
   description = "Project ID where attestors get created"
-  value       = var.project_id
+  value       = module.cicd_pipeline.bin_auth_attestor_project_id
 }
 
 output "boa_artifact_repo" {
-  description = "GAR Repo created to store runner images"
-  value       = google_artifact_registry_repository.image_repo.name
+  description = "GAR Repo created to store BoA images"
+  value       = module.cicd_pipeline.boa_artifact_repo
+}
+
+output "cache_bucket_name" {
+  description = "The name of the storage bucket for cloud build."
+  value       = module.cicd_pipeline.cache_bucket_name
+}
+
+output "build_trigger_name" {
+  description = "The name of the cloud build trigger for the bank of anthos repo."
+  value       = module.cicd_pipeline.build_trigger_name
 }

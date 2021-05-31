@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-variable "project_id" {
-  description = "The project ID to deploy to"
-}
+module "example" {
+  source = "../../../examples/app_cicd"
 
-variable "bucket_name" {
-  description = "The name of the bucket to create"
+  project_id       = var.project_id
+  primary_location = var.primary_location
 }
