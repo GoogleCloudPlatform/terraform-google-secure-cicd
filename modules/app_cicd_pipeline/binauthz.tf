@@ -25,15 +25,14 @@ resource "random_string" "keyring_name" {
 resource "google_kms_key_ring" "keyring" {
   name     = "attestor-key-ring-${random_string.keyring_name.id}"
   location = var.primary_location
-  project  = var.app_cicd_project_id
+  project  = var.project_id
   lifecycle {
     prevent_destroy = false
   }
 }
 
-# Create a Google Secret containing the keyring name
 resource "google_secret_manager_secret" "keyring-secret" {
-  project   = var.app_cicd_project_id
+  project   = var.project_id
   secret_id = google_kms_key_ring.keyring.name
   labels = {
     label = google_kms_key_ring.keyring.name
@@ -54,7 +53,7 @@ module "attestors" {
   version  = "~> 14.1"
   for_each = toset(var.attestor_names_prefix)
 
-  project_id    = var.app_cicd_project_id
+  project_id    = var.project_id
   attestor-name = each.key
   keyring-id    = google_kms_key_ring.keyring.id
 }
