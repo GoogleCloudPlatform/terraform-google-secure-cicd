@@ -21,7 +21,7 @@ output "cache_bucket_name" {
 
 output "build_trigger_name" {
   description = "The name of the cloud build trigger for the bank of anthos repo."
-  value       = google_cloudbuild_trigger.boa_build_trigger.name
+  value       = google_cloudbuild_trigger.app_build_trigger.name
 }
 
 output "bin_auth_attestor_names" {
@@ -34,7 +34,7 @@ output "bin_auth_attestor_project_id" {
   value       = var.project_id
 }
 
-output "boa_artifact_repo" {
+output "app_artifact_repo" {
   description = "GAR Repo created to store runner images"
   value       = google_artifact_registry_repository.image_repo.name
 }

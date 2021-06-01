@@ -34,17 +34,22 @@ variable "attestor_names_prefix" {
   type        = list(string)
 }
 
-variable "build_app_yaml" {
+variable "app_build_trigger_yaml" {
   type        = string
   description = "Name of application cloudbuild yaml file"
 }
 
-variable "build_image_yaml" {
+variable "runner_build_folder" {
+  type        = string
+  description = "Path to the source folder for the cloud builds submit command"
+}
+
+variable "build_image_config_yaml" {
   type        = string
   description = "Name of image builder yaml file"
 }
 
-variable "boa_build_repo" {
+variable "app_build_repo" {
   type        = string
   description = "Name of repo that contains bank of anthos source code along with cloudbuild yaml"
 }
@@ -52,4 +57,21 @@ variable "boa_build_repo" {
 variable "gar_repo_name_suffix" {
   type        = string
   description = "Docker artifact regitery repo to store app build images"
+}
+
+variable "use_tf_google_credentials_env_var" {
+  description = "Optional GOOGLE_CREDENTIALS environment variable to be activated."
+  type        = bool
+  default     = false
+}
+
+variable "additional_substitutions" {
+  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
+  type        = map(string)
+  default     = {}
+}
+
+variable "trigger_branch_name" {
+  type        = string
+  description = "A regular expression to match one or more branches for the build trigger."
 }

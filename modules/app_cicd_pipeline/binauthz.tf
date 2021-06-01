@@ -31,23 +31,6 @@ resource "google_kms_key_ring" "keyring" {
   }
 }
 
-resource "google_secret_manager_secret" "keyring-secret" {
-  project   = var.project_id
-  secret_id = google_kms_key_ring.keyring.name
-  labels = {
-    label = google_kms_key_ring.keyring.name
-  }
-
-  replication {
-    automatic = true
-  }
-}
-
-resource "google_secret_manager_secret_version" "keyring-secret-version" {
-  secret      = google_secret_manager_secret.keyring-secret.id
-  secret_data = google_kms_key_ring.keyring.name
-}
-
 module "attestors" {
   source   = "terraform-google-modules/kubernetes-engine/google//modules/binary-authorization"
   version  = "~> 14.1"

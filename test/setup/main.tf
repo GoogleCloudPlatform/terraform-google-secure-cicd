@@ -35,12 +35,17 @@ module "project" {
     "sourcerepo.googleapis.com",
     "artifactregistry.googleapis.com",
     "containeranalysis.googleapis.com",
-    "cloudkms.googleapis.com"
+    "cloudkms.googleapis.com",
+    "binaryauthorization.googleapis.com",
   ]
   activate_api_identities = [
     {
-      api   = "cloudbuild.googleapis.com"
-      roles = ["roles/storage.admin"]
+      api = "cloudbuild.googleapis.com"
+      roles = [
+        "roles/storage.admin",
+        "roles/artifactregistry.admin",
+        "roles/cloudbuild.builds.builder",
+      ]
     },
   ]
 }

@@ -22,4 +22,4 @@ steps:
   args: ['push', '$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder']
 substitutions:
   _DEFAULT_REGION: 'us-east1' # default value
-  _GAR_REPOSITORY: '$PROJECT_ID-boa-image-repo' # default value
+  _GAR_REPOSITORY: '$PROJECT_ID-app-image-repo' # default value

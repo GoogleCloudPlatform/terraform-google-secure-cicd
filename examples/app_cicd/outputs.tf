@@ -31,7 +31,7 @@ output "bin_auth_attestor_project_id" {
 
 output "boa_artifact_repo" {
   description = "GAR Repo created to store BoA images"
-  value       = module.cicd_pipeline.boa_artifact_repo
+  value       = module.cicd_pipeline.app_artifact_repo
 }
 
 output "cache_bucket_name" {

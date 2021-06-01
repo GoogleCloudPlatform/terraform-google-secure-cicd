@@ -15,7 +15,7 @@
  */
 
 locals {
-  created_csrs = toset([for repo in google_sourcerepo_repository.app_infra_repo : repo.name])
+  created_csrs = toset([for repo in google_sourcerepo_repository.app_config_repo : repo.name])
   gar_name     = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
   folders      = ["cache/.m2/.ignore", "cache/.skaffold/.ignore", "cache/.cache/pip/wheels/.ignore"]
 }
@@ -24,7 +24,7 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-resource "google_sourcerepo_repository" "app_infra_repo" {
+resource "google_sourcerepo_repository" "app_config_repo" {
   for_each = toset(var.app_cicd_repos)
   project  = var.project_id
   name     = each.key
@@ -55,35 +55,32 @@ resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
   depends_on = [google_storage_bucket.cache_bucket]
 }
 
-resource "google_cloudbuild_trigger" "boa_build_trigger" {
+resource "google_cloudbuild_trigger" "app_build_trigger" {
   project = var.project_id
-  name    = "${var.boa_build_repo}-trigger"
+  name    = "${var.app_build_repo}-trigger"
   trigger_template {
-    branch_name = ".*"
-    repo_name   = var.boa_build_repo
+    branch_name = var.trigger_branch_name
+    repo_name   = var.app_build_repo
   }
-  substitutions = {
-    _GAR_REPOSITORY    = local.gar_name
-    _DEFAULT_REGION    = var.primary_location
-    _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
-  }
-  filename   = var.build_app_yaml
-  depends_on = [google_sourcerepo_repository.app_infra_repo]
+  substitutions = merge(
+    {
+      _GAR_REPOSITORY    = local.gar_name
+      _DEFAULT_REGION    = var.primary_location
+      _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
+    },
+    var.additional_substitutions
+  )
+  filename   = var.app_build_trigger_yaml
+  depends_on = [google_sourcerepo_repository.app_config_repo]
 }
 
-resource "null_resource" "cloudbuild_image_builder" {
-  triggers = {
-    project_id_cloudbuild_project = var.project_id
-  }
-
-  provisioner "local-exec" {
-    command = <<EOT
-      gcloud builds submit ${path.module}/cloud-build-builder/ \
-      --project ${var.project_id} \
-      --config=${path.module}/cloud-build-builder/${var.build_image_yaml} \
-      --substitutions=_DEFAULT_REGION=${var.primary_location},_GAR_REPOSITORY=${local.gar_name}
-  EOT
-  }
+module "gcloud" {
+  source                            = "terraform-google-modules/gcloud/google"
+  version                           = "~> 2.0"
+  platform                          = "linux"
+  create_cmd_entrypoint             = "${path.module}/scripts/cloud-build-submit.sh"
+  create_cmd_body                   = "${var.runner_build_folder} ${var.project_id} ${var.build_image_config_yaml} ${var.primary_location} ${local.gar_name}"
+  use_tf_google_credentials_env_var = var.use_tf_google_credentials_env_var
 }
 
 resource "google_artifact_registry_repository" "image_repo" {
@@ -100,6 +97,6 @@ resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" 
   project    = var.project_id
   location   = google_artifact_registry_repository.image_repo.location
   repository = google_artifact_registry_repository.image_repo.name
-  role       = "roles/artifactregistry.writer"
+  role       = "roles/artifactregistry.admin"
   member     = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
