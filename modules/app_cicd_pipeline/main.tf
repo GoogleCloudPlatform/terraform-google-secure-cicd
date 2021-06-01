@@ -100,6 +100,6 @@ resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" 
   project    = var.project_id
   location   = google_artifact_registry_repository.image_repo.location
   repository = google_artifact_registry_repository.image_repo.name
-  role       = "roles/artifactregistry.writer"
+  role       = "roles/artifactregistry.admin"
   member     = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }

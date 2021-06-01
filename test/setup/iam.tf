@@ -16,7 +16,18 @@
 
 locals {
   int_required_roles = [
-    "roles/owner"
+    "roles/storage.admin",
+    "roles/artifactregistry.admin",
+    "roles/binaryauthorization.attestorsAdmin",
+    "roles/cloudbuild.builds.builder",
+    "roles/cloudkms.admin",
+    "roles/cloudkms.signerVerifier",
+    "roles/containeranalysis.admin",
+    "roles/secretmanager.admin",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/source.admin",
+    "roles/composer.serviceAgent",
+    "roles/viewer",
   ]
 }
 
