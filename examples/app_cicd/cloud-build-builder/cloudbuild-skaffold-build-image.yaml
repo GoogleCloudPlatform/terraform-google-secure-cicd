@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-control "gcloud" do
-  title "gcloud"
-
-  describe command("gcloud --project=#{attribute("project_id")} services list --enabled") do
-    its(:exit_status) { should eq 0 }
-    its(:stderr) { should eq "" }
-    its(:stdout) { should match "storage-api.googleapis.com" }
-  end
-end
+options:
+  # Use higher CPU machines so the caching and build steps are faster.
+  machineType: 'N1_HIGHCPU_32'
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', '$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder', '.' ]
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder']
+substitutions:
+  _DEFAULT_REGION: 'us-east1' # default value
+  _GAR_REPOSITORY: '$PROJECT_ID-app-image-repo' # default value

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,36 @@
 
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
-  version = "~> 8.0"
+  version = "~> 10.0"
 
-  name              = "ci-secure_cicd"
+  name              = "ci-secure-cicd"
   random_project_id = "true"
   org_id            = var.org_id
   folder_id         = var.folder_id
   billing_account   = var.billing_account
-  skip_gcloud_download = true
 
   activate_apis = [
     "cloudresourcemanager.googleapis.com",
     "storage-api.googleapis.com",
-    "serviceusage.googleapis.com"
+    "serviceusage.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "containerregistry.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "secretmanager.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "containeranalysis.googleapis.com",
+    "cloudkms.googleapis.com",
+    "binaryauthorization.googleapis.com",
+  ]
+  activate_api_identities = [
+    {
+      api = "cloudbuild.googleapis.com"
+      roles = [
+        "roles/storage.admin",
+        "roles/artifactregistry.admin",
+        "roles/cloudbuild.builds.builder",
+      ]
+    },
   ]
 }

@@ -14,7 +14,23 @@
  * limitations under the License.
  */
 
-resource "google_storage_bucket" "main" {
-  project = var.project_id
-  name    = var.bucket_name
+terraform {
+  required_version = ">= 0.12.6"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 3.45"
+    }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 3.45"
+    }
+  }
+
+  provider_meta "google" {
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:app_cicd_pipeline/v1.0.0"
+  }
+  provider_meta "google-beta" {
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:app_cicd_pipeline/v1.0.0"
+  }
 }

@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-terraform {
-  required_version = ">= 0.13"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 3.53"
-    }
-  }
+variable "project_id" {
+  type        = string
+  description = "Project ID for CICD Pipeline Project"
+}
 
-  provider_meta "google" {
-    module_name = "blueprints/terraform/secure-cicd/v0.0.1"
-  }
+variable "primary_location" {
+  type        = string
+  description = "Region used for key-ring"
 }

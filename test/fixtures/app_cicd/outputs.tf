@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-output "bucket_name" {
-  description = "The name of the bucket."
-  value       = module.secure_cicd.bucket_name
+output "project_id" {
+  description = "The ID of the project in which resources are provisioned."
+  value       = var.project_id
+}
+
+output "cache_bucket_name" {
+  description = "The name of the storage bucket for cloud build."
+  value       = module.example.cache_bucket_name
+}
+
+output "build_trigger_name" {
+  description = "The name of the cloud build trigger for the bank of anthos repo."
+  value       = module.example.build_trigger_name
 }

@@ -19,7 +19,8 @@ variable "project_id" {
   type        = string
 }
 
-variable "bucket_name" {
-  description = "The name of the bucket to create."
+variable "primary_location" {
   type        = string
+  description = "Region used for key-ring"
+  default     = "us-central1"
 }

@@ -1,0 +1,37 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+schemaVersion: "2.0.0"
+
+globalEnvVars:
+  - key: "PATH"
+    value: "/env/bin:$PATH"
+
+fileExistenceTests:
+- name: 'Root folder is executable'
+  path: '/'
+  shouldExist: true
+  permissions: 'drwxr-xr-x'
+  uid: 0
+  gid: 0
+  isExecutableBy: 'group'
+- name: 'Debian Sources do NOT exist'
+  path: '/etc/apt/sources.list'
+  shouldExist: true # TODO Set this to "false" to fail the test
+- name: 'Bash shell is available' # NOTE: In real world, remove bash, sources and ssh to improve security
+  path: '/bin/bash'
+  shouldExist: true # TODO Set this to "false" to fail the test
+- name: 'No SSH'
+  path: '/usr/bin/ssh'
+  shouldExist: false
