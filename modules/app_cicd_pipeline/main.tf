@@ -74,6 +74,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
   depends_on = [google_sourcerepo_repository.app_config_repo]
 }
 
+### Build the Cloud Build builder image
 module "gcloud" {
   source                            = "terraform-google-modules/gcloud/google"
   version                           = "~> 2.0"

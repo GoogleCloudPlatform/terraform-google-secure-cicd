@@ -96,51 +96,33 @@ steps:
 
 ################ Securing Artifacts Before Deployment ####################
 
-# Create build-installation-image for each of the images
-- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+### Container Struture Test
+- name: 'gcr.io/cloud-builders/docker'
   id: "container-structure"
   entrypoint: "/bin/bash"
   args:
     - '-xe'
-    - -c
+    - '-c'
     - |
-      # hardcoded test
-      gcloud builds submit --config cloudbuild-check-image.yaml --substitutions _IMAGE="us-central1-docker.pkg.dev/ci-secure-cicd-b198/ci-secure-cicd-b198-boa-image-repo/accounts-db@sha256:3d33a440966a457a25db5eb2fb18abd1069229c1573e39299aa4f863449f47fd" --project="${PROJECT_ID}" --async
-      # Get all images into an array
-      # IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
-      IMAGE=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts.json))
+      # install jq and container-structure-test
+      apt-get -y install jq
+      curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 \
+      && chmod +x container-structure-test-linux-amd64 \
+      && mv container-structure-test-linux-amd64 /usr/bin/container-structure-test
+
+      # remove commit hash from string (need either tag or digest, not both)
+      sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
-        gcloud builds submit --config cloudbuild-check-image.yaml --substitutions _IMAGE="$${IMAGE}" --project="${PROJECT_ID}" --async
-      done
-
-      # loop on results until all jobs are complete
-      COUNT=0
-      MAX=100
-      COMPLETED="false"
-      while [ "$$COMPLETED" == "false" ]; do
-
-          if [[ $$COUNT -ge $$MAX ]]; then
-              echo "Timeout happened before results were returned"
-              exit 1
-          fi
-
-          RESULT=($(gcloud builds list --ongoing --filter "tags='container-structure-test'" --format="value(ID)"))
-
-          if [[ $${#RESULT[@]} -gt 0 ]]; then
-              echo "$${#RESULT[@]} of $${JOB_TOTAL}, checking again in 5s"
-              COUNT=$$COUNT+1
-              sleep 5s
-          else
-              echo "Done!"
-              COMPLETED="true"
-              break # do I really need a conditional?
-          fi
+        docker pull "$${IMAGE}" # pull the remote image from GAR w/ digest SHA
+        container-structure-test test --image "$${IMAGE}" --config policies/container-structure-policy.yaml
       done
   volumes:
   - path: '/artifacts'
     name: 'artifacts'
   waitFor: ['build-images']
-  # Container image analysis scanning (CVE Check)
+
+### Container image analysis scanning (CVE Check)
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "container-scanner"
   entrypoint: "/bin/bash"
@@ -149,8 +131,9 @@ steps:
     - -c
     - |
       #exit 0 # SKIP
-      echo "SHORT_SHA: $SHORT_SHA"
       gcloud config set project ${PROJECT_ID}
+
+      # remove commit hash from string (need either tag or digest, not both)
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
@@ -168,7 +151,7 @@ steps:
       name: 'artifacts'
   waitFor: ['build-images']
 
-# Binary Authorization
+### Binary Authorization
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "security-checkpoint"
   entrypoint: "/bin/bash"
@@ -192,20 +175,13 @@ steps:
             --format="value(name)")
 
         if [ -z $${HAS_ATTESTATION} ]; then
-          echo "Create an attestation for $${IMAGE}}"
-          # signature file/ occurrence
-          gcloud container binauthz create-signature-payload \
-              --artifact-url="$${IMAGE}" > /artifacts/generated_payload.json
-
-          gcloud container binauthz attestations create \
-            --project="${PROJECT_ID}" \
+          gcloud beta container binauthz attestations sign-and-create \
             --artifact-url="$${IMAGE}" \
             --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
-            --signature-file=/artifacts/generated_payload.json \
-            --public-key-id="$${PUBLIC_KEY_ID}" \
-            --validate
-          rm -rf /artifacts/generated_payload.json
-      fi
+            --keyversion=$( echo "$${PUBLIC_KEY_ID}" | sed "s|//cloudkms.googleapis.com/v1/||" )          
+
+
+        fi
       done
   volumes:
     - path: '/artifacts'

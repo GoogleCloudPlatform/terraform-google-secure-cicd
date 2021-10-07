@@ -50,7 +50,7 @@ ENV CLOUDSDK_INSTALL_DIR /usr/local/gcloud/
 RUN curl -sSL https://sdk.cloud.google.com | bash
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
-RUN gcloud components install skaffold kubectl kustomize kpt nomos
+RUN gcloud components install skaffold kubectl kustomize kpt nomos beta
 
 ##### 4. Add the kritis signer to the commands
 COPY --from=kritis-build /signer .
