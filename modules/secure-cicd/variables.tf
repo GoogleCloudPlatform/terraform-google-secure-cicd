@@ -54,7 +54,7 @@ variable "app_source_repo" {
   description = "Name of repo that contains app source code along with cloudbuild yaml"
 }
 
-variable "manfiest_dry_repo" {
+variable "manifest_dry_repo" {
   type        = string
   description = "Name of repo that contains template K8s manifests files"
 }
