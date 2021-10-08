@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-variable "app_cicd_repos" {
-  description = "A list of Cloud Source Repos to be created to hold app infra Terraform configs"
-  type        = list(string)
-}
+# variable "app_cicd_repos" {
+#   description = "A list of Cloud Source Repos to be created to hold app infra Terraform configs"
+#   type        = list(string)
+# }
 
 variable "project_id" {
   type        = string
@@ -49,9 +49,19 @@ variable "build_image_config_yaml" {
   description = "Name of image builder yaml file"
 }
 
-variable "app_build_repo" {
+variable "app_source_repo" {
   type        = string
-  description = "Name of repo that contains bank of anthos source code along with cloudbuild yaml"
+  description = "Name of repo that contains app source code along with cloudbuild yaml"
+}
+
+variable "manfiest_dry_repo" {
+  type        = string
+  description = "Name of repo that contains template K8s manifests files"
+}
+
+variable "manifest_wet_repo" {
+  type        = string
+  description = "Name of repo that will receive hydrated K8s manifests files"
 }
 
 variable "gar_repo_name_suffix" {

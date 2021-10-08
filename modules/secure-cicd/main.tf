@@ -24,11 +24,22 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-resource "google_sourcerepo_repository" "app_config_repo" {
-  for_each = toset(var.app_cicd_repos)
+resource "google_sourcerepo_repository" "app_source_repo" {
   project  = var.project_id
-  name     = each.key
+  name     = var.app_source_repo
 }
+
+resource "google_sourcerepo_repository" "manifest_dry_repo" {
+  project  = var.project_id
+  name     = var.manifest_dry_repo
+}
+
+resource "google_sourcerepo_repository" "manifest_wet_repo" {
+  project  = var.project_id
+  name     = var.manifest_wet_repo
+}
+
+
 
 resource "google_storage_bucket" "cache_bucket" {
   project                     = var.project_id
@@ -67,6 +78,8 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
       _GAR_REPOSITORY    = local.gar_name
       _DEFAULT_REGION    = var.primary_location
       _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
+      _MANIFEST_DRY_REPO = var.manifest_dry_repo
+      _MANIFEST_WET_REPO = var.manifest_wet_repo
     },
     var.additional_substitutions
   )
