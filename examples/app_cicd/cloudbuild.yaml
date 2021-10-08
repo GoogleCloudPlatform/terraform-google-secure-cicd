@@ -153,7 +153,7 @@ steps:
 
 ### Binary Authorization
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
-  id: "security-checkpoint"
+  id: "binary-authorization-checkpoint"
   entrypoint: "/bin/bash"
   args:
     - '-xe'
@@ -190,7 +190,7 @@ steps:
     - 'container-structure'
     - 'container-scanner'
 
-# Hydrate manifests
+### Hydrate manifests and push to wet repo
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "commit-upstream"
   entrypoint: "/bin/bash"
@@ -198,63 +198,44 @@ steps:
     - '-xe'
     - -c
     - |
-      # Clone the DRY repo (using mocked version)
-      gcloud config set project ${PROJECT_ID}
       PATTERN='^.*\/([a-zA-Z-]+)$$$'
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
       IMAGE_NAMES=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts.json))
 
-      FOLDERS=("accounts" "frontend" "transactions")
-      # Clone all three repos
-      for folder in "$${FOLDERS[@]}"
-      do
-          gcloud source repos clone $folder --project=${PROJECT_ID}
-      done
+      cd /workspace
 
-      INDEX=0
+      # Clone the DRY repo
+      gcloud config set project ${PROJECT_ID}
+      gcloud source repos clone $_MANIFEST_DRY_REPO --project=${PROJECT_ID}
+
+      # Clone the WET repo
+      gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
+
       for IMAGE in "$${IMAGE_NAMES[@]}"; do
 
           [[ $$IMAGE =~ $$PATTERN ]]
           IMG=$${BASH_REMATCH[1]}
 
-          case $$IMG in
-              frontend|loadgenerator)
-                  pushd frontend > /dev/null # repo folder
-                    GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" GCR="gcr.io/$PROJECT_ID/$${IMG}*" BOA="gcr.io/bank-of-anthos/$${IMG}*" FULL_IMAGE="$${IMAGES[$$INDEX]}" yq eval -i '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == strenv(GAR) or . == strenv(GCR) or . == strenv(BOA))) |= strenv(FULL_IMAGE)' $$IMG.yaml
-                  popd > /dev/null
-                  ;;
-              userservice|contacts)
-                  echo "ACCOUNTS - $${IMAGE}"
-                  pushd accounts > /dev/null # repo folder
-                    GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" GCR="gcr.io/$PROJECT_ID/$${IMG}*" BOA="gcr.io/bank-of-anthos/$${IMG}*" FULL_IMAGE="$${IMAGES[$$INDEX]}" yq eval -i '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == strenv(GAR) or . == strenv(GCR) or . == strenv(BOA))) |= strenv(FULL_IMAGE)' $$IMG.yaml
-                  popd > /dev/null
-                  ;;
-              balancereader|ledgerwriter|transactionhistory)
-                  echo "TRANSACTIONS - $${IMAGE}"
-                  pushd transactions > /dev/null # repo folder
-                    GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" GCR="gcr.io/$PROJECT_ID/$${IMG}*" BOA="gcr.io/bank-of-anthos/$${IMG}*" FULL_IMAGE="$${IMAGES[$$INDEX]}" yq eval -i '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == strenv(GAR) or . == strenv(GCR) or . == strenv(BOA))) |= strenv(FULL_IMAGE)' $$IMG.yaml
-                  popd > /dev/null
-                  ;;
-          esac
+          GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" 
+          GCR="gcr.io/$PROJECT_ID/$${IMG}*" 
+          BOA="gcr.io/bank-of-anthos/$${IMG}*" 
+          FULL_IMAGE="$${IMAGES[$$INDEX]}" 
+          yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/$$IMG.yaml
 
-          INDEX=$${INDEX}+1
       done
 
-      # Go into each repo and commit changes
-      for folder in "$${FOLDERS[@]}"
-      do
-          pushd $$folder > /dev/null
-              git config --global user.email "cicd-agent@bank-of-anthos-demo.com"
-              git config --global user.name "Build Agent (automated)"
-              git add .
-              git commit -m 'new deployment of applications'
-              git push origin master
-          popd > /dev/null
-      done
+      # Go into wet repo and commit changes
+      cd /workspace/$_MANIFEST_WET_REPO
+      git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
+      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
+      git add .
+      git commit -m 'new deployment of applications'
+      git push origin master
+
 
 
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
   waitFor:
-    - 'security-checkpoint'
+    - 'binary-authorization-checkpoint'

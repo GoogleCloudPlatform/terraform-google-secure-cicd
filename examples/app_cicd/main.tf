@@ -18,7 +18,7 @@ module "cicd_pipeline" {
   source                  = "../../modules/secure-cicd"
   project_id              = var.project_id
   # app_cicd_repos          = ["bank-of-anthos-source", "root-config-repo", "accounts", "transactions", "frontend"]
-  app_source_repo         = "bank-of-anthos-source"
+  app_source_repo         = "app-source"
   manifest_dry_repo       = "app-dry-manifests"
   manifest_wet_repo       = "app-wet-manifests"
   gar_repo_name_suffix    = "app-image-repo"

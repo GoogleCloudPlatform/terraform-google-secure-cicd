@@ -15,7 +15,7 @@
  */
 
 locals {
-  created_csrs = toset([for repo in google_sourcerepo_repository.app_config_repo : repo.name])
+  created_csrs = toset([google_sourcerepo_repository.app_source_repo.name, google_sourcerepo_repository.manifest_dry_repo.name, google_sourcerepo_repository.manifest_wet_repo.name])
   gar_name     = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
   folders      = ["cache/.m2/.ignore", "cache/.skaffold/.ignore", "cache/.cache/pip/wheels/.ignore"]
 }
@@ -68,10 +68,10 @@ resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
 
 resource "google_cloudbuild_trigger" "app_build_trigger" {
   project = var.project_id
-  name    = "${var.app_build_repo}-trigger"
+  name    = "${var.app_source_repo}-trigger"
   trigger_template {
     branch_name = var.trigger_branch_name
-    repo_name   = var.app_build_repo
+    repo_name   = var.app_source_repo
   }
   substitutions = merge(
     {
@@ -84,7 +84,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
     var.additional_substitutions
   )
   filename   = var.app_build_trigger_yaml
-  depends_on = [google_sourcerepo_repository.app_config_repo]
+  depends_on = [google_sourcerepo_repository.app_source_repo]
 }
 
 ### Build the Cloud Build builder image
