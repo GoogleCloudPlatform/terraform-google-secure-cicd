@@ -178,7 +178,7 @@ steps:
           gcloud beta container binauthz attestations sign-and-create \
             --artifact-url="$${IMAGE}" \
             --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
-            --keyversion=$( echo "$${PUBLIC_KEY_ID}" | sed "s|//cloudkms.googleapis.com/v1/||" )          
+            --keyversion=$( echo "$${PUBLIC_KEY_ID}" | sed "s|//cloudkms.googleapis.com/v1/||" )
 
 
         fi
@@ -216,10 +216,10 @@ steps:
           [[ $$IMAGE =~ $$PATTERN ]]
           IMG=$${BASH_REMATCH[1]}
 
-          GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*" 
-          GCR="gcr.io/$PROJECT_ID/$${IMG}*" 
-          BOA="gcr.io/bank-of-anthos/$${IMG}*" 
-          FULL_IMAGE="$${IMAGES[$$INDEX]}" 
+          GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*"
+          GCR="gcr.io/$PROJECT_ID/$${IMG}*"
+          BOA="gcr.io/bank-of-anthos/$${IMG}*"
+          FULL_IMAGE="$${IMAGES[$$INDEX]}"
           yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/$$IMG.yaml
 
       done

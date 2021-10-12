@@ -60,7 +60,7 @@ func TestAppCICDExample(t *testing.T) {
 		// Artifact Registry repository
 		gar := gcloud.Run(t, fmt.Sprintf("artifacts repositories describe %s-%s --project %s --location %s", appCICDT.GetStringOutput("project_id"), gar_repo_name_suffix, appCICDT.GetStringOutput("project_id"), primary_location))
 		gar_fullname := "projects/" + appCICDT.GetStringOutput("project_id") + "/locations/" + primary_location + "/repositories/" + appCICDT.GetStringOutput("project_id") + "-" + gar_repo_name_suffix
-		assert.Equal(gcb.Get("name").String(), gar_fullname, "GAR Repo is valid")
+		assert.Equal(gar.Get("name").String(), gar_fullname, "GAR Repo is valid")
 
 		// TODO: BinAuthz
 	})
