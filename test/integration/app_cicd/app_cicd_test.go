@@ -31,12 +31,12 @@ import (
 func TestAppCICDExample(t *testing.T) {
 	// define constants for all required assertions in the test case
 
-	const app_source_repo = "app-source"
-	const trigger_name = "app-source-trigger"
-	const manifest_dry_repo       = "app-dry-manifests"
-	const manifest_wet_repo       = "app-wet-manifests"
-	const gar_repo_name_suffix    = "app-image-repo"
-	const primary_location        = "us-central1"
+	const app_source_repo      = "app-source"
+	const trigger_name         = "app-source-trigger"
+	const manifest_dry_repo    = "app-dry-manifests"
+	const manifest_wet_repo    = "app-wet-manifests"
+	const gar_repo_name_suffix = "app-image-repo"
+	const primary_location     = "us-central1"
 
 	// initialize Terraform test from the Blueprints test framework
 	appCICDT := tft.NewTFBlueprintTest(t)
@@ -53,16 +53,16 @@ func TestAppCICDExample(t *testing.T) {
 		// Cloud Build Trigger - App Source
 		gcb := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", trigger_name, appCICDT.GetStringOutput("project_id")))
 
-		assert.Equal(gcb.Get("name").String(), trigger_name, "Cloud Build Trigger name is valid")
-		assert.Equal(gcb.Get("substitutions._MANIFEST_DRY_REPO").String(), manifest_dry_repo, "Manifest Dry Repo trigger substitution is valid")
-		assert.Equal(gcb.Get("substitutions._MANIFEST_WET_REPO").String(), manifest_wet_repo, "Manifest Wet Repo trigger substitution is valid")
+		assert.Equal(trigger_name, gcb.Get("name").String(), "Cloud Build Trigger name is valid")
+		assert.Equal(manifest_dry_repo, gcb.Get("substitutions._MANIFEST_DRY_REPO").String(), "Manifest Dry Repo trigger substitution is valid")
+		assert.Equal(manifest_wet_repo, gcb.Get("substitutions._MANIFEST_WET_REPO").String(), "Manifest Wet Repo trigger substitution is valid")
 		assert.Contains(gcb.Get("substitutions._DEFAULT_REGION").String(), primary_location, "Default Region trigger substitution is valid")
-		assert.Equal(gcb.Get("triggerTemplates.repoName").String(), app_source_repo, "Attached CSR repo is valid")
+		assert.Equal(app_source_repo, gcb.Get("triggerTemplate.repoName").String(), "Attached CSR repo is valid")
 
 		// Artifact Registry repository
 		gar := gcloud.Run(t, fmt.Sprintf("artifacts repositories describe %s-%s --project %s --location %s", appCICDT.GetStringOutput("project_id"), gar_repo_name_suffix, appCICDT.GetStringOutput("project_id"), primary_location))
 		gar_fullname := "projects/" + appCICDT.GetStringOutput("project_id") + "/locations/" + primary_location + "/repositories/" + appCICDT.GetStringOutput("project_id") + "-" + gar_repo_name_suffix
-		assert.Equal(gar.Get("name").String(), gar_fullname, "GAR Repo is valid")
+		assert.Equal(gar_fullname, gar.Get("name").String(), "GAR Repo is valid")
 
 		// TODO: BinAuthz
 	})
