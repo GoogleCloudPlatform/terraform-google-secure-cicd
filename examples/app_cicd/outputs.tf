@@ -43,3 +43,18 @@ output "build_trigger_name" {
   description = "The name of the cloud build trigger for the bank of anthos repo."
   value       = module.cicd_pipeline.build_trigger_name
 }
+
+output "app_source_repo_name" {
+  description = "The name of the Cloud Source repo that contains application source code"
+  value       = module.cicd_pipeline.app_source_repo_name
+}
+
+output "dry_manifest_repo_name" {
+  description = "The name of the Cloud Source repo that contains application source code"
+  value       = module.cicd_pipeline.dry_manifest_repo_name
+}
+
+output "wet_manifest_repo_name" {
+  description = "The name of the Cloud Source repo that contains application source code"
+  value       = module.cicd_pipeline.wet_manifest_repo_name
+}

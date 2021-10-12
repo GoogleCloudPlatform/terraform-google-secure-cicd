@@ -39,8 +39,6 @@ resource "google_sourcerepo_repository" "manifest_wet_repo" {
   name     = var.manifest_wet_repo
 }
 
-
-
 resource "google_storage_bucket" "cache_bucket" {
   project                     = var.project_id
   name                        = "${var.project_id}_cloudbuild"
