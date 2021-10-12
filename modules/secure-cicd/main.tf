@@ -15,7 +15,6 @@
  */
 
 locals {
-  created_csrs = toset([google_sourcerepo_repository.app_source_repo.name, google_sourcerepo_repository.manifest_dry_repo.name, google_sourcerepo_repository.manifest_wet_repo.name])
   gar_name     = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
   folders      = ["cache/.m2/.ignore", "cache/.skaffold/.ignore", "cache/.cache/pip/wheels/.ignore"]
 }
@@ -25,7 +24,7 @@ data "google_project" "app_cicd_project" {
 }
 
 resource "google_sourcerepo_repository" "repos" {
-  for_each = [var.manifest_wet_repo,var.manifest_dry_repo, var.app_source_repo]
+  for_each = toset([var.manifest_wet_repo, var.manifest_dry_repo, var.app_source_repo])
   name     = each.key
   project  = var.project_id
 }
@@ -73,7 +72,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
     var.additional_substitutions
   )
   filename   = var.app_build_trigger_yaml
-  depends_on = [google_sourcerepo_repository.app_source_repo]
+  depends_on = [google_sourcerepo_repository.repos]
 }
 
 ### Build the Cloud Build builder image
