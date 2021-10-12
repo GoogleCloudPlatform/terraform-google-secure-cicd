@@ -88,7 +88,7 @@ variable "trigger_branch_name" {
 variable "cloudbuild_service_account_roles" {
   type        = list(string)
   description = "IAM roles given to the Cloud Build service account to enable security scanning operations"
-  default     = [
+  default = [
     "roles/artifactregistry.admin",
     "roles/binaryauthorization.attestorsVerifier",
     "roles/cloudbuild.builds.builder",

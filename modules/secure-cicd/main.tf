@@ -88,9 +88,9 @@ module "gcloud" {
 ### Cloud Build Service Account permissions
 resource "google_project_iam_member" "project" {
   for_each = toset(var.cloudbuild_service_account_roles)
-  project = var.project_id
-  role    = each.value
-  member  = "${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
+  project  = var.project_id
+  role     = each.value
+  member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
 
 resource "google_artifact_registry_repository" "image_repo" {
