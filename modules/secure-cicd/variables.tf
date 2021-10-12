@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-# variable "app_cicd_repos" {
-#   description = "A list of Cloud Source Repos to be created to hold app infra Terraform configs"
-#   type        = list(string)
-# }
-
 variable "project_id" {
   type        = string
   description = "Project ID for CICD Pipeline Project"
@@ -52,21 +47,25 @@ variable "build_image_config_yaml" {
 variable "app_source_repo" {
   type        = string
   description = "Name of repo that contains app source code along with cloudbuild yaml"
+  default     = "app-source"
 }
 
 variable "manifest_dry_repo" {
   type        = string
   description = "Name of repo that contains template K8s manifests files"
+  default     = "app-dry-manifests"
 }
 
 variable "manifest_wet_repo" {
   type        = string
   description = "Name of repo that will receive hydrated K8s manifests files"
+  default     = "app-wet-manifests"
 }
 
 variable "gar_repo_name_suffix" {
   type        = string
   description = "Docker artifact regitery repo to store app build images"
+  default     = "app-image-repo"
 }
 
 variable "use_tf_google_credentials_env_var" {

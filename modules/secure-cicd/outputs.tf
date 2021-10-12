@@ -39,17 +39,7 @@ output "app_artifact_repo" {
   value       = google_artifact_registry_repository.image_repo.name
 }
 
-output "app_source_repo_name" {
-  description = "The name of the Cloud Source repo that contains application source code"
-  value       = google_sourcerepo_repository.app_source_repo.name
-}
-
-output "dry_manifest_repo_name" {
-  description = "The name of the Cloud Source repo that contains application source code"
-  value       = google_sourcerepo_repository.manifest_dry_repo.name
-}
-
-output "wet_manifest_repo_name" {
-  description = "The name of the Cloud Source repo that contains application source code"
-  value       = google_sourcerepo_repository.manifest_wet_repo.name
+output "source_repo_names" {
+  description = "Name of the created CSR repos"
+  value       = [for repo in google_sourcerepo_repository.repos : repo.name]
 }

@@ -71,7 +71,6 @@ steps:
     - '-xe'
     - -c
     - |
-      ./mvnw validate # TODO: remove this?
       # Replace gcr.io/bank-of-anthos to current project in skaffold.yaml
       sed -i "s|gcr.io/bank-of-anthos|$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY|g" skaffold.yaml
       skaffold config set --global local-cluster false
@@ -81,18 +80,9 @@ steps:
       while read p; do
         echo "$p"
       done < /artifacts/build-artifacts.json
-  env:
-  - MAVEN_OPTS=-Dmaven.repo.local=/cache/.m2
-  - XDG_CACHE_HOME=/.cache # pip/wheel will come with cache
   volumes:
   - path: '/artifacts'
     name: 'artifacts'
-  # - path: '/.skaffold/'
-  #   name: 'skaffold_cache'
-  # - path: '/cache/.m2'
-  #   name: 'm2_cache'
-  # - path: '/.cache/pip/wheels'
-  #   name: 'pip_cache'
 
 ################ Securing Artifacts Before Deployment ####################
 

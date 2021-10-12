@@ -24,19 +24,10 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-resource "google_sourcerepo_repository" "app_source_repo" {
+resource "google_sourcerepo_repository" "repos" {
+  for_each = [var.manifest_wet_repo,var.manifest_dry_repo, var.app_source_repo]
+  name     = each.key
   project  = var.project_id
-  name     = var.app_source_repo
-}
-
-resource "google_sourcerepo_repository" "manifest_dry_repo" {
-  project  = var.project_id
-  name     = var.manifest_dry_repo
-}
-
-resource "google_sourcerepo_repository" "manifest_wet_repo" {
-  project  = var.project_id
-  name     = var.manifest_wet_repo
 }
 
 resource "google_storage_bucket" "cache_bucket" {
