@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-module "cicd_pipeline" {
-  source                  = "../../modules/secure-cicd"
+module "ci_pipeline" {
+  source                  = "../../modules/secure-ci"
   project_id              = var.project_id
   app_source_repo         = "app-source"
   manifest_dry_repo       = "app-dry-manifests"

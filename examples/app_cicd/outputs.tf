@@ -21,30 +21,30 @@ output "project_id" {
 
 output "bin_auth_attestor_names" {
   description = "Names of Attestors"
-  value       = module.cicd_pipeline.bin_auth_attestor_names
+  value       = module.ci_pipeline.bin_auth_attestor_names
 }
 
 output "bin_auth_attestor_project_id" {
   description = "Project ID where attestors get created"
-  value       = module.cicd_pipeline.bin_auth_attestor_project_id
+  value       = module.ci_pipeline.bin_auth_attestor_project_id
 }
 
 output "boa_artifact_repo" {
   description = "GAR Repo created to store BoA images"
-  value       = module.cicd_pipeline.app_artifact_repo
+  value       = module.ci_pipeline.app_artifact_repo
 }
 
 output "cache_bucket_name" {
   description = "The name of the storage bucket for cloud build."
-  value       = module.cicd_pipeline.cache_bucket_name
+  value       = module.ci_pipeline.cache_bucket_name
 }
 
 output "build_trigger_name" {
   description = "The name of the cloud build trigger for the bank of anthos repo."
-  value       = module.cicd_pipeline.build_trigger_name
+  value       = module.ci_pipeline.build_trigger_name
 }
 
 output "source_repo_names" {
   description = "Name of the created CSR repos"
-  value       = module.cicd_pipeline.source_repo_names
+  value       = module.ci_pipeline.source_repo_names
 }

@@ -222,8 +222,6 @@ steps:
       git commit -m 'new deployment of applications'
       git push origin master
 
-
-
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
