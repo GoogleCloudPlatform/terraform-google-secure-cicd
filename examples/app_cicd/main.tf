@@ -32,3 +32,22 @@ module "ci_pipeline" {
     _FAVORITE_COLOR = "blue"
   }
 }
+
+module "cd_pipeline" {
+  source                  = "../../modules/secure-cd"
+  project_id              = var.project_id
+  primary_location        = "us-central1"
+
+  gar_repo_name           = module.ci_pipeline.app_artifact_repo
+  manifest_wet_repo       = "app-wet-manifests" 
+  deploy_branches         = ["dev", "qa", "prod"]
+  app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
+
+  dev_cluster_name        = "dev-cluster"
+  qa_cluster_name         = "qa-cluster"
+  prod_cluster_name       = "prod-cluster"
+
+  additional_substitutions = {
+    _FAVORITE_COLOR = "blue"
+  }
+}
