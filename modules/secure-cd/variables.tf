@@ -38,3 +38,25 @@ variable "app_deploy_trigger_yaml" {
   type        = string
   description = "Name of application cloudbuild yaml file for deployment"
 }
+
+variable "deploy_branches" {
+  type        = list(string)
+  description = "Branches of the Wet Manifest Repo that will trigger deployments to corresponding GKE clusters"
+  default     = ["dev", "qa", "prod"]
+}
+
+variable "prod_cluster_name" {
+  type        = string
+  description = "Nane of prod cluster"
+}
+
+variable "qa_cluster_name" {
+  type        = string
+  description = "Nane of qa cluster"
+}
+
+variable "dev_cluster_name" {
+  type        = string
+  description = "Nane of dev cluster"
+}
+
