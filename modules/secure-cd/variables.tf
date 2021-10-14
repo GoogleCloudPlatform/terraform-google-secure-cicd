@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-terraform {
-  required_version = ">= 0.12.6"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 3.45"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = "~> 3.45"
-    }
-  }
+variable "project_id" {
+  type        = string
+  description = "Project ID for CICD Pipeline Project"
+}
 
-  provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-ci/v1.0.0"
-  }
-  provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-ci/v1.0.0"
-  }
+variable "primary_location" {
+  type        = string
+  description = "Region used for key-ring"
+}
+
+variable "manifest_wet_repo" {
+  type        = string
+  description = "Name of repo that contains hydrated K8s manifests files"
+}
+
+variable "gar_repo_name" {
+  type        = string
+  description = "Docker artifact regitery repo to store app build images"
+}
+
+variable "app_deploy_trigger_yaml" {
+  type        = string
+  description = "Name of application cloudbuild yaml file for deployment"
 }
