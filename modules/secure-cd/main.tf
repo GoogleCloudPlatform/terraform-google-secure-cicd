@@ -22,19 +22,20 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-resource "google_cloudbuild_trigger" "dev_deploy_trigger" {
+resource "google_cloudbuild_trigger" "deploy_trigger" {
+  for_each = toset(var.deploy_branches)
   project = var.project_id
-  name    = "${var.app_source_repo}-trigger"
+  name    = "deploy-trigger-${each.value}"
   trigger_template {
-    branch_name = var.trigger_branch_name
+    branch_name = each.value
     repo_name   = var.manifest_wet_repo
   }
   substitutions = merge(
     {
       _GAR_REPOSITORY    = local.gar_name
       _DEFAULT_REGION    = var.primary_location
-      _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
       _MANIFEST_WET_REPO = var.manifest_wet_repo
+      _ENVIRONMENT       = each.value // TODO: is this necessary or can we just know the branch inherently
     },
     var.additional_substitutions
   )
@@ -60,7 +61,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
     cluster                 = "${var.primary_location}.${var.prod_cluster_name}"
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
-    require_attestations_by = [google_binary_authorization_attestor.attestor.name] //TODO
+    require_attestations_by = ["security-attestor", "quality-attestor", "build-attestor"] //TODO
   }
 
   // QA Cluster Policy
@@ -68,7 +69,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
     cluster                 = "${var.primary_location}.${var.qa_cluster_name}"
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
-    require_attestations_by = [google_binary_authorization_attestor.attestor.name] //TODO
+    require_attestations_by = ["security-attestor", "build-attestor"] //TODO
   }
 
   // Dev Cluster Policy
@@ -76,6 +77,6 @@ resource "google_binary_authorization_policy" "deployment_policy" {
     cluster                 = "${var.primary_location}.${var.dev_cluster_name}"
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
-    require_attestations_by = [google_binary_authorization_attestor.attestor.name] //TODO
+    require_attestations_by = ["security-attestor"] //TODO
   }
 }
