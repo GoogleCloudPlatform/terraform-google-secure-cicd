@@ -32,7 +32,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   }
   substitutions = merge(
     {
-      _GAR_REPOSITORY    = local.gar_name
+      _GAR_REPOSITORY    = var.gar_repo_name
       _DEFAULT_REGION    = var.primary_location
       _MANIFEST_WET_REPO = var.manifest_wet_repo
       _ENVIRONMENT       = each.value // TODO: is this necessary or can we just know the branch inherently
@@ -40,11 +40,12 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
     var.additional_substitutions
   )
   filename   = var.app_deploy_trigger_yaml
-  depends_on = [google_sourcerepo_repository.repos]
 }
 
 // Binary Authorization Policy
 resource "google_binary_authorization_policy" "deployment_policy" {
+  project = var.project_id
+  
   admission_whitelist_patterns {
     name_pattern = "gcr.io/google_containers/*"
   }

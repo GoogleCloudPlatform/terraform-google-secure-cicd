@@ -60,3 +60,8 @@ variable "dev_cluster_name" {
   description = "Nane of dev cluster"
 }
 
+variable "additional_substitutions" {
+  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
+  type        = map(string)
+  default     = {}
+}
