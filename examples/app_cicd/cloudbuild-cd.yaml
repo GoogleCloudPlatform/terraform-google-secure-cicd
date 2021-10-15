@@ -28,11 +28,11 @@ artifacts:
       - 'build-artifacts.json'
 steps:
 
-- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+- name: "gcr.io/cloud-builders/gke-deploy"
   id: "deploy-to-cluster"
   entrypoint: "/bin/bash"
   args:
-    - '-xe'
-    - -c
-    - |
+    - apply
+    - -f .
+    - -c $_CLUSTER_NAME 
     

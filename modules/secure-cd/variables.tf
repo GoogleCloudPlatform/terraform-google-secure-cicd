@@ -39,10 +39,14 @@ variable "app_deploy_trigger_yaml" {
   description = "Name of application cloudbuild yaml file for deployment"
 }
 
-variable "deploy_branches" {
-  type        = list(string)
-  description = "Branches of the Wet Manifest Repo that will trigger deployments to corresponding GKE clusters"
-  default     = ["dev", "qa", "prod"]
+variable "deploy_branch_clusters" {
+  type        = map(object({
+    cluster    = string
+    project_id = string
+    location   = string
+  }))
+  description = "mapping of branch names to cluster deployments"
+  default     = {}
 }
 
 variable "prod_cluster_name" {

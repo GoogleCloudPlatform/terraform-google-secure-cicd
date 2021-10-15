@@ -40,12 +40,25 @@ module "cd_pipeline" {
 
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
   manifest_wet_repo       = "app-wet-manifests" 
-  deploy_branches         = ["dev", "qa", "prod"]
+  deploy_branch_clusters = {
+    prod = {
+      cluster    = "prod-cluster",
+      project_id = var.project_id,
+      location   = "us-central1",
+    },
+    qa = {
+      cluser     = "qa-cluster",
+      project_id = var.project_id,
+      location   = "us-central1"
+    }
+    dev = {
+      cluster    = "dev-cluster",
+      project_id = var.project_id,
+      location   = "us-central1",
+    },
+  }
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
 
-  dev_cluster_name        = "dev-cluster"
-  qa_cluster_name         = "qa-cluster"
-  prod_cluster_name       = "prod-cluster"
 
   additional_substitutions = {
     _FAVORITE_COLOR = "blue"

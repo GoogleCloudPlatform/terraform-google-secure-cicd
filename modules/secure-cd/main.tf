@@ -23,19 +23,22 @@ data "google_project" "app_cicd_project" {
 }
 
 resource "google_cloudbuild_trigger" "deploy_trigger" {
-  for_each = toset(var.deploy_branches)
-  project = var.project_id
-  name    = "deploy-trigger-${each.value}"
+  for_each = var.deploy_branch_clusters
+  project  = var.project_id
+  name     = "deploy-trigger-${each.key}"
+
   trigger_template {
-    branch_name = each.value
+    branch_name = each.key
     repo_name   = var.manifest_wet_repo
   }
   substitutions = merge(
     {
       _GAR_REPOSITORY    = var.gar_repo_name
-      _DEFAULT_REGION    = var.primary_location
+      _DEFAULT_REGION    = each.value.location
       _MANIFEST_WET_REPO = var.manifest_wet_repo
-      _ENVIRONMENT       = each.value // TODO: is this necessary or can we just know the branch inherently
+      _ENVIRONMENT       = each.key // TODO: is this necessary or can we just know the branch inherently
+      _CLUSTER_NAME      = each.value.cluster
+      _CLUSTER_PROJECT   = each.value.project_id
     },
     var.additional_substitutions
   )
@@ -59,7 +62,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   // Prod Cluster Policy
   cluster_admission_rules {
-    cluster                 = "${var.primary_location}.${var.prod_cluster_name}"
+    cluster                 = "${var.deploy_branch_clusters[prod].location}.${var.deploy_branch_clusters[prod].cluster}" // TODO: customer config
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = ["security-attestor", "quality-attestor", "build-attestor"] //TODO
@@ -67,7 +70,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   // QA Cluster Policy
   cluster_admission_rules {
-    cluster                 = "${var.primary_location}.${var.qa_cluster_name}"
+    cluster                 = "${var.deploy_branch_clusters[qa].location}.${var.deploy_branch_clusters[qa].cluster}" // TODO: customer config
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = ["security-attestor", "build-attestor"] //TODO
@@ -75,7 +78,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   // Dev Cluster Policy
   cluster_admission_rules {
-    cluster                 = "${var.primary_location}.${var.dev_cluster_name}"
+    cluster                 = "${var.deploy_branch_clusters[dev].location}.${var.deploy_branch_clusters[dev].cluster}" // TODO: customer config
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = ["security-attestor"] //TODO
