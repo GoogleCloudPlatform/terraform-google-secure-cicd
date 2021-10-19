@@ -14,6 +14,25 @@
  * limitations under the License.
  */
 
+locals {
+    deploy_branch_clusters = {
+    prod = {
+      cluster    = "prod-cluster",
+      project_id = var.project_id,
+      location   = "us-central1",
+    },
+    qa = {
+      cluster    = "qa-cluster",
+      project_id = var.project_id,
+      location   = "us-central1",
+    }
+    dev = {
+      cluster    = "dev-cluster",
+      project_id = var.project_id,
+      location   = "us-central1",
+    },
+  }
+}
 module "ci_pipeline" {
   source                  = "../../modules/secure-ci"
   project_id              = var.project_id
@@ -40,27 +59,18 @@ module "cd_pipeline" {
 
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
   manifest_wet_repo       = "app-wet-manifests" 
-  deploy_branch_clusters = {
-    prod = {
-      cluster    = "prod-cluster",
-      project_id = var.project_id,
-      location   = "us-central1",
-    },
-    qa = {
-      cluser     = "qa-cluster",
-      project_id = var.project_id,
-      location   = "us-central1"
-    }
-    dev = {
-      cluster    = "dev-cluster",
-      project_id = var.project_id,
-      location   = "us-central1",
-    },
-  }
+  deploy_branch_clusters  = local.deploy_branch_clusters
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
 
 
   additional_substitutions = {
     _FAVORITE_COLOR = "blue"
   }
+}
+
+module "gke_clusters" {
+  source  = "terraform-google-modules/kubernetes-engine/google//examples/simple_regional"
+  version = "17.0.0"
+  
+  
 }

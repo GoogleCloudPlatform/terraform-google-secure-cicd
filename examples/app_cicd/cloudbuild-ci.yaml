@@ -74,7 +74,7 @@ steps:
       # Replace gcr.io/bank-of-anthos to current project in skaffold.yaml
       sed -i "s|gcr.io/bank-of-anthos|$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY|g" skaffold.yaml
       skaffold config set --global local-cluster false
-      skaffold build --default-repo=$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json
+      skaffold build --default-repo=$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY --tag=$SHORT_SHA --file-output=/artifacts/build-artifacts.json
       sed -i "s|:latest||g" /artifacts/build-artifacts.json # remove the "latest" tag (complicates things later)
       cp /artifacts/build-artifacts.json ./build-artifacts.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
       while read p; do
@@ -200,6 +200,7 @@ steps:
 
       # Clone the WET repo
       gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
+      git -C /workspace/$_MANIFEST_WET_REPO checkout -b $_WET_BRANCH_NAME
 
       for IMAGE in "$${IMAGE_NAMES[@]}"; do
 
@@ -217,10 +218,10 @@ steps:
       # Go into wet repo and commit changes
       cd /workspace/$_MANIFEST_WET_REPO
       git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
-      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
+      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var?
       git add .
       git commit -m 'new deployment of applications'
-      git push origin master
+      git push origin $_WET_BRANCH_NAME
 
   volumes:
     - path: '/artifacts'

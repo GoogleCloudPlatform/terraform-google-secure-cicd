@@ -49,21 +49,6 @@ variable "deploy_branch_clusters" {
   default     = {}
 }
 
-variable "prod_cluster_name" {
-  type        = string
-  description = "Nane of prod cluster"
-}
-
-variable "qa_cluster_name" {
-  type        = string
-  description = "Nane of qa cluster"
-}
-
-variable "dev_cluster_name" {
-  type        = string
-  description = "Nane of dev cluster"
-}
-
 variable "additional_substitutions" {
   description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
   type        = map(string)

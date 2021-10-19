@@ -62,7 +62,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   // Prod Cluster Policy
   cluster_admission_rules {
-    cluster                 = "${var.deploy_branch_clusters[prod].location}.${var.deploy_branch_clusters[prod].cluster}" // TODO: customer config
+    cluster                 = "${var.deploy_branch_clusters["prod"].location}.${var.deploy_branch_clusters["prod"].cluster}" // TODO: customer config
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = ["security-attestor", "quality-attestor", "build-attestor"] //TODO
@@ -70,7 +70,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   // QA Cluster Policy
   cluster_admission_rules {
-    cluster                 = "${var.deploy_branch_clusters[qa].location}.${var.deploy_branch_clusters[qa].cluster}" // TODO: customer config
+    cluster                 = "${var.deploy_branch_clusters["qa"].location}.${var.deploy_branch_clusters["qa"].cluster}" // TODO: customer config
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = ["security-attestor", "build-attestor"] //TODO
@@ -78,7 +78,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   // Dev Cluster Policy
   cluster_admission_rules {
-    cluster                 = "${var.deploy_branch_clusters[dev].location}.${var.deploy_branch_clusters[dev].cluster}" // TODO: customer config
+    cluster                 = "${var.deploy_branch_clusters["dev"].location}.${var.deploy_branch_clusters["dev"].cluster}" // TODO: customer config
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = ["security-attestor"] //TODO

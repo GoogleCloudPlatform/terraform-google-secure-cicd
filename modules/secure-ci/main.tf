@@ -68,6 +68,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
       _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
       _MANIFEST_DRY_REPO = var.manifest_dry_repo
       _MANIFEST_WET_REPO = var.manifest_wet_repo
+      _WET_BRANCH_NAME   = var.wet_branch_name
     },
     var.additional_substitutions
   )

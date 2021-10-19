@@ -62,6 +62,12 @@ variable "manifest_wet_repo" {
   default     = "app-wet-manifests"
 }
 
+variable "wet_branch_name" {
+  type        = string
+  description = "Name of branch in the wet manifest repo that CI pipeline will push to (usually, the name of the first deployed environment)"
+  default     = "dev"
+}
+
 variable "gar_repo_name_suffix" {
   type        = string
   description = "Docker artifact regitery repo to store app build images"
