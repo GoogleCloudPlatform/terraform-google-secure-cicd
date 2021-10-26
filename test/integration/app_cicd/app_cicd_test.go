@@ -31,12 +31,16 @@ import (
 func TestAppCICDExample(t *testing.T) {
 	// define constants for all required assertions in the test case
 
-	const triggerName       = "app-source-trigger"
-	const garRepoNameSuffix = "app-image-repo"
-	const primaryLocation   = "us-central1"
-	const appSourceRepoName = "app-source"
-	const manifestDryRepoName = "app-dry-manifests"
-	const manifestWetRepoName = "app-wet-manifests"
+	const triggerName          = "app-source-trigger"
+	const garRepoNameSuffix    = "app-image-repo"
+	const primaryLocation      = "us-central1"
+	const appSourceRepoName    = "app-source"
+	const manifestDryRepoName  = "app-dry-manifests"
+	const manifestWetRepoName  = "app-wet-manifests"
+	const buildAttestorName    = "build-attestor"
+	const qualityAttestorName  = "quality-attestor"
+	const securityAttestorName = "security-attestor"
+
 
 	// initialize Terraform test from the Blueprints test framework
 	appCICDT := tft.NewTFBlueprintTest(t)
@@ -66,9 +70,20 @@ func TestAppCICDExample(t *testing.T) {
 		garFullname := "projects/" + projectID + "/locations/" + primaryLocation + "/repositories/" + projectID + "-" + garRepoNameSuffix
 		assert.Equal(garFullname, gar.Get("name").String(), "GAR Repo is valid")
 
-		// TODO: BinAuthz
+		// BinAuthz
+		binAuthZBuildAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", buildAttestor, projectID))
+		binAuthZQualityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", qualityAttestor, projectID))
+		binAuthZSecurityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", securityAttestor, projectID))
 
-		// TODO: CSR
+		buildAttestorFullName := "projects/" + projectID + "/attestors/" + buildAttestorName
+		qualityAttestorFullName := "projects/" + projectID + "/attestors/" + qualityAttestorName
+		securityAttestorFullName := "projects/" + projectID + "/attestors/" + securityAttestorName
+
+		assert.Equal(buildAttestorFullName, binAuthZBuildAttestor.Get("name").String(), "Build Attestor is valid")
+		assert.Equal(securityAttestorFullName, binAuthZSecurityAttestor.Get("name").String(), "Security Attestor is valid")
+		assert.Equal(qualityAttestorFullName, binAuthZQualityAttestor.Get("name").String(), "Quality Attestor is valid")
+
+		// CSR
 		csrSource := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", appSourceRepoName, projectID))
 		csrDryManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestDryRepoName, projectID))
 		csrWetManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestWetRepoName, projectID))
