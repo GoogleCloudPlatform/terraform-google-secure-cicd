@@ -39,10 +39,6 @@ artifacts:
     location: gs://$_CACHE_BUCKET_NAME/artifacts
     paths:
       - 'build-artifacts.json'
-# availableSecrets:
-#   secretManager:
-#   - versionName: "projects/${PROJECT_ID}/secrets/gsr-key/versions/1"
-#     env: 'GSR_SECRET'
 steps:
 
 ###############################  Securing Source Code ###########################
