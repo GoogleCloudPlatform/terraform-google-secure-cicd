@@ -71,9 +71,9 @@ func TestAppCICDExample(t *testing.T) {
 		assert.Equal(garFullname, gar.Get("name").String(), "GAR Repo is valid")
 
 		// BinAuthz
-		binAuthZBuildAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", buildAttestor, projectID))
-		binAuthZQualityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", qualityAttestor, projectID))
-		binAuthZSecurityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", securityAttestor, projectID))
+		binAuthZBuildAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", buildAttestorName, projectID))
+		binAuthZQualityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", qualityAttestorName, projectID))
+		binAuthZSecurityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", securityAttestorName, projectID))
 
 		buildAttestorFullName := "projects/" + projectID + "/attestors/" + buildAttestorName
 		qualityAttestorFullName := "projects/" + projectID + "/attestors/" + qualityAttestorName
