@@ -87,7 +87,7 @@ func TestAppCICDExample(t *testing.T) {
 		csrSource := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", appSourceRepoName, projectID))
 		csrDryManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestDryRepoName, projectID))
 		csrWetManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestWetRepoName, projectID))
-		
+
 		csrSourceFullName := "projects/" + projectID + "/repos/" + appSourceRepoName
 		csrDryManifestFullName := "projects/" + projectID + "/repos/" + manifestDryRepoName
 		csrWetManifestFullName := "projects/" + projectID + "/repos/" + manifestWetRepoName
@@ -103,9 +103,6 @@ func TestAppCICDExample(t *testing.T) {
 		assert.Equal(csrSourceURL, csrSource.Get("url").String(), "CSR App Source URL is valid")
 		assert.Equal(csrDryManifestURL, csrDryManifest.Get("url").String(), "CSR Dry Manifest URL is valid")
 		assert.Equal(csrWetManifestURL, csrWetManifest.Get("url").String(), "CSR Wet Manifest URL is valid")
-
-
-
 	})
 	// call the test function to execute the integration test
 	appCICDT.Test()
