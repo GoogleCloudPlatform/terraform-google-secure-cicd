@@ -64,7 +64,39 @@ func TestAppCICDExample(t *testing.T) {
 		gar_fullname := "projects/" + appCICDT.GetStringOutput("project_id") + "/locations/" + primary_location + "/repositories/" + appCICDT.GetStringOutput("project_id") + "-" + gar_repo_name_suffix
 		assert.Equal(gar_fullname, gar.Get("name").String(), "GAR Repo is valid")
 
-		// TODO: BinAuthz
+		// BinAuthz
+		binAuthZBuildAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", buildAttestorName, projectID))
+		binAuthZQualityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", qualityAttestorName, projectID))
+		binAuthZSecurityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", securityAttestorName, projectID))
+
+		buildAttestorFullName := "projects/" + projectID + "/attestors/" + buildAttestorName
+		qualityAttestorFullName := "projects/" + projectID + "/attestors/" + qualityAttestorName
+		securityAttestorFullName := "projects/" + projectID + "/attestors/" + securityAttestorName
+
+		assert.Equal(buildAttestorFullName, binAuthZBuildAttestor.Get("name").String(), "Build Attestor is valid")
+		assert.Equal(securityAttestorFullName, binAuthZSecurityAttestor.Get("name").String(), "Security Attestor is valid")
+		assert.Equal(qualityAttestorFullName, binAuthZQualityAttestor.Get("name").String(), "Quality Attestor is valid")
+
+		// CSR
+		csrSource := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", appSourceRepoName, projectID))
+		csrDryManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestDryRepoName, projectID))
+		csrWetManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestWetRepoName, projectID))
+
+		csrSourceFullName := "projects/" + projectID + "/repos/" + appSourceRepoName
+		csrDryManifestFullName := "projects/" + projectID + "/repos/" + manifestDryRepoName
+		csrWetManifestFullName := "projects/" + projectID + "/repos/" + manifestWetRepoName
+
+		csrSourceURL := "https://source.developers.google.com/p/" + projectID + "/r/" + appSourceRepoName
+		csrDryManifestURL := "https://source.developers.google.com/p/" + projectID + "/r/" + manifestDryRepoName
+		csrWetManifestURL := "https://source.developers.google.com/p/" + projectID + "/r/" + manifestWetRepoName
+
+		assert.Equal(csrSourceFullName, csrSource.Get("name").String(), "CSR App Source repo name is valid")
+		assert.Equal(csrDryManifestFullName, csrDryManifest.Get("name").String(), "CSR Dry Manifest repo name is valid")
+		assert.Equal(csrWetManifestFullName, csrWetManifest.Get("name").String(), "CSR Wet Manifest repo name is valid")
+
+		assert.Equal(csrSourceURL, csrSource.Get("url").String(), "CSR App Source URL is valid")
+		assert.Equal(csrDryManifestURL, csrDryManifest.Get("url").String(), "CSR Dry Manifest URL is valid")
+		assert.Equal(csrWetManifestURL, csrWetManifest.Get("url").String(), "CSR Wet Manifest URL is valid")
 	})
 	// call the test function to execute the integration test
 	appCICDT.Test()
