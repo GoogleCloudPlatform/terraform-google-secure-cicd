@@ -16,7 +16,6 @@
 
 locals {
   gar_name = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
-  folders  = ["cache/.m2/.ignore", "cache/.skaffold/.ignore", "cache/.cache/pip/wheels/.ignore"]
 }
 
 data "google_project" "app_cicd_project" {
@@ -38,13 +37,6 @@ resource "google_storage_bucket" "cache_bucket" {
   versioning {
     enabled = true
   }
-}
-
-resource "google_storage_bucket_object" "cache_bucket_folders" {
-  for_each = toset(local.folders)
-  name     = each.value
-  content  = "/n"
-  bucket   = google_storage_bucket.cache_bucket.name
 }
 
 resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
