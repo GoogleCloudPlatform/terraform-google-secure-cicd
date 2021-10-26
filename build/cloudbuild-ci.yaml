@@ -18,7 +18,7 @@
 #   Secrets Scanner: secrets scanner
 #   License checking: ???
 # Build
-#   Docker build
+#   Skaffold build
 # After Build
 #   Artifact Structure Test: Container structure test
 #   Image Vulnerabilities: CVE scanner
@@ -116,7 +116,6 @@ steps:
     - '-xe'
     - -c
     - |
-      #exit 0 # SKIP
       gcloud config set project ${PROJECT_ID}
 
       # remove commit hash from string (need either tag or digest, not both)
@@ -145,7 +144,6 @@ steps:
     - '-xe'
     - -c
     - |
-      #exit 0 # SKIP
       gcloud config set project ${PROJECT_ID}
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
