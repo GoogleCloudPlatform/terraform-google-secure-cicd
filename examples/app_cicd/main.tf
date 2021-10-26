@@ -14,22 +14,30 @@
  * limitations under the License.
  */
 
+data "google_project" "app_cicd_project" {
+  project_id = var.project_id
+}
+
 locals {
     deploy_branch_clusters = {
     prod = {
-      cluster    = "prod-cluster",
-      project_id = var.project_id,
-      location   = "us-central1",
+      cluster      = "prod-cluster",
+      project_id   = var.project_id,
+      location     = "us-central1",
+      attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/build-attestor"]
     },
     qa = {
-      cluster    = "qa-cluster",
-      project_id = var.project_id,
-      location   = "us-central1",
+      cluster      = "qa-cluster",
+      project_id   = var.project_id,
+      location     = "us-central1",
+      attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+
     }
     dev = {
-      cluster    = "dev-cluster",
-      project_id = var.project_id,
-      location   = "us-central1",
+      cluster      = "dev-cluster",
+      project_id   = "boa-dev-329721",
+      location     = "us-central1",
+      attestations = ["projects/${var.project_id}/attestors/security-attestor"]
     },
   }
 }
@@ -68,9 +76,76 @@ module "cd_pipeline" {
   }
 }
 
-module "gke_clusters" {
-  source  = "terraform-google-modules/kubernetes-engine/google//examples/simple_regional"
-  version = "17.0.0"
-  
-  
+/////////////////
+/// GKE + VPC ///
+/////////////////
+
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+  host                   = "https://${module.gke.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
 }
+
+# module "gke" {
+#   source                      = "terraform-google-modules/kubernetes-engine/google"
+#   project_id                  = local.deploy_branch_clusters["dev"].project_id
+#   name                        = local.deploy_branch_clusters["dev"].cluster
+#   regional                    = true
+#   region                      = local.deploy_branch_clusters["dev"].location
+#   network                     = module.vpc.network_name
+#   subnetwork                  = "subnet-dev"
+#   ip_range_pods               = "subnet-dev-pods"
+#   ip_range_services           = "subnet-dev-svcs"
+#   create_service_account      = false
+#   service_account             = "${data.google_project.app_cicd_project.number}-compute@developer.gserviceaccount.com"
+#   enable_binary_authorization = true
+#   skip_provisioners           = false
+#   cluster_autoscaling = {
+#     "enabled": true,
+#     "gpu_resources": [],
+#     "max_cpu_cores": 32,
+#     "max_memory_gb": 64,
+#     "min_cpu_cores": 0,
+#     "min_memory_gb": 0
+#   }
+# }
+
+# module "vpc" {
+#   source       = "terraform-google-modules/network/google"
+#   project_id   = var.project_id 
+#   network_name = "gke-vpc"
+
+#   subnets = [
+#     {
+#       subnet_name   = "subnet-dev"
+#       subnet_ip     = "10.10.0.0/20"
+#       subnet_region = "us-central1"
+#     },
+#     {
+#       subnet_name   = "subnet-qa"
+#       subnet_ip     = "10.20.0.0/20"
+#       subnet_region = "us-central1"
+#     },
+#     {
+#       subnet_name   = "subnet-prod"
+#       subnet_ip     = "10.30.0.0/20"
+#       subnet_region = "us-central1"
+#     },
+#   ]
+
+#   secondary_ranges = {
+#     subnet-dev = [
+#       {
+#         range_name    = "subnet-dev-pods"
+#         ip_cidr_range = "10.100.0.0/14"
+#       },
+#       {
+#         range_name    = "subnet-dev-svcs"
+#         ip_cidr_range = "10.120.0.0/14"
+#       }
+#     ]
+
+#   }
+# }

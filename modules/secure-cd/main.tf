@@ -33,21 +33,31 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   }
   substitutions = merge(
     {
-      _GAR_REPOSITORY    = var.gar_repo_name
-      _DEFAULT_REGION    = each.value.location
-      _MANIFEST_WET_REPO = var.manifest_wet_repo
-      _ENVIRONMENT       = each.key // TODO: is this necessary or can we just know the branch inherently
-      _CLUSTER_NAME      = each.value.cluster
-      _CLUSTER_PROJECT   = each.value.project_id
+      _GAR_REPOSITORY      = var.gar_repo_name
+      _DEFAULT_REGION      = each.value.location
+      _MANIFEST_WET_REPO   = var.manifest_wet_repo
+      _ENVIRONMENT         = each.key // TODO: is this necessary or can we just know the branch inherently
+      _CLUSTER_NAME        = each.value.cluster
+      _CLUSTER_PROJECT     = each.value.project_id
+      _CLOUDBUILD_FILENAME = var.app_deploy_trigger_yaml
     },
     var.additional_substitutions
   )
-  filename   = var.app_deploy_trigger_yaml
+  filename = var.app_deploy_trigger_yaml
+
+  # build {
+  #   step {
+  #     name = "gcr.io/cloud-builders/gke-deploy"
+  #     id   = "deploy-to-cluster"
+  #     args = ["apply", "-f", ".", "-c", each.value.cluster, "-l", each.value.location]
+  #   }
+  # }
 }
 
 // Binary Authorization Policy
 resource "google_binary_authorization_policy" "deployment_policy" {
-  project = var.project_id
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
   
   admission_whitelist_patterns {
     name_pattern = "gcr.io/google_containers/*"
@@ -60,27 +70,19 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   global_policy_evaluation_mode = "ENABLE"
 
-  // Prod Cluster Policy
   cluster_admission_rules {
-    cluster                 = "${var.deploy_branch_clusters["prod"].location}.${var.deploy_branch_clusters["prod"].cluster}" // TODO: customer config
+    cluster                 = "${each.value.location}.${each.value.cluster}" // TODO: customer config
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
-    require_attestations_by = ["security-attestor", "quality-attestor", "build-attestor"] //TODO
-  }
-
-  // QA Cluster Policy
-  cluster_admission_rules {
-    cluster                 = "${var.deploy_branch_clusters["qa"].location}.${var.deploy_branch_clusters["qa"].cluster}" // TODO: customer config
-    evaluation_mode         = "REQUIRE_ATTESTATION"
-    enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
-    require_attestations_by = ["security-attestor", "build-attestor"] //TODO
-  }
-
-  // Dev Cluster Policy
-  cluster_admission_rules {
-    cluster                 = "${var.deploy_branch_clusters["dev"].location}.${var.deploy_branch_clusters["dev"].cluster}" // TODO: customer config
-    evaluation_mode         = "REQUIRE_ATTESTATION"
-    enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
-    require_attestations_by = ["security-attestor"] //TODO
+    require_attestations_by = each.value.attestations //TODO?
   }
 }
+
+## IAM bindings for Cloud Build SA to allow deployment to GKE (roles/container.developer)
+
+resource "google_project_iam_member" "gke_dev" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  role     = "roles/container.developer"
+  member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
+} 
