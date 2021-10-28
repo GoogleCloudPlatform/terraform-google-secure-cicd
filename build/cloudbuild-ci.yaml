@@ -174,7 +174,7 @@ steps:
     - 'container-structure'
     - 'container-scanner'
 
-### Hydrate manifests and push to wet repo
+## Hydrate manifests and push to wet repo
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "commit-upstream"
   entrypoint: "/bin/bash"
@@ -183,8 +183,9 @@ steps:
     - -c
     - |
       PATTERN='^.*\/([a-zA-Z-]+)$$$'
-      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
-      IMAGE_NAMES=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts.json))
+      sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
+      IMAGE_NAMES=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts-notag.json))
 
       cd /workspace
 
@@ -195,6 +196,8 @@ steps:
       # Clone the WET repo
       gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
       git -C /workspace/$_MANIFEST_WET_REPO checkout -b $_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO merge master
+      mkdir /workspace/$_MANIFEST_WET_REPO/manifests
 
       for IMAGE in "$${IMAGE_NAMES[@]}"; do
 
@@ -205,17 +208,19 @@ steps:
           GCR="gcr.io/$PROJECT_ID/$${IMG}*"
           BOA="gcr.io/bank-of-anthos/$${IMG}*"
           FULL_IMAGE="$${IMAGES[$$INDEX]}"
-          yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/$$IMG.yaml
+          yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/manifests/$$IMG.yaml
 
       done
 
-      # Go into wet repo and commit changes
+      ## Go into wet repo and commit changes
       cd /workspace/$_MANIFEST_WET_REPO
       git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
-      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var?
+      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
+      git branch --set-upstream-to=origin/$_WET_BRANCH_NAME
       git add .
       git commit -m 'new deployment of applications'
-      git push origin $_WET_BRANCH_NAME
+      git status
+      git push --force
 
   volumes:
     - path: '/artifacts'
