@@ -35,7 +35,7 @@ locals {
     }
     dev = {
       cluster      = "dev-cluster",
-      project_id   = "boa-dev-329721",
+      project_id   = "boa-dev-2",
       location     = "us-central1",
       attestations = ["projects/${var.project_id}/attestors/security-attestor"]
     },
