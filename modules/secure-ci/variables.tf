@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-variable "app_cicd_repos" {
-  description = "A list of Cloud Source Repos to be created to hold app infra Terraform configs"
-  type        = list(string)
-}
-
 variable "project_id" {
   type        = string
   description = "Project ID for CICD Pipeline Project"
@@ -49,14 +44,28 @@ variable "build_image_config_yaml" {
   description = "Name of image builder yaml file"
 }
 
-variable "app_build_repo" {
+variable "app_source_repo" {
   type        = string
-  description = "Name of repo that contains bank of anthos source code along with cloudbuild yaml"
+  description = "Name of repo that contains app source code along with cloudbuild yaml"
+  default     = "app-source"
+}
+
+variable "manifest_dry_repo" {
+  type        = string
+  description = "Name of repo that contains template K8s manifests files"
+  default     = "app-dry-manifests"
+}
+
+variable "manifest_wet_repo" {
+  type        = string
+  description = "Name of repo that will receive hydrated K8s manifests files"
+  default     = "app-wet-manifests"
 }
 
 variable "gar_repo_name_suffix" {
   type        = string
   description = "Docker artifact regitery repo to store app build images"
+  default     = "app-image-repo"
 }
 
 variable "use_tf_google_credentials_env_var" {
@@ -74,4 +83,20 @@ variable "additional_substitutions" {
 variable "trigger_branch_name" {
   type        = string
   description = "A regular expression to match one or more branches for the build trigger."
+}
+
+variable "cloudbuild_service_account_roles" {
+  type        = list(string)
+  description = "IAM roles given to the Cloud Build service account to enable security scanning operations"
+  default = [
+    "roles/artifactregistry.admin",
+    "roles/binaryauthorization.attestorsVerifier",
+    "roles/cloudbuild.builds.builder",
+    "roles/cloudkms.cryptoOperator",
+    "roles/containeranalysis.notes.attacher",
+    "roles/containeranalysis.notes.occurrences.viewer",
+    "roles/containeranalysis.notes.viewer",
+    "roles/source.writer",
+    "roles/storage.admin"
+  ]
 }

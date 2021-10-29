@@ -15,19 +15,17 @@
  */
 
 locals {
-  created_csrs = toset([for repo in google_sourcerepo_repository.app_config_repo : repo.name])
-  gar_name     = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
-  folders      = ["cache/.m2/.ignore", "cache/.skaffold/.ignore", "cache/.cache/pip/wheels/.ignore"]
+  gar_name = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
 }
 
 data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-resource "google_sourcerepo_repository" "app_config_repo" {
-  for_each = toset(var.app_cicd_repos)
-  project  = var.project_id
+resource "google_sourcerepo_repository" "repos" {
+  for_each = toset([var.manifest_wet_repo, var.manifest_dry_repo, var.app_source_repo])
   name     = each.key
+  project  = var.project_id
 }
 
 resource "google_storage_bucket" "cache_bucket" {
@@ -41,13 +39,6 @@ resource "google_storage_bucket" "cache_bucket" {
   }
 }
 
-resource "google_storage_bucket_object" "cache_bucket_folders" {
-  for_each = toset(local.folders)
-  name     = each.value
-  content  = "/n"
-  bucket   = google_storage_bucket.cache_bucket.name
-}
-
 resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
   bucket     = google_storage_bucket.cache_bucket.name
   role       = "roles/storage.admin"
@@ -57,23 +48,26 @@ resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
 
 resource "google_cloudbuild_trigger" "app_build_trigger" {
   project = var.project_id
-  name    = "${var.app_build_repo}-trigger"
+  name    = "${var.app_source_repo}-trigger"
   trigger_template {
     branch_name = var.trigger_branch_name
-    repo_name   = var.app_build_repo
+    repo_name   = var.app_source_repo
   }
   substitutions = merge(
     {
       _GAR_REPOSITORY    = local.gar_name
       _DEFAULT_REGION    = var.primary_location
       _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
+      _MANIFEST_DRY_REPO = var.manifest_dry_repo
+      _MANIFEST_WET_REPO = var.manifest_wet_repo
     },
     var.additional_substitutions
   )
   filename   = var.app_build_trigger_yaml
-  depends_on = [google_sourcerepo_repository.app_config_repo]
+  depends_on = [google_sourcerepo_repository.repos]
 }
 
+### Build the Cloud Build builder image
 module "gcloud" {
   source                            = "terraform-google-modules/gcloud/google"
   version                           = "~> 2.0"
@@ -81,6 +75,14 @@ module "gcloud" {
   create_cmd_entrypoint             = "${path.module}/scripts/cloud-build-submit.sh"
   create_cmd_body                   = "${var.runner_build_folder} ${var.project_id} ${var.build_image_config_yaml} ${var.primary_location} ${local.gar_name}"
   use_tf_google_credentials_env_var = var.use_tf_google_credentials_env_var
+}
+
+### Cloud Build Service Account permissions
+resource "google_project_iam_member" "project" {
+  for_each = toset(var.cloudbuild_service_account_roles)
+  project  = var.project_id
+  role     = each.value
+  member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
 
 resource "google_artifact_registry_repository" "image_repo" {

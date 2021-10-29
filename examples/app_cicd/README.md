@@ -16,5 +16,6 @@
 | build\_trigger\_name | The name of the cloud build trigger for the bank of anthos repo. |
 | cache\_bucket\_name | The name of the storage bucket for cloud build. |
 | project\_id | The project to run tests against |
+| source\_repo\_names | Name of the created CSR repos |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
