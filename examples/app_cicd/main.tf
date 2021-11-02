@@ -19,7 +19,7 @@ data "google_project" "app_cicd_project" {
 }
 
 locals {
-    deploy_branch_clusters = {
+  deploy_branch_clusters = {
     prod = {
       cluster      = "prod-cluster",
       project_id   = var.project_id,
@@ -67,7 +67,7 @@ module "cd_pipeline" {
 
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
   manifest_wet_repo       = "app-wet-manifests" 
-  deploy_branch_clusters  = local.deploy_branch_clusters
+  deploy_branch_clusters  = var.deploy_branch_clusters
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
 
 
@@ -75,77 +75,3 @@ module "cd_pipeline" {
     _FAVORITE_COLOR = "blue"
   }
 }
-
-/////////////////
-/// GKE + VPC ///
-/////////////////
-
-data "google_client_config" "default" {}
-
-provider "kubernetes" {
-  host                   = "https://${module.gke.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
-}
-
-# module "gke" {
-#   source                      = "terraform-google-modules/kubernetes-engine/google"
-#   project_id                  = local.deploy_branch_clusters["dev"].project_id
-#   name                        = local.deploy_branch_clusters["dev"].cluster
-#   regional                    = true
-#   region                      = local.deploy_branch_clusters["dev"].location
-#   network                     = module.vpc.network_name
-#   subnetwork                  = "subnet-dev"
-#   ip_range_pods               = "subnet-dev-pods"
-#   ip_range_services           = "subnet-dev-svcs"
-#   create_service_account      = false
-#   service_account             = "${data.google_project.app_cicd_project.number}-compute@developer.gserviceaccount.com"
-#   enable_binary_authorization = true
-#   skip_provisioners           = false
-#   cluster_autoscaling = {
-#     "enabled": true,
-#     "gpu_resources": [],
-#     "max_cpu_cores": 32,
-#     "max_memory_gb": 64,
-#     "min_cpu_cores": 0,
-#     "min_memory_gb": 0
-#   }
-# }
-
-# module "vpc" {
-#   source       = "terraform-google-modules/network/google"
-#   project_id   = var.project_id 
-#   network_name = "gke-vpc"
-
-#   subnets = [
-#     {
-#       subnet_name   = "subnet-dev"
-#       subnet_ip     = "10.10.0.0/20"
-#       subnet_region = "us-central1"
-#     },
-#     {
-#       subnet_name   = "subnet-qa"
-#       subnet_ip     = "10.20.0.0/20"
-#       subnet_region = "us-central1"
-#     },
-#     {
-#       subnet_name   = "subnet-prod"
-#       subnet_ip     = "10.30.0.0/20"
-#       subnet_region = "us-central1"
-#     },
-#   ]
-
-#   secondary_ranges = {
-#     subnet-dev = [
-#       {
-#         range_name    = "subnet-dev-pods"
-#         ip_cidr_range = "10.100.0.0/14"
-#       },
-#       {
-#         range_name    = "subnet-dev-svcs"
-#         ip_cidr_range = "10.120.0.0/14"
-#       }
-#     ]
-
-#   }
-# }

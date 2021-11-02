@@ -23,3 +23,14 @@ variable "primary_location" {
   type        = string
   description = "Region used for key-ring"
 }
+
+variable "deploy_branch_clusters" {
+  type        = map(object({
+    cluster      = string
+    project_id   = string
+    location     = string
+    attestations = list(string)
+  }))
+  description = "mapping of branch names to cluster deployments"
+  default     = {}
+}

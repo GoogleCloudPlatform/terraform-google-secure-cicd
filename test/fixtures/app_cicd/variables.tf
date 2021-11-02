@@ -19,8 +19,21 @@ variable "project_id" {
   type        = string
 }
 
+variable "org_id" {
+  description = "The numeric organization id"
+}
+
+variable "folder_id" {
+  description = "The folder to deploy in"
+}
+
 variable "primary_location" {
   type        = string
   description = "Region used for key-ring"
   default     = "us-central1"
+}
+
+variable "billing_account" {
+  type        = string
+  description = "The billing account id associated with the project, e.g. XXXXXX-YYYYYY-ZZZZZZ"
 }
