@@ -18,7 +18,7 @@
 #   Secrets Scanner: secrets scanner
 #   License checking: ???
 # Build
-#   Skaffold build
+#   Docker build
 # After Build
 #   Artifact Structure Test: Container structure test
 #   Image Vulnerabilities: CVE scanner
@@ -39,6 +39,7 @@ artifacts:
     location: gs://$_CACHE_BUCKET_NAME/artifacts
     paths:
       - 'build-artifacts.json'
+      - 'build-artifacts-notag.json'
 steps:
 
 ###############################  Securing Source Code ###########################
@@ -67,10 +68,11 @@ steps:
     - '-xe'
     - -c
     - |
+      ./mvnw validate
       # Replace gcr.io/bank-of-anthos to current project in skaffold.yaml
       sed -i "s|gcr.io/bank-of-anthos|$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY|g" skaffold.yaml
       skaffold config set --global local-cluster false
-      skaffold build --default-repo=$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY --tag=$SHORT_SHA --file-output=/artifacts/build-artifacts.json
+      skaffold build --default-repo=$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json
       sed -i "s|:latest||g" /artifacts/build-artifacts.json # remove the "latest" tag (complicates things later)
       cp /artifacts/build-artifacts.json ./build-artifacts.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
       while read p; do
@@ -98,6 +100,7 @@ steps:
 
       # remove commit hash from string (need either tag or digest, not both)
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
+      cp /artifacts/build-artifacts-notag.json ./build-artifacts-notag.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
         docker pull "$${IMAGE}" # pull the remote image from GAR w/ digest SHA
@@ -174,7 +177,7 @@ steps:
     - 'container-structure'
     - 'container-scanner'
 
-## Hydrate manifests and push to wet repo
+### Hydrate manifests and push to wet repo
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "commit-upstream"
   entrypoint: "/bin/bash"
@@ -187,6 +190,9 @@ steps:
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       IMAGE_NAMES=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts-notag.json))
 
+      git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
+      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
+
       cd /workspace
 
       # Clone the DRY repo
@@ -195,12 +201,16 @@ steps:
 
       # Clone the WET repo
       gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
-      git -C /workspace/$_MANIFEST_WET_REPO checkout -b $_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO branch $_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO checkout $_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase
+      ls /workspace/$_MANIFEST_WET_REPO
       git -C /workspace/$_MANIFEST_WET_REPO merge master
-      mkdir /workspace/$_MANIFEST_WET_REPO/manifests
+      mkdir -p /workspace/$_MANIFEST_WET_REPO/manifests
 
+      INDEX=0
       for IMAGE in "$${IMAGE_NAMES[@]}"; do
-
           [[ $$IMAGE =~ $$PATTERN ]]
           IMG=$${BASH_REMATCH[1]}
 
@@ -209,19 +219,17 @@ steps:
           BOA="gcr.io/bank-of-anthos/$${IMG}*"
           FULL_IMAGE="$${IMAGES[$$INDEX]}"
           yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/manifests/$$IMG.yaml
-
+          
+          INDEX=$${INDEX}+1
       done
 
-      ## Go into wet repo and commit changes
+      ### Go into wet repo and commit changes
       cd /workspace/$_MANIFEST_WET_REPO
-      git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
-      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
+      
       git branch --set-upstream-to=origin/$_WET_BRANCH_NAME
       git add .
       git commit -m 'new deployment of applications'
-      git status
-      git push --force
-
+      git push
   volumes:
     - path: '/artifacts'
       name: 'artifacts'

@@ -21,18 +21,7 @@ options:
   # Use higher CPU machines so the caching and build steps are faster.
   machineType: 'N1_HIGHCPU_32'
   substitution_option: 'ALLOW_LOOSE'
-artifacts:
-  objects:
-    location: gs://$_CACHE_BUCKET_NAME/artifacts
-    paths:
-      - 'build-artifacts.json'
 steps:
-
 - name: "gcr.io/cloud-builders/gke-deploy"
   id: "deploy-to-cluster"
-  entrypoint: "/bin/bash"
-  args:
-    - apply
-    - -f .
-    - -c $_CLUSTER_NAME 
-    
+  args: ['apply', '-f', 'manifests', '-p', '$_CLUSTER_PROJECT', '-c', '$_CLUSTER_NAME', '-l', '$_DEFAULT_REGION']
