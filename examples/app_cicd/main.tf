@@ -18,29 +18,6 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-locals {
-  deploy_branch_clusters = {
-    prod = {
-      cluster      = "prod-cluster",
-      project_id   = var.project_id,
-      location     = "us-central1",
-      attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-    },
-    qa = {
-      cluster      = "qa-cluster",
-      project_id   = var.project_id,
-      location     = "us-central1",
-      attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-
-    }
-    dev = {
-      cluster      = "dev-cluster",
-      project_id   = "boa-dev-2",
-      location     = "us-central1",
-      attestations = ["projects/${var.project_id}/attestors/security-attestor"]
-    },
-  }
-}
 module "ci_pipeline" {
   source                  = "../../modules/secure-ci"
   project_id              = var.project_id
