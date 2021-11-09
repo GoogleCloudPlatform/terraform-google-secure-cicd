@@ -74,7 +74,9 @@ module "gke-project" {
     "binaryauthorization.googleapis.com",
     "containerscanning.googleapis.com",
     "container.googleapis.com",
-    "cloudtrace.googleapis.com"
+    "cloudtrace.googleapis.com",
+    "monitoring.googleapis.com",
+    "logging.googleapis.com"
   ]
 }
 
@@ -149,6 +151,15 @@ resource "google_container_cluster" "cluster" {
 
   # Enable Autopilot for this cluster
   enable_autopilot = true
+
+  cluster_autoscaling {
+    enabled = true
+    autoscaling_profile = "BALANCED"
+  }
+
+  vertical_pod_autoscaling {
+    enabled = true
+  }
 
   # Configuration options for the Release channel feature, which provide more control over automatic upgrades of your GKE clusters.
   release_channel {
