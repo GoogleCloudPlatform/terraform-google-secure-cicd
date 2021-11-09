@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Start by building the application.
-FROM golang:1.15-buster as kritis-build
+FROM golang:1.17-buster as kritis-build
 
 # Install kritis
 WORKDIR /go/src
