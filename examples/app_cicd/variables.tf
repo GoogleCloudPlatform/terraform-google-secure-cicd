@@ -30,6 +30,7 @@ variable "deploy_branch_clusters" {
     project_id   = string
     location     = string
     attestations = list(string)
+    next_env     = string
   }))
   description = "mapping of branch names to cluster deployments"
   default     = {}
