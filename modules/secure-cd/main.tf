@@ -22,16 +22,16 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-resource "google_storage_bucket" "artifact_bucket" {
-  project                     = var.project_id
-  name                        = "${var.project_id}_cloudbuild_cd"
-  location                    = var.primary_location
-  uniform_bucket_level_access = true
-  force_destroy               = true
-  versioning {
-    enabled = true
-  }
-}
+# resource "google_storage_bucket" "artifact_bucket" {
+#   project                     = var.project_id
+#   name                        = "${var.project_id}_cloudbuild_cd"
+#   location                    = var.primary_location
+#   uniform_bucket_level_access = true
+#   force_destroy               = true
+#   versioning {
+#     enabled = true
+#   }
+# }
 
 resource "google_cloudbuild_trigger" "deploy_trigger" {
   for_each = var.deploy_branch_clusters
@@ -44,26 +44,21 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   }
   substitutions = merge(
     {
-      _GAR_REPOSITORY       = var.gar_repo_name
-      _DEFAULT_REGION       = each.value.location
-      _MANIFEST_WET_REPO    = var.manifest_wet_repo
-      _ENVIRONMENT          = each.key // TODO: is this necessary or can we just know the branch inherently
-      _CLUSTER_NAME         = each.value.cluster
-      _CLUSTER_PROJECT      = each.value.project_id
-      _CLOUDBUILD_FILENAME  = var.app_deploy_trigger_yaml
-      _ARTIFACT_BUCKET_NAME = google_storage_bucket.artifact_bucket.name
+      _GAR_REPOSITORY      = var.gar_repo_name
+      _DEFAULT_REGION      = each.value.location
+      _MANIFEST_WET_REPO   = var.manifest_wet_repo
+      _ENVIRONMENT         = each.key // TODO: is this necessary or can we just know the branch inherently
+      _CLUSTER_NAME        = each.value.cluster
+      _CLUSTER_PROJECT     = each.value.project_id
+      _CLOUDBUILD_FILENAME = var.app_deploy_trigger_yaml
+      _CACHE_BUCKET_NAME   = var.cache_bucket_name
+      _NEXT_ENV            = each.value.next_env
+      _ATTESTOR_NAME       = each.value.attestations[0]
     },
     var.additional_substitutions
   )
   filename = var.app_deploy_trigger_yaml
 
-  # build {
-  #   step {
-  #     name = "gcr.io/cloud-builders/gke-deploy"
-  #     id   = "deploy-to-cluster"
-  #     args = ["apply", "-f", ".", "-c", each.value.cluster, "-l", each.value.location]
-  #   }
-  # }
 }
 
 // Binary Authorization Policy
