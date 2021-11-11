@@ -79,11 +79,11 @@ steps:
         echo "$p"
       done < /artifacts/build-artifacts.json
 
-       # remove commit hash from string (need either tag or digest, not both)
-      sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
-      cp /artifacts/build-artifacts-notag.json ./build-artifacts-notag.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
-      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
-      echo $$IMAGES > /workspace/IMAGES.txt
+      #  # remove commit hash from string (need either tag or digest, not both)
+      # sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
+      # cp /artifacts/build-artifacts-notag.json ./build-artifacts-notag.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
+      # IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
+      # echo $$IMAGES > /workspace/IMAGES.txt
   volumes:
   - path: '/artifacts'
     name: 'artifacts'
@@ -91,49 +91,49 @@ steps:
 ################ Securing Artifacts Before Deployment ####################
 
 ### Container Struture Test
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: "container-structure"
-#   entrypoint: "/bin/bash"
-#   args:
-#     - '-xe'
-#     - '-c'
-#     - |
-#       # install jq and container-structure-test
-#       apt-get -y install jq
-#       curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 \
-#       && chmod +x container-structure-test-linux-amd64 \
-#       && mv container-structure-test-linux-amd64 /usr/bin/container-structure-test
-
-#       # remove commit hash from string (need either tag or digest, not both)
-#       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
-#       cp /artifacts/build-artifacts-notag.json ./build-artifacts-notag.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
-#       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
-#       for IMAGE in "$${IMAGES[@]}"; do
-#         docker pull "$${IMAGE}" # pull the remote image from GAR w/ digest SHA
-#         container-structure-test test --image "$${IMAGE}" --config policies/container-structure-policy.yaml
-#       done
-#   volumes:
-#   - path: '/artifacts'
-#     name: 'artifacts'
-#   waitFor: ['build-images']
-
-
-### Container Structure Test simpler
-- name: 'gcr.io/gcp-runtimes/container-structure-test'
+- name: 'gcr.io/cloud-builders/docker'
   id: "container-structure"
-  entrypoint: "bash"
+  entrypoint: "/bin/bash"
   args:
+    - '-xe'
     - '-c'
     - |
-      IMAGES=( $$(cat /workspace/IMAGES.txt))
-     
+      # install jq and container-structure-test
+      apt-get -y install jq
+      curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 \
+      && chmod +x container-structure-test-linux-amd64 \
+      && mv container-structure-test-linux-amd64 /usr/bin/container-structure-test
+
+      # remove commit hash from string (need either tag or digest, not both)
+      sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
+      cp /artifacts/build-artifacts-notag.json ./build-artifacts-notag.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
+        docker pull "$${IMAGE}" # pull the remote image from GAR w/ digest SHA
         container-structure-test test --image "$${IMAGE}" --config policies/container-structure-policy.yaml
       done
   volumes:
   - path: '/artifacts'
     name: 'artifacts'
   waitFor: ['build-images']
+
+
+### Container Structure Test simpler
+# - name: 'gcr.io/gcp-runtimes/container-structure-test'
+#   id: "container-structure"
+#   entrypoint: "/bin/bash"
+#   args:
+#     - '-c'
+#     - |
+#       IMAGES=( $$(cat /workspace/IMAGES.txt))
+     
+#       for IMAGE in "$${IMAGES[@]}"; do
+#         container-structure-test test --image "$${IMAGE}" --config policies/container-structure-policy.yaml
+#       done
+#   volumes:
+#   - path: '/artifacts'
+#     name: 'artifacts'
+#   waitFor: ['build-images']
 
 ### Container image analysis scanning (CVE Check)
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
