@@ -21,7 +21,106 @@ options:
   # Use higher CPU machines so the caching and build steps are faster.
   machineType: 'N1_HIGHCPU_32'
   substitution_option: 'ALLOW_LOOSE'
+# artifacts:
+#   objects:
+#     location: gs://$_ARTIFACT_BUCKET_NAME/artifacts
 steps:
 - name: "gcr.io/cloud-builders/gke-deploy"
   id: "deploy-to-cluster"
   args: ['apply', '-f', 'manifests', '-p', '$_CLUSTER_PROJECT', '-c', '$_CLUSTER_NAME', '-l', '$_DEFAULT_REGION']
+
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "get-svc-endpoints"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      gcloud config set project $_CLUSTER_PROJECT
+      gcloud container clusters get-credentials $_CLUSTER_NAME --region=$_DEFAULT_REGION
+      kubectl get svc -ojson > /workspace/svcs.json
+
+      ### Do we need a version that runs against private IP'd svcs?
+      ### jq '[.items[] | ({svc: .metadata.name, endpoint: "\(.spec.clusterIPs[]):\(.spec.ports[].port)"}), (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
+      
+      ### Below only grabs external IP'd svcs
+      jq '[.items[] | (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
+
+      SVC_NAMES=( $$(jq -r '.[].svc' /workspace/svcs-endpoints-filtered.json))
+      ENDPOINTS=( $$(jq -r '.[].endpoint' /workspace/svcs-endpoints-filtered.json))
+      echo $$SVC_NAMES > /workspace/svc_names_env.txt
+      echo $$ENDPOINTS > /workspace/endpoints_env.txt
+  waitFor: 
+    - 'deploy-to-cluster'
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "zaproxy-endpoint-scan"
+  entrypoint: "bash"
+  args:
+    - -c
+    - |
+      SVC_NAMES=( $$(cat /workspace/svc_names_env.txt))
+      ENDPOINTS=( $$(cat /workspace/endpoints_env.txt))
+
+      INDEX=0
+      for SVC in "$${SVC_NAMES[@]}"; do
+          echo "$$SVC"
+          ENDPOINT="$${ENDPOINTS[$$INDEX]}"
+          echo "Checking $$ENDPOINT"
+
+          docker run owasp/zap2docker-stable zap-cli quick-scan --self-contained --start-options '-config api.disablekey=true' http://$$ENDPOINT
+          
+          INDEX=$${INDEX}+1
+      done
+  waitFor: 
+    - 'get-svc-endpoints'
+
+### Binary Authorization
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "binary-authorization-checkpoint"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      gcloud config set project ${PROJECT_ID}
+
+      gsutil cp /artifacts/build-artifacts-notag.json /workspace/artifacts
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
+
+      # Public Key for attestor
+      PUBLIC_KEY_ID=$(gcloud container binauthz attestors describe ${_ATTESTOR_NAME} \
+        --format='value(userOwnedGrafeasNote.publicKeys[0].id)')
+
+      for IMAGE in "$${IMAGES[@]}"; do
+        HAS_ATTESTATION=$(gcloud container binauthz attestations list \
+            --project="${PROJECT_ID}" \
+            --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
+            --artifact-url="$${IMAGE}" \
+            --format="value(name)")
+
+        if [ -z $${HAS_ATTESTATION} ]; then
+          gcloud beta container binauthz attestations sign-and-create \
+            --artifact-url="$${IMAGE}" \
+            --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
+            --keyversion=$( echo "$${PUBLIC_KEY_ID}" | sed "s|//cloudkms.googleapis.com/v1/||" )
+
+        fi
+      done
+
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "promote-manifests"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      git branch $_NEXT_ENV
+      git checkout $_NEXT_ENV
+      git branch --set-upstream-to=origin/$_NEXT_ENV
+      git pull --no-rebase
+      git merge $BRANCH_NAME
+
+      git add .
+      git commit -m 'promote from $BRANCH_NAME to $_NEXT_ENV'
+      git push
