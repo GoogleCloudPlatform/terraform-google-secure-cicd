@@ -24,24 +24,26 @@ module "example" {
   project_id       = var.project_id
   primary_location = var.primary_location
   deploy_branch_clusters = {
-    prod = {
-      cluster      = "prod-cluster",
-      project_id   = module.gke-project["prod"].project_id,
+    dev = {
+      cluster      = "dev-cluster",
+      project_id   = module.gke-project["dev"].project_id,
       location     = var.primary_location,
-      attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      attestations = ["projects/${var.project_id}/attestors/build-attestor"]
+      next_env     = "qa"
     },
     qa = {
       cluster      = "qa-cluster",
       project_id   = module.gke-project["qa"].project_id,
       location     = var.primary_location,
       attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-
-    }
-    dev = {
-      cluster      = "dev-cluster",
-      project_id   = module.gke-project["dev"].project_id,
+      next_env     = "prod"
+    },
+    prod = {
+      cluster      = "prod-cluster",
+      project_id   = module.gke-project["prod"].project_id,
       location     = var.primary_location,
-      attestations = ["projects/${var.project_id}/attestors/security-attestor"]
+      attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      next_env     = ""
     },
   }
 }
@@ -138,28 +140,43 @@ module "vpc" {
     subnets = []
 }
 
+# resource "google_service_account" "gke-sa" {
+#   for_each     = toset(local.envs)
+#   project      = module.gke-project[each.value].project_id
+#   account_id   = "gke-sa-${each.value}"
+#   display_name = "${each.value} GKE Service Account"
+# }
 
 ////// GKE Clusters
 resource "google_container_cluster" "cluster" {
   for_each = toset(local.envs)
 
-  name                     = "${each.value}-cluster"
-  location                 = var.primary_location
-  project = module.gke-project[each.value].project_id
+  name               = "${each.value}-cluster"
+  location           = var.primary_location
+  project            = module.gke-project[each.value].project_id
 
-  network                  = "default"
+  network            = "default"
+  networking_mode    = "VPC_NATIVE"
+
+  initial_node_count = 3
+  node_config {
+    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+    service_account = "${module.gke-project[each.value].project_number}-compute@developer.gserviceaccount.com"
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
+  ip_allocation_policy {
+    cluster_ipv4_cidr_block = "/16"
+    services_ipv4_cidr_block = "/16"
+  }
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
 
   # Enable Autopilot for this cluster
-  enable_autopilot = true
-
-  cluster_autoscaling {
-    enabled = true
-    autoscaling_profile = "BALANCED"
-  }
-
-  vertical_pod_autoscaling {
-    enabled = true
-  }
+  #enable_autopilot = true
 
   # Configuration options for the Release channel feature, which provide more control over automatic upgrades of your GKE clusters.
   release_channel {
