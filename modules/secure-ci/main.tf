@@ -62,7 +62,6 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
       _MANIFEST_WET_REPO = var.manifest_wet_repo
       _WET_BRANCH_NAME   = var.wet_branch_name
     },
-    var.additional_substitutions
   )
   filename   = var.app_build_trigger_yaml
   depends_on = [google_sourcerepo_repository.repos]
