@@ -47,15 +47,13 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
       _GAR_REPOSITORY      = var.gar_repo_name
       _DEFAULT_REGION      = each.value.location
       _MANIFEST_WET_REPO   = var.manifest_wet_repo
-      _ENVIRONMENT         = each.key // TODO: is this necessary or can we just know the branch inherently
       _CLUSTER_NAME        = each.value.cluster
       _CLUSTER_PROJECT     = each.value.project_id
       _CLOUDBUILD_FILENAME = var.app_deploy_trigger_yaml
       _CACHE_BUCKET_NAME   = var.cache_bucket_name
       _NEXT_ENV            = each.value.next_env
-      _ATTESTOR_NAME       = each.value.attestations[0]
-    },
-    var.additional_substitutions
+      _ATTESTOR_NAME       = var.deploy_branch_clusters["${each.value.next_env}"].attestations[0]
+    }
   )
   filename = var.app_deploy_trigger_yaml
 
@@ -78,7 +76,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
   global_policy_evaluation_mode = "ENABLE"
 
   cluster_admission_rules {
-    cluster                 = "${each.value.location}.${each.value.cluster}" // TODO: customer config
+    cluster                 = "${each.value.location}.${each.value.cluster}" 
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = each.value.attestations //TODO?
