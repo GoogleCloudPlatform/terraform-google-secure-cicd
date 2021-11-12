@@ -80,12 +80,6 @@ variable "use_tf_google_credentials_env_var" {
   default     = false
 }
 
-variable "additional_substitutions" {
-  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
-  type        = map(string)
-  default     = {}
-}
-
 variable "trigger_branch_name" {
   type        = string
   description = "A regular expression to match one or more branches for the build trigger."

@@ -51,8 +51,7 @@ variable "deploy_branch_clusters" {
   default     = {}
 }
 
-variable "additional_substitutions" {
-  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
-  type        = map(string)
-  default     = {}
+variable "cache_bucket_name" {
+  description = "cloud build artifact bucket name"
+  type        = string
 }

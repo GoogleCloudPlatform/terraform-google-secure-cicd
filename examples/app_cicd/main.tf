@@ -31,10 +31,6 @@ module "ci_pipeline" {
   runner_build_folder     = "../../../examples/app_cicd/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
   trigger_branch_name     = ".*"
-
-  additional_substitutions = {
-    _FAVORITE_COLOR = "blue"
-  }
 }
 
 module "cd_pipeline" {
@@ -47,9 +43,4 @@ module "cd_pipeline" {
   deploy_branch_clusters  = var.deploy_branch_clusters
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
   cache_bucket_name       = module.ci_pipeline.cache_bucket_name
-
-
-  additional_substitutions = {
-    _FAVORITE_COLOR = "blue"
-  }
 }
