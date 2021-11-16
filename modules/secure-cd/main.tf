@@ -52,7 +52,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
       _CLOUDBUILD_FILENAME = var.app_deploy_trigger_yaml
       _CACHE_BUCKET_NAME   = var.cache_bucket_name
       _NEXT_ENV            = each.value.next_env
-      _ATTESTOR_NAME       = var.deploy_branch_clusters["${each.value.next_env}"].attestations[0]
+      _ATTESTOR_NAME       = each.value.next_env == "" ? "" : (var.deploy_branch_clusters[each.value.next_env].attestations[0])
     }
   )
   filename = var.app_deploy_trigger_yaml
