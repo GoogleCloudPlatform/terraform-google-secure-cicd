@@ -29,9 +29,9 @@ timeout: "3600s" # 1 hour
 tags:
   - "secure-cicd-ci"
 substitutions:
-  _ATTESTOR_NAME: "security-attestor"
+  _ATTESTOR_NAME: "build-attestor"
 options:
-  # Use higher CPU machines so the caching and build steps are faster.
+  # Use higher CPU machines so build steps are faster.
   machineType: 'N1_HIGHCPU_32'
   substitution_option: 'ALLOW_LOOSE'
 artifacts:
@@ -45,17 +45,17 @@ steps:
 ###############################  Securing Source Code ###########################
 
 # Secrets Scanner (TODO: Switch to Talisman)
-- name: golang:1.15-buster
-  id: test-source-secrets
-  entrypoint: 'bash'
-  args:
-  - '-xe'
-  - '-c'
-  - |
-    go get -u github.com/ezekg/git-hound
-    git-hound -config policies/githound.yaml sniff > githound-output.txt
-    cat githound-output.txt
-  waitFor: ['-']
+# - name: golang:1.15-buster
+#   id: test-source-secrets
+#   entrypoint: 'bash'
+#   args:
+#   - '-xe'
+#   - '-c'
+#   - |
+#     go get -u github.com/ezekg/git-hound
+#     git-hound -config policies/githound.yaml sniff > githound-output.txt
+#     cat githound-output.txt
+#   waitFor: ['-']
 
 
 ###############################  Build Containers ###########################
@@ -183,7 +183,7 @@ steps:
       for IMAGE in "$${IMAGES[@]}"; do
         HAS_ATTESTATION=$(gcloud container binauthz attestations list \
             --project="${PROJECT_ID}" \
-            --attestor="projects/${PROJECT_ID}/attestors/security-attestor" \
+            --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
             --artifact-url="$${IMAGE}" \
             --format="value(name)")
 
