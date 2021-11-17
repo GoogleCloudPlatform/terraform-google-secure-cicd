@@ -22,17 +22,6 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
-# resource "google_storage_bucket" "artifact_bucket" {
-#   project                     = var.project_id
-#   name                        = "${var.project_id}_cloudbuild_cd"
-#   location                    = var.primary_location
-#   uniform_bucket_level_access = true
-#   force_destroy               = true
-#   versioning {
-#     enabled = true
-#   }
-# }
-
 resource "google_cloudbuild_trigger" "deploy_trigger" {
   for_each = var.deploy_branch_clusters
   project  = var.project_id

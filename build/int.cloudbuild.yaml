@@ -31,7 +31,7 @@ steps:
   waitFor:
     - go-init-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cd test/integration && RUN_STAGE=apply go test -v -run TestAppCICDExample ./... -p 1']
+  args: ['/bin/bash', '-c', 'cd test/integration && RUN_STAGE=apply go test -v -run TestAppCICDExample ./... -p 1 -timeout 60m']
 - id: go-verify-app-cicd-example
   waitFor:
     - go-apply-app-cicd-example
@@ -45,6 +45,8 @@ steps:
 tags:
 - 'ci'
 - 'integration'
+- 'cd'
+- 'deployment'
 substitutions:
   _DOCKER_IMAGE_DEVELOPER_TOOLS: 'cft/developer-tools'
   _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '1.0'
