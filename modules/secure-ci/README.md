@@ -3,7 +3,6 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| additional\_substitutions | Parameters to be substituted in the build specification. All keys should begin with an underscore. | `map(string)` | `{}` | no |
 | app\_build\_trigger\_yaml | Name of application cloudbuild yaml file | `string` | n/a | yes |
 | app\_source\_repo | Name of repo that contains app source code along with cloudbuild yaml | `string` | `"app-source"` | no |
 | attestor\_names\_prefix | A list of Cloud Source Repos to be created to hold app infra Terraform configs | `list(string)` | n/a | yes |
@@ -17,6 +16,7 @@
 | runner\_build\_folder | Path to the source folder for the cloud builds submit command | `string` | n/a | yes |
 | trigger\_branch\_name | A regular expression to match one or more branches for the build trigger. | `string` | n/a | yes |
 | use\_tf\_google\_credentials\_env\_var | Optional GOOGLE\_CREDENTIALS environment variable to be activated. | `bool` | `false` | no |
+| wet\_branch\_name | Name of branch in the wet manifest repo that CI pipeline will push to (usually, the name of the first deployed environment) | `string` | `"dev"` | no |
 
 ## Outputs
 

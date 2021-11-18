@@ -3,6 +3,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| deploy\_branch\_clusters | mapping of branch names to cluster deployments | <pre>map(object({<br>    cluster      = string<br>    project_id   = string<br>    location     = string<br>    attestations = list(string)<br>    next_env     = string<br>  }))</pre> | `{}` | no |
 | primary\_location | Region used for key-ring | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 
