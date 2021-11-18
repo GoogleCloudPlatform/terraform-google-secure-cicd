@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-locals {
- 
-}
-
 data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
