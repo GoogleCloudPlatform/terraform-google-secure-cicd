@@ -25,7 +25,7 @@ variable "primary_location" {
 }
 
 variable "deploy_branch_clusters" {
-  type        = map(object({
+  type = map(object({
     cluster      = string
     project_id   = string
     location     = string

@@ -137,7 +137,7 @@ steps:
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
-  waitFor: 
+  waitFor:
     - 'build-images'
     - 'container-structure'
 
@@ -221,13 +221,13 @@ steps:
           BOA="gcr.io/bank-of-anthos/$${IMG}*"
           FULL_IMAGE="$${IMAGES[$$INDEX]}"
           yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/manifests/$$IMG.yaml
-          
+
           INDEX=$${INDEX}+1
       done
 
       ## Go into wet repo and commit changes
       cd /workspace/$_MANIFEST_WET_REPO
-      
+
       git branch --set-upstream-to=origin/$_WET_BRANCH_NAME
       git add .
       git commit -m 'new deployment of applications'

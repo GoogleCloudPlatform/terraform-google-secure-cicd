@@ -43,7 +43,7 @@ steps:
 
       ### Do we need a version that runs against private IP'd svcs?
       ### jq '[.items[] | ({svc: .metadata.name, endpoint: "\(.spec.clusterIPs[]):\(.spec.ports[].port)"}), (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
-      
+
       ### Below only grabs external IP'd svcs
       jq '[.items[] | (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
 
@@ -51,7 +51,7 @@ steps:
       ENDPOINTS=( $$(jq -r '.[].endpoint' /workspace/svcs-endpoints-filtered.json))
       echo $$SVC_NAMES > /workspace/svc_names_env.txt
       echo $$ENDPOINTS > /workspace/endpoints_env.txt
-  waitFor: 
+  waitFor:
     - 'deploy-to-cluster'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -70,10 +70,10 @@ steps:
           echo "Checking $$ENDPOINT"
 
           docker run owasp/zap2docker-stable zap-cli quick-scan --self-contained --start-options '-config api.disablekey=true' http://$$ENDPOINT
-          
+
           INDEX=$${INDEX}+1
       done
-  waitFor: 
+  waitFor:
     - 'get-svc-endpoints'
 
 ### Binary Authorization
@@ -111,10 +111,10 @@ steps:
 
           fi
         done
-      else 
+      else
         echo "_ATTESTOR_NAME not specified. No attestation to add."
       fi
-  waitFor: 
+  waitFor:
     - 'zaproxy-endpoint-scan'
 
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
@@ -137,9 +137,9 @@ steps:
         git -C /workspace/$_MANIFEST_WET_REPO checkout $_NEXT_ENV
         git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_NEXT_ENV || echo "$_NEXT_ENV branch does not yet exist"
         git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase || echo "$_NEXT_ENV branch does not yet exist"
-        
+
         cd /workspace/$_MANIFEST_WET_REPO
-        
+
         # Merge manifests up
         git status
         git merge origin/$BRANCH_NAME
@@ -148,5 +148,5 @@ steps:
       else
         echo "_NEXT_ENV not specified. No further environment to promote to"
       fi
-  waitFor: 
+  waitFor:
     - 'binary-authorization-checkpoint'

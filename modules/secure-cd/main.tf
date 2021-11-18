@@ -48,7 +48,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
 resource "google_binary_authorization_policy" "deployment_policy" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
-  
+
   admission_whitelist_patterns {
     name_pattern = "gcr.io/google_containers/*"
   }
@@ -61,7 +61,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
   global_policy_evaluation_mode = "ENABLE"
 
   cluster_admission_rules {
-    cluster                 = "${each.value.location}.${each.value.cluster}" 
+    cluster                 = "${each.value.location}.${each.value.cluster}"
     evaluation_mode         = "REQUIRE_ATTESTATION"
     enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = each.value.attestations //TODO?
@@ -75,18 +75,19 @@ resource "google_project_iam_member" "gke_dev" {
   project  = each.value.project_id
   role     = "roles/container.developer"
   member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
-} 
+}
 
 
 ## IAM bindings for GKE projects to access container images from GAR
 ## TODO: we can't be sure that they will be using the default GCE SA, so how do we automate this permissioning?
 data "google_project" "gke_projects" {
-  for_each = var.deploy_branch_clusters
+  for_each   = var.deploy_branch_clusters
   project_id = each.value.project_id
 }
+
 resource "google_project_iam_member" "gke_gar_reader" {
   for_each = var.deploy_branch_clusters
-  project = var.project_id
-  role = "roles/artifactregistry.reader"
-  member = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
+  project  = var.project_id
+  role     = "roles/artifactregistry.reader"
+  member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
 }
