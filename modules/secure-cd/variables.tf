@@ -31,7 +31,7 @@ variable "manifest_wet_repo" {
 
 variable "gar_repo_name" {
   type        = string
-  description = "Docker artifact regitery repo to store app build images"
+  description = "Docker artifact registry repo to store app build images"
 }
 
 variable "app_deploy_trigger_yaml" {
