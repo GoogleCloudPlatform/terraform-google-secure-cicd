@@ -68,30 +68,18 @@ func TestAppCICDExample(t *testing.T) {
 		assert.Equal(garFullname, gar.Get("name").String(), "GAR Repo is valid")
 
 		// BinAuthz Attestors
-		var attestors := []string{"build-attestor", "quality-attestor", "security-attestor"}
+		attestors := [3]string{"build-attestor", "quality-attestor", "security-attestor"}
 
-		for i, attestor := range attestors {
+		for _, attestor := range attestors {
 			binAuthZAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", attestor, projectID))
 			attestorFullName := "projects/" + projectID + "/attestors/" + attestor
 			assert.Equal(attestorFullName, binAuthZAttestor.Get("name").String(), attestor + " is valid")
 		}
 
-		// binAuthZBuildAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", buildAttestorName, projectID))
-		// binAuthZQualityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", qualityAttestorName, projectID))
-		// binAuthZSecurityAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", securityAttestorName, projectID))
-
-		// buildAttestorFullName := "projects/" + projectID + "/attestors/" + buildAttestorName
-		// qualityAttestorFullName := "projects/" + projectID + "/attestors/" + qualityAttestorName
-		// securityAttestorFullName := "projects/" + projectID + "/attestors/" + securityAttestorName
-
-		// assert.Equal(buildAttestorFullName, binAuthZBuildAttestor.Get("name").String(), "Build Attestor is valid")
-		// assert.Equal(securityAttestorFullName, binAuthZSecurityAttestor.Get("name").String(), "Security Attestor is valid")
-		// assert.Equal(qualityAttestorFullName, binAuthZQualityAttestor.Get("name").String(), "Quality Attestor is valid")
-
 		// CSR
-		var repos := []string{appSourceRepoName, manifestDryRepoName, manifestWetRepoName}
+		repos := [3]string{appSourceRepoName, manifestDryRepoName, manifestWetRepoName}
 
-		for i, repo := range repos {
+		for _, repo := range repos {
 			csr := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", repo, projectID))
 			csrFullName := "projects/" + projectID + "/repos/" + repo
 			csrURL := "https://source.developers.google.com/p/" + projectID + "/r/" + repo
@@ -99,31 +87,11 @@ func TestAppCICDExample(t *testing.T) {
 			assert.Equal(csrURL, csr.Get("url").String(), "CSR " + repo + " URL is valid")
 		}
 
-		// csrSource := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", appSourceRepoName, projectID))
-		// csrDryManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestDryRepoName, projectID))
-		// csrWetManifest := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", manifestWetRepoName, projectID))
-
-		// csrSourceFullName := "projects/" + projectID + "/repos/" + appSourceRepoName
-		// csrDryManifestFullName := "projects/" + projectID + "/repos/" + manifestDryRepoName
-		// csrWetManifestFullName := "projects/" + projectID + "/repos/" + manifestWetRepoName
-
-		// csrSourceURL := "https://source.developers.google.com/p/" + projectID + "/r/" + appSourceRepoName
-		// csrDryManifestURL := "https://source.developers.google.com/p/" + projectID + "/r/" + manifestDryRepoName
-		// csrWetManifestURL := "https://source.developers.google.com/p/" + projectID + "/r/" + manifestWetRepoName
-
-		// assert.Equal(csrSourceFullName, csrSource.Get("name").String(), "CSR App Source repo name is valid")
-		// assert.Equal(csrDryManifestFullName, csrDryManifest.Get("name").String(), "CSR Dry Manifest repo name is valid")
-		// assert.Equal(csrWetManifestFullName, csrWetManifest.Get("name").String(), "CSR Wet Manifest repo name is valid")
-
-		// assert.Equal(csrSourceURL, csrSource.Get("url").String(), "CSR App Source URL is valid")
-		// assert.Equal(csrDryManifestURL, csrDryManifest.Get("url").String(), "CSR Dry Manifest URL is valid")
-		// assert.Equal(csrWetManifestURL, csrWetManifest.Get("url").String(), "CSR Wet Manifest URL is valid")
-
 		/////// SECURE-CD ///////
 		// Deploy Triggers
-		var cdTriggers := []string{"deploy-trigger-dev", "deploy-trigger-qa", "deploy-trigger-prod"}
+		cdTriggers := [3]string{"deploy-trigger-dev", "deploy-trigger-qa", "deploy-trigger-prod"}
 
-		for i, cdTrigger := range cdTriggers {
+		for _, cdTrigger := range cdTriggers {
 			gcbCD := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", cdTrigger, projectID))
 			assert.Equal(cdTrigger, gcbCD.Get("name").String(), "Trigger name is valid")
 			assert.Equal(manifestWetRepoName, gcbCD.Get("triggerTemplate.repoName").String(), "repoName triggerTemplate is valid")
@@ -133,7 +101,7 @@ func TestAppCICDExample(t *testing.T) {
 		}
 
 		// BinAuthz Policy
-		
+
 
 	})
 	// call the test function to execute the integration test
