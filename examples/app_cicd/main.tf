@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-data "google_project" "app_cicd_project" {
-  project_id = var.project_id
-}
-
 module "ci_pipeline" {
   source                  = "../../modules/secure-ci"
   project_id              = var.project_id
