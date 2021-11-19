@@ -92,52 +92,67 @@ module "vpc" {
   network_name = "default"
   routing_mode = "REGIONAL"
 
-  auto_create_subnetworks = true
-
-  firewall_rules = [
+  subnets = [
     {
-      name      = "default-allow-icmp"
-      direction = "INGRESS"
-      priority  = 65534
-      ranges    = ["0.0.0.0/0"]
-      allow = [{
-        protocol = "icmp"
-        ports    = []
-      }]
+      subnet_name   = "gke-subnet"
+      subnet_ip     = "10.0.0.0/17"
+      subnet_region = var.primary_location
     },
-    {
-      name      = "default-allow-internal"
-      direction = "INGRESS"
-      priority  = 65534
-      ranges    = ["10.128.0.0/9"]
-      allow = [{
-        protocol = "all"
-        ports    = []
-      }]
-    },
-    {
-      name      = "default-allow-rdp"
-      direction = "INGRESS"
-      priority  = 65534
-      ranges    = ["0.0.0.0/0"]
-      allow = [{
-        protocol = "tcp"
-        ports    = ["3389"]
-      }]
-    },
-    {
-      name      = "default-allow-ssh"
-      direction = "INGRESS"
-      priority  = 65534
-      ranges    = ["0.0.0.0/0"]
-      allow = [{
-        protocol = "tcp"
-        ports    = ["22"]
-      }]
-    }
   ]
-
-  subnets = []
+  secondary_ranges = {
+    gke-subnet = [
+      {
+        range_name    = "us-central1-01-gke-01-pods"
+        ip_cidr_range = "192.168.0.0/18"
+      },
+      {
+        range_name    = "us-central1-01-gke-01-services"
+        ip_cidr_range = "192.168.64.0/18"
+      },
+    ]
+  }
+  # firewall_rules = [
+  #   {
+  #     name      = "default-allow-icmp"
+  #     direction = "INGRESS"
+  #     priority  = 65534
+  #     ranges    = ["0.0.0.0/0"]
+  #     allow = [{
+  #       protocol = "icmp"
+  #       ports    = []
+  #     }]
+  #   },
+  #   {
+  #     name      = "default-allow-internal"
+  #     direction = "INGRESS"
+  #     priority  = 65534
+  #     ranges    = ["10.128.0.0/9"]
+  #     allow = [{
+  #       protocol = "all"
+  #       ports    = []
+  #     }]
+  #   },
+  #   {
+  #     name      = "default-allow-rdp"
+  #     direction = "INGRESS"
+  #     priority  = 65534
+  #     ranges    = ["0.0.0.0/0"]
+  #     allow = [{
+  #       protocol = "tcp"
+  #       ports    = ["3389"]
+  #     }]
+  #   },
+  #   {
+  #     name      = "default-allow-ssh"
+  #     direction = "INGRESS"
+  #     priority  = 65534
+  #     ranges    = ["0.0.0.0/0"]
+  #     allow = [{
+  #       protocol = "tcp"
+  #       ports    = ["22"]
+  #     }]
+  #   }
+  # ]
 }
 
 # GKE Clusters
@@ -157,7 +172,7 @@ module "gke_cluster" {
   regional                    = true
   region                      = var.primary_location
   network                     = "default"
-  subnetwork                  = "default"
+  subnetwork                  = "gke-subnet"
   ip_range_pods               = "us-central1-01-gke-01-pods"
   ip_range_services           = "us-central1-01-gke-01-services"
   create_service_account      = false
