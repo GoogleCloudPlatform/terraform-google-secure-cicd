@@ -93,7 +93,7 @@ func TestAppCICDExample(t *testing.T) {
 
 		/////// SECURE-CD ///////
 		// Deploy Triggers
-		cdTriggers := [3]string{"deploy-trigger-dev", "deploy-trigger-qa", "deploy-trigger-prod"}
+		cdTriggers := [3]string{"deploy-trigger-dev-dev-cluster", "deploy-trigger-qa-qa-cluster", "deploy-trigger-prod-prod-cluster"}
 
 		for _, cdTrigger := range cdTriggers {
 			gcbCD := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", cdTrigger, projectID))
