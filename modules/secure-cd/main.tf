@@ -44,7 +44,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
 
 }
 
-// Binary Authorization Policy
+# Binary Authorization Policy
 resource "google_binary_authorization_policy" "deployment_policy" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
@@ -68,7 +68,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
   }
 }
 
-## IAM bindings for Cloud Build SA to allow deployment to GKE (roles/container.developer)
+# IAM bindings for Cloud Build SA to allow deployment to GKE (roles/container.developer)
 
 resource "google_project_iam_member" "gke_dev" {
   for_each = var.deploy_branch_clusters
@@ -78,8 +78,8 @@ resource "google_project_iam_member" "gke_dev" {
 }
 
 
-## IAM bindings for GKE projects to access container images from GAR
-## TODO: we can't be sure that they will be using the default GCE SA, so how do we automate this permissioning?
+# IAM bindings for GKE projects to access container images from GAR
+# TODO: we can't be sure that they will be using the default GCE SA, so how do we automate this permissioning?
 data "google_project" "gke_projects" {
   for_each   = var.deploy_branch_clusters
   project_id = each.value.project_id

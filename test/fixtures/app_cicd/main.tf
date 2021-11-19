@@ -48,7 +48,7 @@ module "example" {
   }
 }
 
-////// GKE Projects
+# GKE Projects
 module "gke-project" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/project-factory/google"
@@ -82,7 +82,7 @@ module "gke-project" {
   ]
 }
 
-////// VPCs
+# VPCs
 module "vpc" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/network/google"
@@ -140,7 +140,7 @@ module "vpc" {
   subnets = []
 }
 
-////// GKE Clusters
+# GKE Clusters
 resource "google_container_cluster" "cluster" {
   for_each = toset(local.envs)
 
