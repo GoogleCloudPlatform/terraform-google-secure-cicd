@@ -21,7 +21,7 @@ data "google_project" "app_cicd_project" {
 resource "google_cloudbuild_trigger" "deploy_trigger" {
   for_each = var.deploy_branch_clusters
   project  = var.project_id
-  name     = "deploy-trigger-${each.key}"
+  name     = "deploy-trigger-${each.key}-${each.value.cluster}"
 
   trigger_template {
     branch_name = each.key
