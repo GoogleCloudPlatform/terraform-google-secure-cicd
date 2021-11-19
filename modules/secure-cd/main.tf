@@ -91,3 +91,10 @@ resource "google_project_iam_member" "gke_gar_reader" {
   role     = "roles/artifactregistry.reader"
   member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
 }
+
+resource "google_project_iam_member" "ca_note_viewer" {
+  for_each = var.deploy_branch_clusters
+  project  = var.project_id
+  role     = "roles/containeranalysis.notes.occurrences.viewer"
+  member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
+}
