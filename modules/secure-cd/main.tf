@@ -91,34 +91,11 @@ resource "google_project_iam_member" "gke_gar_reader" {
   member   = "serviceAccount:${each.value.service_account}"
 }
 
-# IAM membership for GKE SAs to access BinAuthZ attestations in CI/CD project
-# resource "google_binary_authorization_attestor_iam_member" "binauthz_verifier" {
-#   for_each = { for entry in local.attestor_iam_config: "${entry.service_account}.${entry.attestor}" => entry } # turn into a map
-#   project  = var.project_id
-#   attestor = each.value.attestor
-#   role     = "roles/binaryauthorization.attestorsVerifier"
-#   member   = "serviceAccount:${each.value.service_account}"
-# }
-
-# resource "google_project_iam_member" "binauthz_verifier" {
-#   for_each = var.deploy_branch_clusters
-#   project  = var.project_id
-#   role     = "roles/binaryauthorization.attestorsVerifier"
-#   member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
-# }
-
-# resource "google_project_iam_member" "ca_note_occur_viewer" {
-#   for_each = var.deploy_branch_clusters
-#   project  = var.project_id
-#   role     = "roles/containeranalysis.notes.occurrences.viewer"
-#   member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
-# }
-
+# IAM membership for Binary Authorization service agents in GKE projects on attestors
 data "google_project" "gke_projects" {
   for_each   = var.deploy_branch_clusters
   project_id = each.value.project_id
 }
-
 resource "google_binary_authorization_attestor_iam_member" "binauthz_verifier" {
   for_each = { for entry in local.attestor_iam_config: "${entry.env}.${entry.attestor}" => entry } # turn into a map
   project  = var.project_id
