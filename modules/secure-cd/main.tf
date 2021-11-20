@@ -18,7 +18,7 @@ locals {
   attestor_iam_config = flatten([
     for env_key, env in var.deploy_branch_clusters : [
       for attestor in env.attestations : {
-        env = env_key
+        env      = env_key
         attestor = split("/", attestor)[3]
       }
     ]
@@ -98,7 +98,7 @@ data "google_project" "gke_projects" {
   project_id = each.value.project_id
 }
 resource "google_binary_authorization_attestor_iam_member" "binauthz_verifier" {
-  for_each = { for entry in local.attestor_iam_config: "${entry.env}.${entry.attestor}" => entry } # turn into a map
+  for_each = { for entry in local.attestor_iam_config : "${entry.env}.${entry.attestor}" => entry } # turn into a map
   project  = var.project_id
   attestor = each.value.attestor
   role     = "roles/binaryauthorization.attestorsVerifier"

@@ -46,7 +46,7 @@ module "example" {
       location        = var.primary_location,
       service_account = module.gke_cluster["prod"].service_account
       attestations    = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-      next_env       = ""
+      next_env        = ""
     },
   }
 }
@@ -112,73 +112,22 @@ module "vpc" {
       },
     ]
   }
-  # firewall_rules = [
-  #   {
-  #     name      = "default-allow-icmp"
-  #     direction = "INGRESS"
-  #     priority  = 65534
-  #     ranges    = ["0.0.0.0/0"]
-  #     allow = [{
-  #       protocol = "icmp"
-  #       ports    = []
-  #     }]
-  #   },
-  #   {
-  #     name      = "default-allow-internal"
-  #     direction = "INGRESS"
-  #     priority  = 65534
-  #     ranges    = ["10.128.0.0/9"]
-  #     allow = [{
-  #       protocol = "all"
-  #       ports    = []
-  #     }]
-  #   },
-  #   {
-  #     name      = "default-allow-rdp"
-  #     direction = "INGRESS"
-  #     priority  = 65534
-  #     ranges    = ["0.0.0.0/0"]
-  #     allow = [{
-  #       protocol = "tcp"
-  #       ports    = ["3389"]
-  #     }]
-  #   },
-  #   {
-  #     name      = "default-allow-ssh"
-  #     direction = "INGRESS"
-  #     priority  = 65534
-  #     ranges    = ["0.0.0.0/0"]
-  #     allow = [{
-  #       protocol = "tcp"
-  #       ports    = ["22"]
-  #     }]
-  #   }
-  # ]
 }
-
-# GKE Clusters
-# data "google_client_config" "default" {}
-
-# provider "kubernetes" {
-#   host                   = "https://${module.gke_cluster.endpoint}"
-#   token                  = data.google_client_config.default.access_token
-#   cluster_ca_certificate = base64decode(module.gke_cluster.ca_certificate)
-# }
 
 module "gke_cluster" {
   for_each = toset(local.envs)
-  source                      = "terraform-google-modules/kubernetes-engine/google"
+  source   = "terraform-google-modules/kubernetes-engine/google"
+
   project_id                  = module.gke-project[each.value].project_id
   name                        = "${each.value}-cluster"
   regional                    = true
   region                      = var.primary_location
-  zones                      = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = "default"
   subnetwork                  = "gke-subnet"
   ip_range_pods               = "us-central1-01-gke-01-pods"
   ip_range_services           = "us-central1-01-gke-01-services"
   create_service_account      = true
-  #service_account             = "${module.gke-project[each.value].project_number}-compute@developer.gserviceaccount.com"
   enable_binary_authorization = true
   skip_provisioners           = false
 
@@ -186,41 +135,3 @@ module "gke_cluster" {
     module.vpc
   ]
 }
-
-# # GKE Clusters
-# resource "google_container_cluster" "cluster" {
-#   for_each = toset(local.envs)
-
-#   name     = "${each.value}-cluster"
-#   location = var.primary_location
-#   project  = module.gke-project[each.value].project_id
-
-#   network         = "default"
-#   networking_mode = "VPC_NATIVE"
-
-#   initial_node_count = 3
-#   node_config {
-#     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-#     service_account = "${module.gke-project[each.value].project_number}-compute@developer.gserviceaccount.com"
-#     oauth_scopes = [
-#       "https://www.googleapis.com/auth/cloud-platform"
-#     ]
-#   }
-#   ip_allocation_policy {
-#     cluster_ipv4_cidr_block  = "/16"
-#     services_ipv4_cidr_block = "/16"
-#   }
-#   timeouts {
-#     create = "30m"
-#     update = "40m"
-#   }
-
-#   # Configuration options for the Release channel feature, which provide more control over automatic upgrades of your GKE clusters.
-#   release_channel {
-#     channel = "REGULAR"
-#   }
-
-#   depends_on = [
-#     module.vpc
-#   ]
-# }

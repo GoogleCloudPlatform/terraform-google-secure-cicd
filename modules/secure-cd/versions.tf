@@ -26,7 +26,7 @@ terraform {
       version = ">= 3.45, < 5.0"
     }
   }
-  
+
   provider_meta "google" {
     module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-cd/v1.0.0"
   }
