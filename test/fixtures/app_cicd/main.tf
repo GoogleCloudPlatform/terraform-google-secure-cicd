@@ -25,25 +25,28 @@ module "example" {
   primary_location = var.primary_location
   deploy_branch_clusters = {
     dev = {
-      cluster      = "dev-cluster",
-      project_id   = module.gke-project["dev"].project_id,
-      location     = var.primary_location,
-      attestations = ["projects/${var.project_id}/attestors/build-attestor"]
-      next_env     = "qa"
+      cluster         = "dev-cluster",
+      project_id      = module.gke-project["dev"].project_id,
+      location        = var.primary_location,
+      service_account = module.gke_cluster["dev"].service_account
+      attestations    = ["projects/${var.project_id}/attestors/build-attestor"]
+      next_env        = "qa"
     },
     qa = {
-      cluster      = "qa-cluster",
-      project_id   = module.gke-project["qa"].project_id,
-      location     = var.primary_location,
-      attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-      next_env     = "prod"
+      cluster         = "qa-cluster",
+      project_id      = module.gke-project["qa"].project_id,
+      location        = var.primary_location,
+      service_account = module.gke_cluster["qa"].service_account
+      attestations    = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      next_env        = "prod"
     },
     prod = {
-      cluster      = "prod-cluster",
-      project_id   = module.gke-project["prod"].project_id,
-      location     = var.primary_location,
-      attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-      next_env     = ""
+      cluster         = "prod-cluster",
+      project_id      = module.gke-project["prod"].project_id,
+      location        = var.primary_location,
+      service_account = module.gke_cluster["prod"].service_account
+      attestations    = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      next_env       = ""
     },
   }
 }
@@ -65,11 +68,9 @@ module "gke-project" {
     "cloudresourcemanager.googleapis.com",
     "storage-api.googleapis.com",
     "serviceusage.googleapis.com",
-    "cloudbuild.googleapis.com",
     "containerregistry.googleapis.com",
     "iamcredentials.googleapis.com",
     "secretmanager.googleapis.com",
-    "sourcerepo.googleapis.com",
     "artifactregistry.googleapis.com",
     "containeranalysis.googleapis.com",
     "cloudkms.googleapis.com",
@@ -171,12 +172,13 @@ module "gke_cluster" {
   name                        = "${each.value}-cluster"
   regional                    = true
   region                      = var.primary_location
+  zones                      = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = "default"
   subnetwork                  = "gke-subnet"
   ip_range_pods               = "us-central1-01-gke-01-pods"
   ip_range_services           = "us-central1-01-gke-01-services"
-  create_service_account      = false
-  service_account             = "${module.gke-project[each.value].project_number}-compute@developer.gserviceaccount.com"
+  create_service_account      = true
+  #service_account             = "${module.gke-project[each.value].project_number}-compute@developer.gserviceaccount.com"
   enable_binary_authorization = true
   skip_provisioners           = false
 

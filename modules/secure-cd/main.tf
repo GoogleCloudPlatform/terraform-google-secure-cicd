@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
+locals {
+  attestor_iam_config = flatten([
+    for env_key, env in var.deploy_branch_clusters : [
+      for attestor in env.attestations : {
+        env = env_key
+        attestor = split("/", attestor)[3]
+      }
+    ]
+  ])
+}
+
 data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
@@ -49,10 +60,6 @@ resource "google_binary_authorization_policy" "deployment_policy" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
 
-  admission_whitelist_patterns {
-    name_pattern = "gcr.io/google_containers/*"
-  }
-
   default_admission_rule {
     evaluation_mode  = "ALWAYS_DENY"
     enforcement_mode = "ENFORCED_BLOCK_AND_AUDIT_LOG"
@@ -68,8 +75,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
   }
 }
 
-# IAM bindings for Cloud Build SA to allow deployment to GKE (roles/container.developer)
-
+# IAM membership for Cloud Build SA to allow deployment to GKE
 resource "google_project_iam_member" "gke_dev" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
@@ -77,24 +83,46 @@ resource "google_project_iam_member" "gke_dev" {
   member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
 
+# IAM membership for GKE SAs to access container images from GAR
+resource "google_project_iam_member" "gke_gar_reader" {
+  for_each = var.deploy_branch_clusters
+  project  = var.project_id
+  role     = "roles/artifactregistry.reader"
+  member   = "serviceAccount:${each.value.service_account}"
+}
 
-# IAM bindings for GKE projects to access container images from GAR
-# TODO: we can't be sure that they will be using the default GCE SA, so how do we automate this permissioning?
+# IAM membership for GKE SAs to access BinAuthZ attestations in CI/CD project
+# resource "google_binary_authorization_attestor_iam_member" "binauthz_verifier" {
+#   for_each = { for entry in local.attestor_iam_config: "${entry.service_account}.${entry.attestor}" => entry } # turn into a map
+#   project  = var.project_id
+#   attestor = each.value.attestor
+#   role     = "roles/binaryauthorization.attestorsVerifier"
+#   member   = "serviceAccount:${each.value.service_account}"
+# }
+
+# resource "google_project_iam_member" "binauthz_verifier" {
+#   for_each = var.deploy_branch_clusters
+#   project  = var.project_id
+#   role     = "roles/binaryauthorization.attestorsVerifier"
+#   member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
+# }
+
+# resource "google_project_iam_member" "ca_note_occur_viewer" {
+#   for_each = var.deploy_branch_clusters
+#   project  = var.project_id
+#   role     = "roles/containeranalysis.notes.occurrences.viewer"
+#   member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
+# }
+
 data "google_project" "gke_projects" {
   for_each   = var.deploy_branch_clusters
   project_id = each.value.project_id
 }
 
-resource "google_project_iam_member" "gke_gar_reader" {
-  for_each = var.deploy_branch_clusters
+resource "google_binary_authorization_attestor_iam_member" "binauthz_verifier" {
+  for_each = { for entry in local.attestor_iam_config: "${entry.env}.${entry.attestor}" => entry } # turn into a map
   project  = var.project_id
-  role     = "roles/artifactregistry.reader"
-  member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
-}
-
-resource "google_project_iam_member" "ca_note_viewer" {
-  for_each = var.deploy_branch_clusters
-  project  = var.project_id
-  role     = "roles/containeranalysis.notes.occurrences.viewer"
-  member   = "serviceAccount:${data.google_project.gke_projects[each.key].number}-compute@developer.gserviceaccount.com"
+  attestor = each.value.attestor
+  role     = "roles/binaryauthorization.attestorsVerifier"
+  member   = "serviceAccount:service-${data.google_project.gke_projects[each.value.env].number}@gcp-sa-binaryauthorization.iam.gserviceaccount.com"
 }
