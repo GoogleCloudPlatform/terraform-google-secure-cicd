@@ -25,7 +25,7 @@ variable "primary_location" {
 }
 
 variable "attestor_names_prefix" {
-  description = "A list of Cloud Source Repos to be created to hold app infra Terraform configs"
+  description = "A list of Binary Authorization attestors to create"
   type        = list(string)
 }
 

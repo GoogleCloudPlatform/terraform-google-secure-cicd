@@ -18,10 +18,6 @@ locals {
   gar_name = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
 }
 
-data "google_project" "app_cicd_project" {
-  project_id = var.project_id
-}
-
 resource "google_sourcerepo_repository" "repos" {
   for_each = toset([var.manifest_wet_repo, var.manifest_dry_repo, var.app_source_repo])
   name     = each.key
@@ -67,7 +63,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
   depends_on = [google_sourcerepo_repository.repos]
 }
 
-### Build the Cloud Build builder image
+# Build the Cloud Build builder image
 module "gcloud" {
   source                            = "terraform-google-modules/gcloud/google"
   version                           = "~> 2.0"
@@ -77,7 +73,7 @@ module "gcloud" {
   use_tf_google_credentials_env_var = var.use_tf_google_credentials_env_var
 }
 
-### Cloud Build Service Account permissions
+# Cloud Build Service Account permissions
 resource "google_project_iam_member" "project" {
   for_each = toset(var.cloudbuild_service_account_roles)
   project  = var.project_id
@@ -94,6 +90,10 @@ resource "google_artifact_registry_repository" "image_repo" {
   format        = "DOCKER"
 }
 
+data "google_project" "app_cicd_project" {
+  project_id = var.project_id
+}
+
 resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" {
   provider   = google-beta
   project    = var.project_id
@@ -102,3 +102,4 @@ resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" 
   role       = "roles/artifactregistry.admin"
   member     = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
+
