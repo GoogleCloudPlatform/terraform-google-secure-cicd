@@ -100,3 +100,9 @@ variable "cloudbuild_service_account_roles" {
     "roles/storage.admin"
   ]
 }
+
+variable "additional_substitutions" {
+  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
+  type        = map(string)
+  default     = {}
+}
