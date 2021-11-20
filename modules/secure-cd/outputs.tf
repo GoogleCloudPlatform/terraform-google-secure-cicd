@@ -14,3 +14,12 @@
  * limitations under the License.
  */
 
+output "deploy_trigger_names" {
+  description = "Names of CD Cloud Build triggers"
+  value       = [for trigger in google_cloudbuild_trigger.deploy_trigger : trigger.name]
+}
+
+output "binauthz_policy_required_attestations" {
+  description = "Binary Authorization policy required attestation in GKE projects"
+  value       = [for policy in google_binary_authorization_policy.deployment_policy : policy.cluster_admission_rules.*.require_attestations_by]
+}
