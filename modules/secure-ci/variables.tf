@@ -95,7 +95,6 @@ variable "cloudbuild_service_account_roles" {
     "roles/cloudkms.cryptoOperator",
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",
-    "roles/containeranalysis.notes.viewer",
     "roles/source.writer",
     "roles/storage.admin"
   ]
