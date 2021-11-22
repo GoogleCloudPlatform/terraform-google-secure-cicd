@@ -63,6 +63,7 @@ module "gke-project" {
 
   activate_apis = [
     "cloudresourcemanager.googleapis.com",
+    "cloudbilling.googleapis.com",
     "storage-api.googleapis.com",
     "serviceusage.googleapis.com",
     "containerregistry.googleapis.com",
