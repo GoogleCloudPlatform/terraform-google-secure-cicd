@@ -84,14 +84,6 @@ resource "google_project_iam_member" "gke_dev" {
   member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
 
-# IAM membership for GKE SAs to access container images from GAR
-resource "google_project_iam_member" "gke_gar_reader" {
-  for_each = var.deploy_branch_clusters
-  project  = var.project_id
-  role     = "roles/artifactregistry.reader"
-  member   = "serviceAccount:${each.value.service_account}"
-}
-
 # IAM membership for Binary Authorization service agents in GKE projects on attestors
 data "google_project" "gke_projects" {
   for_each   = var.deploy_branch_clusters

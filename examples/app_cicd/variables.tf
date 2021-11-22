@@ -29,7 +29,6 @@ variable "deploy_branch_clusters" {
     cluster         = string
     project_id      = string
     location        = string
-    service_account = string
     attestations    = list(string)
     next_env        = string
   }))

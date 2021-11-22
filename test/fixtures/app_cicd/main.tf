@@ -28,7 +28,6 @@ module "example" {
       cluster         = "dev-cluster",
       project_id      = module.gke-project["dev"].project_id,
       location        = var.primary_location,
-      service_account = module.gke_cluster["dev"].service_account
       attestations    = ["projects/${var.project_id}/attestors/build-attestor"]
       next_env        = "qa"
     },
@@ -36,7 +35,6 @@ module "example" {
       cluster         = "qa-cluster",
       project_id      = module.gke-project["qa"].project_id,
       location        = var.primary_location,
-      service_account = module.gke_cluster["qa"].service_account
       attestations    = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
       next_env        = "prod"
     },
@@ -44,7 +42,6 @@ module "example" {
       cluster         = "prod-cluster",
       project_id      = module.gke-project["prod"].project_id,
       location        = var.primary_location,
-      service_account = module.gke_cluster["prod"].service_account
       attestations    = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
       next_env        = ""
     },
@@ -130,6 +127,10 @@ module "gke_cluster" {
   create_service_account      = true
   enable_binary_authorization = true
   skip_provisioners           = false
+
+  # Enabled read-access to images in GAR repo in CI/CD project
+  grant_registry_access = true
+  registry_project_ids  = [var.project_id]
 
   depends_on = [
     module.vpc
