@@ -25,25 +25,25 @@ module "example" {
   primary_location = var.primary_location
   deploy_branch_clusters = {
     dev = {
-      cluster         = "dev-cluster",
-      project_id      = module.gke-project["dev"].project_id,
-      location        = var.primary_location,
-      attestations    = ["projects/${var.project_id}/attestors/build-attestor"]
-      next_env        = "qa"
+      cluster      = "dev-cluster",
+      project_id   = module.gke-project["dev"].project_id,
+      location     = var.primary_location,
+      attestations = ["projects/${var.project_id}/attestors/build-attestor"]
+      next_env     = "qa"
     },
     qa = {
-      cluster         = "qa-cluster",
-      project_id      = module.gke-project["qa"].project_id,
-      location        = var.primary_location,
-      attestations    = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-      next_env        = "prod"
+      cluster      = "qa-cluster",
+      project_id   = module.gke-project["qa"].project_id,
+      location     = var.primary_location,
+      attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      next_env     = "prod"
     },
     prod = {
-      cluster         = "prod-cluster",
-      project_id      = module.gke-project["prod"].project_id,
-      location        = var.primary_location,
-      attestations    = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-      next_env        = ""
+      cluster      = "prod-cluster",
+      project_id   = module.gke-project["prod"].project_id,
+      location     = var.primary_location,
+      attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      next_env     = ""
     },
   }
 }
