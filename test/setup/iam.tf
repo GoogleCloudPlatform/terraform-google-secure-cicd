@@ -29,6 +29,7 @@ locals {
     "roles/composer.serviceAgent",
     "roles/viewer",
     "roles/resourcemanager.projectIamAdmin",
+    "roles/resourcemanager.projectCreator",
   ]
 }
 
