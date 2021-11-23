@@ -47,6 +47,11 @@ module "project" {
         "roles/storage.admin",
         "roles/artifactregistry.admin",
         "roles/cloudbuild.builds.builder",
+        "roles/binaryauthorization.attestorsVerifier",
+        "roles/cloudkms.cryptoOperator",
+        "roles/containeranalysis.notes.attacher",
+        "roles/containeranalysis.notes.occurrences.viewer",
+        "roles/source.writer",
       ]
     },
   ]
