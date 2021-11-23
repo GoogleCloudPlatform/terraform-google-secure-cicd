@@ -29,7 +29,6 @@ locals {
     "roles/composer.serviceAgent",
     "roles/viewer",
     "roles/resourcemanager.projectIamAdmin",
-    "roles/billing.user",
   ]
 }
 
@@ -49,4 +48,11 @@ resource "google_project_iam_member" "int_test" {
 
 resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
+}
+
+# SA needs Billing User to create and enable billing on GKE test projects
+resource "google_billing_account_iam_member" "int_test_billing_user" {
+  billing_account_id = var.billing_account
+  role               = "roles/billing.user"
+  member             = "serviceAccount:${google_service_account.int_test.email}"
 }
