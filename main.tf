@@ -32,7 +32,7 @@ module "ci_pipeline" {
 module "cd_pipeline" {
   source                  = "./modules/secure-cd"
   project_id              = var.project_id
-  primary_location        = var.primary_location # "us-central1"
+  primary_location        = var.primary_location
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
   manifest_wet_repo       = var.manifest_wet_repo_name 
   deploy_branch_clusters  = var.deploy_branch_clusters
