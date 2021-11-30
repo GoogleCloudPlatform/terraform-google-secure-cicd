@@ -88,7 +88,7 @@ module "vpc" {
   version  = "~> 3.0"
 
   project_id   = module.gke-project[each.value].project_id
-  network_name = "default"
+  network_name = "gke-vpc-${each.value}"
   routing_mode = "REGIONAL"
 
   subnets = [
@@ -121,8 +121,8 @@ module "gke_cluster" {
   regional                    = true
   region                      = var.primary_location
   zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
-  network                     = "default"
-  subnetwork                  = "gke-subnet"
+  network                     = module.vpc[each.value].network_name
+  subnetwork                  = module.vpc[each.value].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
   ip_range_services           = "us-central1-01-gke-01-services"
   create_service_account      = true
