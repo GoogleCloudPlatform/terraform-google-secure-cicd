@@ -65,7 +65,6 @@ func TestAppCICDExample(t *testing.T) {
 		// Artifact Registry repository
 		gar := gcloud.Run(t, fmt.Sprintf("artifacts repositories describe %s-%s --project %s --location %s", projectID, garRepoNameSuffix, projectID, primaryLocation))
 		garFullname := fmt.Sprintf("projects/%s/locations/%s/repositories/%s-%s", projectID, primaryLocation, projectID, garRepoNameSuffix)
-		// garFullname := "projects/" + projectID + "/locations/" + primaryLocation + "/repositories/" + projectID + "-" + garRepoNameSuffix
 		assert.Equal(garFullname, gar.Get("name").String(), "GAR Repo is valid")
 
 		// BinAuthz Attestors
@@ -73,7 +72,6 @@ func TestAppCICDExample(t *testing.T) {
 
 		for _, attestor := range attestors {
 			binAuthZAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", attestor, projectID))
-			// attestorFullName := "projects/" + projectID + "/attestors/" + attestor
 			attestorFullName := fmt.Sprintf("projects/%s/attestors/%s", projectID, attestor)
 			assert.Equal(attestorFullName, binAuthZAttestor.Get("name").String(), fmt.Sprintf("%s is valid", attestor))
 		}
@@ -83,8 +81,6 @@ func TestAppCICDExample(t *testing.T) {
 
 		for _, repo := range repos {
 			csr := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", repo, projectID))
-			// csrFullName := "projects/" + projectID + "/repos/" + repo
-			// csrURL := "https://source.developers.google.com/p/" + projectID + "/r/" + repo
 			csrFullName := fmt.Sprintf("projects/%s/repos/%s", projectID, repo)
 			csrURL := fmt.Sprintf("https://source.developers.google.com/p/%s/r/%s", projectID, repo)
 			assert.Equal(csrFullName, csr.Get("name").String(), fmt.Sprintf("CSR %s repo name is valid", repo))
