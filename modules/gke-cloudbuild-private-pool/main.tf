@@ -70,6 +70,7 @@ module "vpn_ha-1" {
   name       = "cloudbuild-to-gke"
   peer_gcp_gateway = module.vpn_ha-2.self_link
   router_asn = 64514
+  # TODO: dynamic block --> 2 tunnels per destination GKE VPC
   tunnels = {
     remote-0 = {
       bgp_peer = {
@@ -99,6 +100,7 @@ module "vpn_ha-1" {
 }
 
 module "vpn_ha-2" {
+  # TODO: for_each --> 1 module per destination GKE VPC
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
   version    = "~> 1.3.0"
   project_id = var.project_id
