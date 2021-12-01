@@ -24,6 +24,7 @@ import (
 	// import the blueprints test framework modules for testing and assertions
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,6 +52,7 @@ func TestAppCICDExample(t *testing.T) {
 		// to parse through the JSON results and assert the values of the resource against the constants defined above
 
 		projectID := appCICDT.GetStringOutput("project_id")
+		gkeProjectIDs := terraform.OutputList(t, appCICDT.GetTFOptions(), "gke_project_ids")
 
 		/////// SECURE-CI ///////
 		// Cloud Build Trigger - App Source
@@ -101,7 +103,10 @@ func TestAppCICDExample(t *testing.T) {
 		}
 
 		// BinAuthz Policy
-
+		for _, gkeProjectID := range gkeProjectIDs {
+			binAuthZPolicy := gcloud.Run(t, fmt.Sprintf("container binauthz policy export --project %s", gkeProjectID))
+			assert.Contains(binAuthZPolicy.Get("ClusterAdmissionRules.us-central1.dev-cluster.evaluationMode").String(), "REQUIRE_ATTESTATION")
+		}
 
 	})
 	// call the test function to execute the integration test
