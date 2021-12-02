@@ -30,6 +30,19 @@ locals {
     "roles/viewer",
     "roles/resourcemanager.projectIamAdmin",
   ]
+  gke_int_required_roles = [
+    "roles/viewer",
+    "roles/compute.admin",
+    "roles/container.admin"
+  ]
+  gke_proj_role_mapping = flatten([
+    for env in local.envs : [
+      for role in local.gke_int_required_roles : {
+        project = module.gke_project[env].project_id
+        role    = role
+      }
+    ]   
+  ])
 }
 
 resource "google_service_account" "int_test" {
@@ -38,6 +51,7 @@ resource "google_service_account" "int_test" {
   display_name = "ci-account"
 }
 
+# SA permissions on CI/CD (main) project
 resource "google_project_iam_member" "int_test" {
   count = length(local.int_required_roles)
 
@@ -46,20 +60,29 @@ resource "google_project_iam_member" "int_test" {
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }
 
+# SA permissions on GKE projects
+resource "google_project_iam_member" "gke_int_test" {
+  for_each = local.gke_proj_role_mapping
+
+  project = each.project
+  role    = each.role
+  member  = "serviceAccount:${google_service_account.int_test.email}"
+}
+
 resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
 }
 
-# SA needs Project Creator to create GKE projects
-resource "google_folder_iam_member" "int_test_proj_creator" {
-  folder = var.folder_id
-  role   = "roles/resourcemanager.projectCreator"
-  member = "serviceAccount:${google_service_account.int_test.email}"
-}
+# # SA needs Project Creator to create GKE projects
+# resource "google_folder_iam_member" "int_test_proj_creator" {
+#   folder = var.folder_id
+#   role   = "roles/resourcemanager.projectCreator"
+#   member = "serviceAccount:${google_service_account.int_test.email}"
+# }
 
-# SA needs Billing User to create and enable billing on GKE test projects
-resource "google_billing_account_iam_member" "int_test_billing_user" {
-  billing_account_id = var.billing_account
-  role               = "roles/billing.user"
-  member             = "serviceAccount:${google_service_account.int_test.email}"
-}
+# # SA needs Billing User to create and enable billing on GKE test projects
+# resource "google_billing_account_iam_member" "int_test_billing_user" {
+#   billing_account_id = var.billing_account
+#   role               = "roles/billing.user"
+#   member             = "serviceAccount:${google_service_account.int_test.email}"
+# }
