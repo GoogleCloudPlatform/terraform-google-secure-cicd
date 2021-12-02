@@ -49,6 +49,9 @@ module "example" {
       next_env              = ""
     },
   }
+  depends_on = [
+    module.gke-project
+  ]
 }
 
 # GKE Projects

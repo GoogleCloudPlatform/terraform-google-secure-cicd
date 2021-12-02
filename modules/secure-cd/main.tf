@@ -87,10 +87,6 @@ resource "google_binary_authorization_policy" "deployment_policy" {
       require_attestations_by = cluster_admission_rules.value.required_attestations
     }
   }
-
-  depends_on = [
-    data.google_project.gke_projects
-  ]
 }
 
 # IAM membership for Cloud Build SA to allow deployment to GKE
