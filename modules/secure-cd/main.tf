@@ -24,12 +24,13 @@ locals {
     ]
   ])
 
-  deploy_projects = distinct([
-    for env in var.deploy_branch_clusters : env.project_id
-  ])
   binary_authorization_map = zipmap(
-    local.deploy_projects,
-    [for project_id in local.deploy_projects : [
+    distinct([
+      for env in var.deploy_branch_clusters : env.project_id
+    ]),
+    [for project_id in distinct([
+      for env in var.deploy_branch_clusters : env.project_id
+      ]) : [
       for env in var.deploy_branch_clusters : env if env.project_id == project_id
     ]]
   )
