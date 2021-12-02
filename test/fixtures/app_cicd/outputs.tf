@@ -31,5 +31,5 @@ output "build_trigger_name" {
 
 output "gke_project_ids" {
   description = "The name of the cloud build trigger for the bank of anthos repo."
-  value       = [for project in module.gke-project : project.project_id]
+  value       = [for entry in var.gke_project_ids : entry.value]
 }

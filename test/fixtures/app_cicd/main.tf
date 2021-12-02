@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-locals {
-  envs = ["dev", "qa", "prod"]
-}
-
 module "example" {
   source = "../../../examples/app_cicd"
 
@@ -26,7 +22,7 @@ module "example" {
   deploy_branch_clusters = {
     dev = {
       cluster               = "dev-cluster",
-      project_id            = module.gke-project["dev"].project_id,
+      project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/build-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/security-attestor"
@@ -34,7 +30,7 @@ module "example" {
     },
     qa = {
       cluster               = "qa-cluster",
-      project_id            = module.gke-project["qa"].project_id,
+      project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/quality-attestor"
@@ -42,59 +38,23 @@ module "example" {
     },
     prod = {
       cluster               = "prod-cluster",
-      project_id            = module.gke-project["prod"].project_id,
+      project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
       env_attestation       = ""
       next_env              = ""
     },
   }
-  depends_on = [
-    module.gke-project
-  ]
-}
-
-# GKE Projects
-module "gke-project" {
-  for_each = toset(local.envs)
-  source   = "terraform-google-modules/project-factory/google"
-  version  = "~> 10.0"
-
-  name                    = "secure-cicd-gke-${each.key}"
-  random_project_id       = "true"
-  org_id                  = var.org_id
-  folder_id               = var.folder_id
-  billing_account         = var.billing_account
-  default_service_account = "keep"
-
-  activate_apis = [
-    "cloudresourcemanager.googleapis.com",
-    "cloudbilling.googleapis.com",
-    "storage-api.googleapis.com",
-    "serviceusage.googleapis.com",
-    "containerregistry.googleapis.com",
-    "iamcredentials.googleapis.com",
-    "secretmanager.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "containeranalysis.googleapis.com",
-    "cloudkms.googleapis.com",
-    "binaryauthorization.googleapis.com",
-    "containerscanning.googleapis.com",
-    "container.googleapis.com",
-    "cloudtrace.googleapis.com",
-    "monitoring.googleapis.com",
-    "logging.googleapis.com"
-  ]
 }
 
 # VPCs
 module "vpc" {
-  for_each = toset(local.envs)
+  for_each = var.gke_project_ids
   source   = "terraform-google-modules/network/google"
   version  = "~> 3.0"
 
-  project_id   = module.gke-project[each.value].project_id
-  network_name = "gke-vpc-${each.value}"
+  project_id   = var.gke_project_ids[each.key]
+  network_name = "gke-vpc-${each.key}"
   routing_mode = "REGIONAL"
 
   subnets = [
@@ -119,16 +79,16 @@ module "vpc" {
 }
 
 module "gke_cluster" {
-  for_each = toset(local.envs)
+  for_each = var.gke_project_ids
   source   = "terraform-google-modules/kubernetes-engine/google"
 
-  project_id                  = module.gke-project[each.value].project_id
+  project_id                  = var.gke_project_ids[each.key]
   name                        = "${each.value}-cluster"
   regional                    = true
   region                      = var.primary_location
   zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
-  network                     = module.vpc[each.value].network_name
-  subnetwork                  = module.vpc[each.value].subnets_names[0]
+  network                     = module.vpc[each.key].network_name
+  subnetwork                  = module.vpc[each.key].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
   ip_range_services           = "us-central1-01-gke-01-services"
   create_service_account      = true
