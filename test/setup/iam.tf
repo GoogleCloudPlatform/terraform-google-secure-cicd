@@ -33,7 +33,11 @@ locals {
   gke_int_required_roles = [
     "roles/viewer",
     "roles/compute.admin",
-    "roles/container.admin"
+    "roles/container.admin",
+    "roles/iam.serviceAccountCreator",
+    "roles/binaryauthorization.policyEditor",
+    "roles/binaryauthorization.attestorsAdmin",
+    "roles/resourcemanager.projectIamAdmin",
   ]
   gke_proj_role_mapping = flatten([
     for env in local.envs : [
