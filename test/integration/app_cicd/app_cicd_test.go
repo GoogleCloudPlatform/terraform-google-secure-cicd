@@ -105,10 +105,22 @@ func TestAppCICDExample(t *testing.T) {
 		// BinAuthz Policy
 		for _, gkeProjectID := range gkeProjectIDs {
 			binAuthZPolicy := gcloud.Run(t, fmt.Sprintf("container binauthz policy export --project %s", gkeProjectID))
-			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.evaluationMode").String(), "ENFORCED_BLOCK_AND_AUDIT_LOG")
-			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.enforcementMode").String(), "ALWAYS_DENY")
-			assert.Contains(binAuthZPolicy.Get("clusterAdmissionRules.#.evaluationMode").String(), "REQUIRE_ATTESTATION")
-			assert.Contains(binAuthZPolicy.Get("clusterAdmissionRules.#.requireAttestationsBy").String(), "build-attestor")
+			cluster := gcloud.Run(t, fmt.Sprintf("container clusters list --project %s", gkeProjectID))
+			clusterName := cluster.Get("0.name").String()
+			// fmt.Println(clusterName)
+			// fmt.Println(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s", clusterName)).String())
+			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.enforcementMode").String(), "ENFORCED_BLOCK_AND_AUDIT_LOG")
+			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.evaluationMode").String(), "ALWAYS_DENY")
+			assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.evaluationMode", clusterName)).String(), "REQUIRE_ATTESTATION")
+			assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "build-attestor")
+			
+			switch clusterName {
+			case "qa-cluster":
+				assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "security-attestor")
+			case "prod-cluster":
+				assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "security-attestor")
+				assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "quality-attestor")
+			}
 		}
 
 	})
