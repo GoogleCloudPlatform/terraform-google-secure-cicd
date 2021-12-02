@@ -30,8 +30,7 @@ locals {
   binary_authorization_map = zipmap(
     local.deploy_projects,
     [for project_id in local.deploy_projects : [
-      for env in var.deploy_branch_clusters : 
-        env if env.project_id == project_id
+      for env in var.deploy_branch_clusters : env if env.project_id == project_id
     ]]
   )
 }

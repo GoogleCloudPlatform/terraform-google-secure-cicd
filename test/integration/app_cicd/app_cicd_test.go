@@ -113,7 +113,7 @@ func TestAppCICDExample(t *testing.T) {
 			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.evaluationMode").String(), "ALWAYS_DENY")
 			assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.evaluationMode", clusterName)).String(), "REQUIRE_ATTESTATION")
 			assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "build-attestor")
-			
+
 			switch clusterName {
 			case "qa-cluster":
 				assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "security-attestor")
