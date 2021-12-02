@@ -24,13 +24,12 @@ locals {
     ]
   ])
 
+  deploy_projects = distinct([
+    for env in var.deploy_branch_clusters : env.project_id
+  ])
   binary_authorization_map = zipmap(
-    distinct([
-      for env in var.deploy_branch_clusters : env.project_id
-    ]),
-    [for project_id in distinct([
-      for env in var.deploy_branch_clusters : env.project_id
-      ]) : [
+    local.deploy_projects,
+    [for project_id in local.deploy_projects : [
       for env in var.deploy_branch_clusters : env if env.project_id == project_id
     ]]
   )
@@ -88,6 +87,10 @@ resource "google_binary_authorization_policy" "deployment_policy" {
       require_attestations_by = cluster_admission_rules.value.required_attestations
     }
   }
+
+  depends_on = [
+    data.google_project.gke_projects
+  ]
 }
 
 # IAM membership for Cloud Build SA to allow deployment to GKE
