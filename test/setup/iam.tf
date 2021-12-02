@@ -40,8 +40,9 @@ locals {
       for role in local.gke_int_required_roles : {
         project = module.gke_project[env].project_id
         role    = role
+        env     = env
       }
-    ]   
+    ]
   ])
 }
 
@@ -63,7 +64,7 @@ resource "google_project_iam_member" "int_test" {
 # SA permissions on GKE projects
 resource "google_project_iam_member" "gke_int_test" {
   for_each = {
-    for mapping in local.gke_proj_role_mapping : "${mapping.project}.${mapping.role}" => mapping
+    for mapping in local.gke_proj_role_mapping : "${mapping.env}.${mapping.role}" => mapping
   }
 
   project = each.value.project
