@@ -62,10 +62,12 @@ resource "google_project_iam_member" "int_test" {
 
 # SA permissions on GKE projects
 resource "google_project_iam_member" "gke_int_test" {
-  for_each = local.gke_proj_role_mapping
+  for_each = {
+    for mapping in local.gke_proj_role_mapping : "${mapping.project}.${mapping.role}" => mapping
+  }
 
-  project = each.project
-  role    = each.role
+  project = each.value.project
+  role    = each.value.role
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }
 
