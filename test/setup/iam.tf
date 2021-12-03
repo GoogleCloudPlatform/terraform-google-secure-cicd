@@ -81,17 +81,3 @@ resource "google_project_iam_member" "gke_int_test" {
 resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
 }
-
-# # SA needs Project Creator to create GKE projects
-# resource "google_folder_iam_member" "int_test_proj_creator" {
-#   folder = var.folder_id
-#   role   = "roles/resourcemanager.projectCreator"
-#   member = "serviceAccount:${google_service_account.int_test.email}"
-# }
-
-# # SA needs Billing User to create and enable billing on GKE test projects
-# resource "google_billing_account_iam_member" "int_test_billing_user" {
-#   billing_account_id = var.billing_account
-#   role               = "roles/billing.user"
-#   member             = "serviceAccount:${google_service_account.int_test.email}"
-# }
