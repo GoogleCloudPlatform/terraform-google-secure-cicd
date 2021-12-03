@@ -38,6 +38,8 @@ locals {
     "roles/binaryauthorization.policyEditor",
     "roles/binaryauthorization.attestorsAdmin",
     "roles/resourcemanager.projectIamAdmin",
+    "roles/iam.serviceAccountUser",
+    "roles/serviceusage.serviceUsageAdmin",
   ]
   gke_proj_role_mapping = flatten([
     for env in local.envs : [

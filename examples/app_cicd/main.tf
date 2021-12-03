@@ -39,4 +39,7 @@ module "cd_pipeline" {
   deploy_branch_clusters  = var.deploy_branch_clusters
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
   cache_bucket_name       = module.ci_pipeline.cache_bucket_name
+  depends_on = [
+    module.ci_pipeline
+  ]
 }
