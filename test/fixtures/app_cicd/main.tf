@@ -83,7 +83,7 @@ module "gke_cluster" {
   source   = "terraform-google-modules/kubernetes-engine/google"
 
   project_id                  = var.gke_project_ids[each.key]
-  name                        = "${each.value}-cluster"
+  name                        = "${each.key}-cluster"
   regional                    = true
   region                      = var.primary_location
   zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
