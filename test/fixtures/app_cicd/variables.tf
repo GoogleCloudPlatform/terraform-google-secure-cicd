@@ -15,12 +15,30 @@
  */
 
 variable "project_id" {
-  description = "The ID of the project in which to provision resources."
+  description = "The ID of the CI/CD project to provision resources."
   type        = string
+}
+
+variable "org_id" {
+  description = "The numeric organization id"
+}
+
+variable "folder_id" {
+  description = "The folder to deploy in"
 }
 
 variable "primary_location" {
   type        = string
   description = "Region used for key-ring"
   default     = "us-central1"
+}
+
+variable "billing_account" {
+  type        = string
+  description = "The billing account id associated with the project, e.g. XXXXXX-YYYYYY-ZZZZZZ"
+}
+
+variable "gke_project_ids" {
+  type        = map(string)
+  description = "map of env name to GKE project ID"
 }

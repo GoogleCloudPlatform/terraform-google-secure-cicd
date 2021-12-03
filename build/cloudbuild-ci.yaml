@@ -29,9 +29,9 @@ timeout: "3600s" # 1 hour
 tags:
   - "secure-cicd-ci"
 substitutions:
-  _ATTESTOR_NAME: "security-attestor"
+  _ATTESTOR_NAME: "build-attestor"
 options:
-  # Use higher CPU machines so the caching and build steps are faster.
+  # Use higher CPU machines so build steps are faster.
   machineType: 'N1_HIGHCPU_32'
   substitution_option: 'ALLOW_LOOSE'
 artifacts:
@@ -39,6 +39,7 @@ artifacts:
     location: gs://$_CACHE_BUCKET_NAME/artifacts
     paths:
       - 'build-artifacts.json'
+      - 'build-artifacts-notag.json'
 steps:
 
 ###############################  Securing Source Code ###########################
@@ -56,7 +57,6 @@ steps:
     cat githound-output.txt
   waitFor: ['-']
 
-
 ###############################  Build Containers ###########################
 
 # Create build-installation-image
@@ -67,6 +67,7 @@ steps:
     - '-xe'
     - -c
     - |
+      ./mvnw validate
       # Replace gcr.io/bank-of-anthos to current project in skaffold.yaml
       sed -i "s|gcr.io/bank-of-anthos|$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY|g" skaffold.yaml
       skaffold config set --global local-cluster false
@@ -98,6 +99,8 @@ steps:
 
       # remove commit hash from string (need either tag or digest, not both)
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
+      cp /artifacts/build-artifacts-notag.json ./build-artifacts-notag.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
+
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
         docker pull "$${IMAGE}" # pull the remote image from GAR w/ digest SHA
@@ -127,14 +130,16 @@ steps:
         -alsologtostderr \
         -image="$${IMAGE}" \
         -policy=policies/container-analysis-policy.yaml \
-        -vulnz_timeout=2m \
+        -vulnz_timeout=5m \
         -mode=check-only || error=true
         if [[ $error == true ]]; then echo "Container Analysis failed due to CVE thresholds being triggered"; exit 1; fi
       done
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
-  waitFor: ['build-images']
+  waitFor:
+    - 'build-images'
+    - 'container-structure'
 
 ### Binary Authorization
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
@@ -154,7 +159,7 @@ steps:
       for IMAGE in "$${IMAGES[@]}"; do
         HAS_ATTESTATION=$(gcloud container binauthz attestations list \
             --project="${PROJECT_ID}" \
-            --attestor="projects/${PROJECT_ID}/attestors/security-attestor" \
+            --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
             --artifact-url="$${IMAGE}" \
             --format="value(name)")
 
@@ -183,8 +188,12 @@ steps:
     - -c
     - |
       PATTERN='^.*\/([a-zA-Z-]+)$$$'
-      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts.json))
-      IMAGE_NAMES=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts.json))
+      sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
+      IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
+      IMAGE_NAMES=( $$(jq -r '.builds[].imageName' /artifacts/build-artifacts-notag.json))
+
+      git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
+      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
 
       cd /workspace
 
@@ -194,9 +203,16 @@ steps:
 
       # Clone the WET repo
       gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
+      git -C /workspace/$_MANIFEST_WET_REPO branch $_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO checkout $_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase
+      ls /workspace/$_MANIFEST_WET_REPO
+      git -C /workspace/$_MANIFEST_WET_REPO merge master
+      mkdir -p /workspace/$_MANIFEST_WET_REPO/manifests
 
+      INDEX=0
       for IMAGE in "$${IMAGE_NAMES[@]}"; do
-
           [[ $$IMAGE =~ $$PATTERN ]]
           IMG=$${BASH_REMATCH[1]}
 
@@ -204,17 +220,18 @@ steps:
           GCR="gcr.io/$PROJECT_ID/$${IMG}*"
           BOA="gcr.io/bank-of-anthos/$${IMG}*"
           FULL_IMAGE="$${IMAGES[$$INDEX]}"
-          yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/$$IMG.yaml
+          yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/manifests/$$IMG.yaml
 
+          INDEX=$${INDEX}+1
       done
 
-      # Go into wet repo and commit changes
+      ## Go into wet repo and commit changes
       cd /workspace/$_MANIFEST_WET_REPO
-      git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
-      git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
+
+      git branch --set-upstream-to=origin/$_WET_BRANCH_NAME
       git add .
       git commit -m 'new deployment of applications'
-      git push origin master
+      git push
 
   volumes:
     - path: '/artifacts'

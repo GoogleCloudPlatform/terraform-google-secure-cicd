@@ -26,6 +26,7 @@ module "project" {
 
   activate_apis = [
     "cloudresourcemanager.googleapis.com",
+    "cloudbilling.googleapis.com",
     "storage-api.googleapis.com",
     "serviceusage.googleapis.com",
     "cloudbuild.googleapis.com",
@@ -46,7 +47,51 @@ module "project" {
         "roles/storage.admin",
         "roles/artifactregistry.admin",
         "roles/cloudbuild.builds.builder",
+        "roles/binaryauthorization.attestorsVerifier",
+        "roles/cloudkms.cryptoOperator",
+        "roles/containeranalysis.notes.attacher",
+        "roles/containeranalysis.notes.occurrences.viewer",
+        "roles/source.writer",
       ]
     },
   ]
 }
+
+locals {
+  envs = ["dev", "qa", "prod"]
+}
+
+# GKE Projects
+module "gke_project" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/project-factory/google"
+  version  = "~> 10.0"
+
+  name                    = "secure-cicd-gke-${each.key}"
+  random_project_id       = "true"
+  org_id                  = var.org_id
+  folder_id               = var.folder_id
+  billing_account         = var.billing_account
+  default_service_account = "keep"
+
+  activate_apis = [
+    "cloudresourcemanager.googleapis.com",
+    "cloudbilling.googleapis.com",
+    "storage-api.googleapis.com",
+    "serviceusage.googleapis.com",
+    "containerregistry.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "secretmanager.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "containeranalysis.googleapis.com",
+    "cloudkms.googleapis.com",
+    "binaryauthorization.googleapis.com",
+    "containerscanning.googleapis.com",
+    "container.googleapis.com",
+    "cloudtrace.googleapis.com",
+    "monitoring.googleapis.com",
+    "logging.googleapis.com"
+  ]
+}
+
+

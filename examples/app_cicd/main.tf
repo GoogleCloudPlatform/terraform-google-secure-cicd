@@ -22,13 +22,24 @@ module "ci_pipeline" {
   manifest_wet_repo       = "app-wet-manifests"
   gar_repo_name_suffix    = "app-image-repo"
   primary_location        = "us-central1"
-  attestor_names_prefix   = ["build", "quality", "security"]
-  app_build_trigger_yaml  = "cloudbuild.yaml"
+  attestor_names_prefix   = ["build", "security", "quality"]
+  app_build_trigger_yaml  = "cloudbuild-ci.yaml"
   runner_build_folder     = "../../../examples/app_cicd/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
   trigger_branch_name     = ".*"
+}
 
-  additional_substitutions = {
-    _FAVORITE_COLOR = "blue"
-  }
+module "cd_pipeline" {
+  source           = "../../modules/secure-cd"
+  project_id       = var.project_id
+  primary_location = "us-central1"
+
+  gar_repo_name           = module.ci_pipeline.app_artifact_repo
+  manifest_wet_repo       = "app-wet-manifests"
+  deploy_branch_clusters  = var.deploy_branch_clusters
+  app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
+  cache_bucket_name       = module.ci_pipeline.cache_bucket_name
+  depends_on = [
+    module.ci_pipeline
+  ]
 }

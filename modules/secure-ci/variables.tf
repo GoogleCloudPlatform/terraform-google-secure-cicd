@@ -25,7 +25,7 @@ variable "primary_location" {
 }
 
 variable "attestor_names_prefix" {
-  description = "A list of Cloud Source Repos to be created to hold app infra Terraform configs"
+  description = "A list of Binary Authorization attestors to create"
   type        = list(string)
 }
 
@@ -62,6 +62,12 @@ variable "manifest_wet_repo" {
   default     = "app-wet-manifests"
 }
 
+variable "wet_branch_name" {
+  type        = string
+  description = "Name of branch in the wet manifest repo that CI pipeline will push to (usually, the name of the first deployed environment)"
+  default     = "dev"
+}
+
 variable "gar_repo_name_suffix" {
   type        = string
   description = "Docker artifact regitery repo to store app build images"
@@ -72,12 +78,6 @@ variable "use_tf_google_credentials_env_var" {
   description = "Optional GOOGLE_CREDENTIALS environment variable to be activated."
   type        = bool
   default     = false
-}
-
-variable "additional_substitutions" {
-  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
-  type        = map(string)
-  default     = {}
 }
 
 variable "trigger_branch_name" {
@@ -95,8 +95,13 @@ variable "cloudbuild_service_account_roles" {
     "roles/cloudkms.cryptoOperator",
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",
-    "roles/containeranalysis.notes.viewer",
     "roles/source.writer",
     "roles/storage.admin"
   ]
+}
+
+variable "additional_substitutions" {
+  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
+  type        = map(string)
+  default     = {}
 }

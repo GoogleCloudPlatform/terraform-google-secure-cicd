@@ -28,7 +28,28 @@ locals {
     "roles/source.admin",
     "roles/composer.serviceAgent",
     "roles/viewer",
+    "roles/resourcemanager.projectIamAdmin",
   ]
+  gke_int_required_roles = [
+    "roles/viewer",
+    "roles/compute.admin",
+    "roles/container.admin",
+    "roles/binaryauthorization.policyEditor",
+    "roles/binaryauthorization.attestorsAdmin",
+    "roles/resourcemanager.projectIamAdmin",
+    "roles/iam.serviceAccountAdmin",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/iam.serviceAccountUser"
+  ]
+  gke_proj_role_mapping = flatten([
+    for env in local.envs : [
+      for role in local.gke_int_required_roles : {
+        project = module.gke_project[env].project_id
+        role    = role
+        env     = env
+      }
+    ]
+  ])
 }
 
 resource "google_service_account" "int_test" {
@@ -37,11 +58,23 @@ resource "google_service_account" "int_test" {
   display_name = "ci-account"
 }
 
+# SA permissions on CI/CD (main) project
 resource "google_project_iam_member" "int_test" {
   count = length(local.int_required_roles)
 
   project = module.project.project_id
   role    = local.int_required_roles[count.index]
+  member  = "serviceAccount:${google_service_account.int_test.email}"
+}
+
+# SA permissions on GKE projects
+resource "google_project_iam_member" "gke_int_test" {
+  for_each = {
+    for mapping in local.gke_proj_role_mapping : "${mapping.env}.${mapping.role}" => mapping
+  }
+
+  project = each.value.project
+  role    = each.value.role
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }
 
