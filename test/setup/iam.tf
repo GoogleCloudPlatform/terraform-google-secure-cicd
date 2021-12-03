@@ -38,7 +38,7 @@ locals {
     "roles/binaryauthorization.policyEditor",
     "roles/binaryauthorization.attestorsAdmin",
     "roles/resourcemanager.projectIamAdmin",
-    "roles/iam.serviceAccountUser",
+    "roles/iam.serviceAccountAdmin",
     "roles/serviceusage.serviceUsageAdmin",
   ]
   gke_proj_role_mapping = flatten([
