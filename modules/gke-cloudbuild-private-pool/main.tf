@@ -51,34 +51,36 @@ resource "google_cloudbuild_worker_pool" "pool" {
   depends_on = [google_service_networking_connection.worker_pool_connection]
 }
 
-data "google_container_cluster" "gke_cluster" {
-    for_each = var.deploy_branch_clusters
-    project  = each.value.project_id
-    name     = each.value.cluster
-    location = each.value.location
+locals {
+  gke_networks = distinct([
+    for env in var.deploy_branch_clusters : {
+      network    = env.network
+      location   = env.location
+      proejct_id = env.project_id
+    }
+  ])
 }
 
-# Network 1 = private pool vpc
-# Network 2 = GKE VPC
 # HA VPN
 module "vpn_ha-1" {
+  count = length(local.gke_networks)
+
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
   version    = "~> 1.3.0"
   project_id = var.project_id
   region     = var.location
   network    = google_compute_network.private_pool_vpc.self_link
-  name       = "cloudbuild-to-gke"
-  peer_gcp_gateway = module.vpn_ha-2.self_link
-  router_asn = 64514
-  # TODO: dynamic block --> 2 tunnels per destination GKE VPC
+  name       = "cloudbuild-to-${local.gke_networks[count.index].network}"
+  peer_gcp_gateway = module.vpn_ha-2[count.index].self_link
+  router_asn = 65001+(count.index*2)
   tunnels = {
     remote-0 = {
       bgp_peer = {
-        address = "169.254.1.1"
-        asn     = 64513
+        address = "169.254.${1+(count.index*2)}.2"
+        asn     = 65002+(count.index*2)
       }
       bgp_peer_options  = null
-      bgp_session_range = "169.254.1.2/30"
+      bgp_session_range = "169.254.${1+(count.index*2)}.1/30"
       ike_version       = 2
       vpn_gateway_interface = 0
       peer_external_gateway_interface = null
@@ -86,11 +88,11 @@ module "vpn_ha-1" {
     }
     remote-1 = {
       bgp_peer = {
-        address = "169.254.2.1"
-        asn     = 64513
+        address = "169.254.${2+(count.index*2)}.2"
+        asn     = 65002+(count.index*2)
       }
       bgp_peer_options  = null
-      bgp_session_range = "169.254.2.2/30"
+      bgp_session_range = "169.254.${2+(count.index*2)}.1/30"
       ike_version       = 2
       vpn_gateway_interface = 1
       peer_external_gateway_interface = null
@@ -100,39 +102,40 @@ module "vpn_ha-1" {
 }
 
 module "vpn_ha-2" {
-  # TODO: for_each --> 1 module per destination GKE VPC
+  count = length(local.gke_networks)
+
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
   version    = "~> 1.3.0"
-  project_id = var.project_id
-  region     = var.location
-  network    = "https://www.googleapis.com/compute/v1/projects/<PROJECT_ID>/global/networks/local-network" ## TODO: GKE network self_link
-  name       = "gke-to-cloudbuild"
-  router_asn = 64513
-  peer_gcp_gateway = module.vpn_ha-1.self_link
+  project_id = local.gke_networks[count.index].project_id
+  region     = local.gke_networks[count.index].location
+  network    = local.gke_networks[count.index].network 
+  name       = "${local.gke_networks[count.index].network}-to-cloudbuild"
+  router_asn = 65002+(count.index*2)
+  peer_gcp_gateway = module.vpn_ha-1[count.index].self_link
   tunnels = {
     remote-0 = {
       bgp_peer = {
-        address = "169.254.1.2"
-        asn     = 64514
+        address = "169.254.${1+(count.index*2)}.1"
+        asn     = 65001+(count.index*2)
       }
       bgp_peer_options  = null
-      bgp_session_range = "169.254.1.1/30"
+      bgp_session_range = "169.254.${1+(count.index*2)}.2/30"
       ike_version       = 2
       vpn_gateway_interface = 0
       peer_external_gateway_interface = null
-      shared_secret     = module.vpn_ha-1.random_secret
+      shared_secret     = module.vpn_ha-1[count.index].random_secret
     }
     remote-1 = {
       bgp_peer = {
-        address = "169.254.2.2"
-        asn     = 64514
+        address = "169.254.${2+(count.index*2)}.1"
+        asn     = 65001+(count.index*2)
       }
       bgp_peer_options  = null
-      bgp_session_range = "169.254.2.1/30"
+      bgp_session_range = "169.254.${2+(count.index*2)}.2/30"
       ike_version       = 2
       vpn_gateway_interface = 1
       peer_external_gateway_interface = null
-      shared_secret     = module.vpn_ha-1.random_secret
+      shared_secret     = module.vpn_ha-1[count.index].random_secret
     }
   }
 }
