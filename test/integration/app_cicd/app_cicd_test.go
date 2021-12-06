@@ -24,6 +24,7 @@ import (
 	// import the blueprints test framework modules for testing and assertions
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,6 +52,7 @@ func TestAppCICDExample(t *testing.T) {
 		// to parse through the JSON results and assert the values of the resource against the constants defined above
 
 		projectID := appCICDT.GetStringOutput("project_id")
+		gkeProjectIDs := terraform.OutputList(t, appCICDT.GetTFOptions(), "gke_project_ids")
 
 		/////// SECURE-CI ///////
 		// Cloud Build Trigger - App Source
@@ -65,7 +67,6 @@ func TestAppCICDExample(t *testing.T) {
 		// Artifact Registry repository
 		gar := gcloud.Run(t, fmt.Sprintf("artifacts repositories describe %s-%s --project %s --location %s", projectID, garRepoNameSuffix, projectID, primaryLocation))
 		garFullname := fmt.Sprintf("projects/%s/locations/%s/repositories/%s-%s", projectID, primaryLocation, projectID, garRepoNameSuffix)
-		// garFullname := "projects/" + projectID + "/locations/" + primaryLocation + "/repositories/" + projectID + "-" + garRepoNameSuffix
 		assert.Equal(garFullname, gar.Get("name").String(), "GAR Repo is valid")
 
 		// BinAuthz Attestors
@@ -73,7 +74,6 @@ func TestAppCICDExample(t *testing.T) {
 
 		for _, attestor := range attestors {
 			binAuthZAttestor := gcloud.Run(t, fmt.Sprintf("container binauthz attestors describe %s --project %s", attestor, projectID))
-			// attestorFullName := "projects/" + projectID + "/attestors/" + attestor
 			attestorFullName := fmt.Sprintf("projects/%s/attestors/%s", projectID, attestor)
 			assert.Equal(attestorFullName, binAuthZAttestor.Get("name").String(), fmt.Sprintf("%s is valid", attestor))
 		}
@@ -83,8 +83,6 @@ func TestAppCICDExample(t *testing.T) {
 
 		for _, repo := range repos {
 			csr := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", repo, projectID))
-			// csrFullName := "projects/" + projectID + "/repos/" + repo
-			// csrURL := "https://source.developers.google.com/p/" + projectID + "/r/" + repo
 			csrFullName := fmt.Sprintf("projects/%s/repos/%s", projectID, repo)
 			csrURL := fmt.Sprintf("https://source.developers.google.com/p/%s/r/%s", projectID, repo)
 			assert.Equal(csrFullName, csr.Get("name").String(), fmt.Sprintf("CSR %s repo name is valid", repo))
@@ -105,7 +103,25 @@ func TestAppCICDExample(t *testing.T) {
 		}
 
 		// BinAuthz Policy
+		for _, gkeProjectID := range gkeProjectIDs {
+			binAuthZPolicy := gcloud.Run(t, fmt.Sprintf("container binauthz policy export --project %s", gkeProjectID))
+			cluster := gcloud.Run(t, fmt.Sprintf("container clusters list --project %s", gkeProjectID))
+			clusterName := cluster.Get("0.name").String()
+			// fmt.Println(clusterName)
+			// fmt.Println(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s", clusterName)).String())
+			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.enforcementMode").String(), "ENFORCED_BLOCK_AND_AUDIT_LOG")
+			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.evaluationMode").String(), "ALWAYS_DENY")
+			assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.evaluationMode", clusterName)).String(), "REQUIRE_ATTESTATION")
+			assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "build-attestor")
 
+			switch clusterName {
+			case "qa-cluster":
+				assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "security-attestor")
+			case "prod-cluster":
+				assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "security-attestor")
+				assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.requireAttestationsBy", clusterName)).String(), "quality-attestor")
+			}
+		}
 
 	})
 	// call the test function to execute the integration test

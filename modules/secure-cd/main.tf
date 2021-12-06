@@ -17,12 +17,22 @@
 locals {
   attestor_iam_config = flatten([
     for env_key, env in var.deploy_branch_clusters : [
-      for attestor in env.attestations : {
+      for attestor in env.required_attestations : {
         env      = env_key
         attestor = split("/", attestor)[3]
       }
     ]
   ])
+
+  deploy_projects = distinct([
+    for env in var.deploy_branch_clusters : env.project_id
+  ])
+  binary_authorization_map = zipmap(
+    local.deploy_projects,
+    [for project_id in local.deploy_projects : [
+      for env in var.deploy_branch_clusters : env if env.project_id == project_id
+    ]]
+  )
 }
 
 data "google_project" "app_cicd_project" {
@@ -48,7 +58,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
       _CLOUDBUILD_FILENAME = var.app_deploy_trigger_yaml
       _CACHE_BUCKET_NAME   = var.cache_bucket_name
       _NEXT_ENV            = each.value.next_env
-      _ATTESTOR_NAME       = each.value.next_env == "" ? "" : (var.deploy_branch_clusters[each.value.next_env].attestations[0])
+      _ATTESTOR_NAME       = each.value.env_attestation
     },
     var.additional_substitutions
   )
@@ -58,8 +68,8 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
 
 # Binary Authorization Policy
 resource "google_binary_authorization_policy" "deployment_policy" {
-  for_each = var.deploy_branch_clusters
-  project  = each.value.project_id
+  for_each = local.binary_authorization_map
+  project  = each.key
 
   default_admission_rule {
     evaluation_mode  = "ALWAYS_DENY"
@@ -68,11 +78,14 @@ resource "google_binary_authorization_policy" "deployment_policy" {
 
   global_policy_evaluation_mode = "ENABLE"
 
-  cluster_admission_rules {
-    cluster                 = "${each.value.location}.${each.value.cluster}"
-    evaluation_mode         = "REQUIRE_ATTESTATION"
-    enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
-    require_attestations_by = each.value.attestations //TODO?
+  dynamic "cluster_admission_rules" {
+    for_each = each.value
+    content {
+      cluster                 = "${cluster_admission_rules.value.location}.${cluster_admission_rules.value.cluster}"
+      evaluation_mode         = "REQUIRE_ATTESTATION"
+      enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
+      require_attestations_by = cluster_admission_rules.value.required_attestations
+    }
   }
 }
 

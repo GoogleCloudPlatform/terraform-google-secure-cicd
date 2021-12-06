@@ -34,3 +34,8 @@ output "org_id" {
 output "billing_account" {
   value = var.billing_account
 }
+
+output "gke_project_ids" {
+  description = "List of GKE project IDs"
+  value       = zipmap(local.envs, [for env in local.envs : module.gke_project[env].project_id])
+}
