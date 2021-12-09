@@ -8,6 +8,8 @@
 #   subnets = []
 # }
 
+
+
 # Networking config
 resource "google_project_service" "servicenetworking" {
   project            = var.project_id
@@ -17,12 +19,14 @@ resource "google_project_service" "servicenetworking" {
 
 resource "google_compute_network" "private_pool_vpc" {
   name                    = var.private_pool_vpc_name
+  project                 = var.project_id
   auto_create_subnetworks = false
   depends_on              = [google_project_service.servicenetworking]
 }
 
 resource "google_compute_global_address" "worker_range" {
   name          = "worker-pool-range"
+  project       = var.project_id
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
@@ -39,6 +43,7 @@ resource "google_service_networking_connection" "worker_pool_connection" {
 # Cloud Build Worker Pool
 resource "google_cloudbuild_worker_pool" "pool" {
   name     = var.worker_pool_name
+  project  = var.project_id
   location = var.location
   worker_config {
     disk_size_gb = 100
@@ -56,7 +61,7 @@ locals {
     for env in var.deploy_branch_clusters : {
       network    = env.network
       location   = env.location
-      proejct_id = env.project_id
+      project_id = env.project_id
     }
   ])
 }
@@ -71,7 +76,8 @@ module "vpn_ha-1" {
   region     = var.location
   network    = google_compute_network.private_pool_vpc.self_link
   name       = "cloudbuild-to-${local.gke_networks[count.index].network}"
-  peer_gcp_gateway = module.vpn_ha-2[count.index].self_link
+  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${local.gke_networks[count.index].project_id}/regions/${local.gke_networks[count.index].location}/vpnGateways/${local.gke_networks[count.index].network}-to-cloudbuild"
+  #peer_gcp_gateway = module.vpn_ha-2[count.index].self_link
   router_asn = 65001+(count.index*2)
   tunnels = {
     remote-0 = {
@@ -111,7 +117,8 @@ module "vpn_ha-2" {
   network    = local.gke_networks[count.index].network 
   name       = "${local.gke_networks[count.index].network}-to-cloudbuild"
   router_asn = 65002+(count.index*2)
-  peer_gcp_gateway = module.vpn_ha-1[count.index].self_link
+  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.project_id}/regions/${var.location}/vpnGateways/cloudbuild-to-${local.gke_networks[count.index].network}"
+  #peer_gcp_gateway = module.vpn_ha-1[count.index].self_link
   tunnels = {
     remote-0 = {
       bgp_peer = {
