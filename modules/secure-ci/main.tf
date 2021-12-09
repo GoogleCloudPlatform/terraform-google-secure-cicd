@@ -67,7 +67,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
 # Build the Cloud Build builder image
 module "gcloud" {
   source                            = "terraform-google-modules/gcloud/google"
-  version                           = "~> 2.0"
+  version                           = "~> 3.1.0"
   platform                          = "linux"
   create_cmd_entrypoint             = "${path.module}/scripts/cloud-build-submit.sh"
   create_cmd_body                   = "${var.runner_build_folder} ${var.project_id} ${var.build_image_config_yaml} ${var.primary_location} ${local.gar_name}"
