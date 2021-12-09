@@ -27,6 +27,7 @@ variable "primary_location" {
 variable "deploy_branch_clusters" {
   type = map(object({
     cluster               = string
+    network               = string
     project_id            = string
     location              = string
     required_attestations = list(string)
