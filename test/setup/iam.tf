@@ -29,6 +29,7 @@ locals {
     "roles/composer.serviceAgent",
     "roles/viewer",
     "roles/resourcemanager.projectIamAdmin",
+    "roles/cloudbuild.workerPoolOwner",
   ]
   gke_int_required_roles = [
     "roles/viewer",
