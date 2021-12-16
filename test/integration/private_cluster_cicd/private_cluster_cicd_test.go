@@ -18,13 +18,13 @@
 package private_cluster_cicd
 
 import (
-	"fmt"
+	// "fmt"
 	"testing"
 
 	// import the blueprints test framework modules for testing and assertions
-	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
+	// "github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	// "github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,12 +32,12 @@ import (
 func TestPrivateClusterCICDExample(t *testing.T) {
 	// define constants for all required assertions in the test case
 
-	const sourceTriggerName    = "app-source-trigger"
-	const garRepoNameSuffix    = "app-image-repo"
-	const primaryLocation      = "us-central1"
-	const appSourceRepoName    = "app-source"
-	const manifestDryRepoName  = "app-dry-manifests"
-	const manifestWetRepoName  = "app-wet-manifests"
+	// const sourceTriggerName    = "app-source-trigger"
+	// const garRepoNameSuffix    = "app-image-repo"
+	// const primaryLocation      = "us-central1"
+	// const appSourceRepoName    = "app-source"
+	// const manifestDryRepoName  = "app-dry-manifests"
+	// const manifestWetRepoName  = "app-wet-manifests"
 
 	// initialize Terraform test from the Blueprints test framework
 	privateClusterCICDT := tft.NewTFBlueprintTest(t)
@@ -51,12 +51,12 @@ func TestPrivateClusterCICDExample(t *testing.T) {
 		// the tft struct can be used to pull output variables of the TF module being invoked by this test and use the op object (a gjson struct)
 		// to parse through the JSON results and assert the values of the resource against the constants defined above
 
-		projectID := privateClusterCICDT.GetStringOutput("project_id")
+		// projectID := privateClusterCICDT.GetStringOutput("project_id")
 		// gkeProjectIDs := terraform.OutputList(t, privateClusterCICDT.GetTFOptions(), "gke_project_ids")
 
 		/////// SECURE-CI ///////
 		// Cloud Build Trigger - App Source
-		gcbCI := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", sourceTriggerName, projectID))
+		// gcbCI := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", sourceTriggerName, projectID))
 
 		// assert.Equal(sourceTriggerName, gcbCI.Get("name").String(), "Cloud Build Trigger name is valid")
 		// assert.Equal(manifestDryRepoName, gcbCI.Get("substitutions._MANIFEST_DRY_REPO").String(), "Manifest Dry Repo trigger substitution is valid")
