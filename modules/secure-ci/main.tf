@@ -51,12 +51,13 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
   }
   substitutions = merge(
     {
-      _GAR_REPOSITORY    = local.gar_name
-      _DEFAULT_REGION    = var.primary_location
-      _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
-      _MANIFEST_DRY_REPO = var.manifest_dry_repo
-      _MANIFEST_WET_REPO = var.manifest_wet_repo
-      _WET_BRANCH_NAME   = var.wet_branch_name
+      _GAR_REPOSITORY          = local.gar_name
+      _DEFAULT_REGION          = var.primary_location
+      _CACHE_BUCKET_NAME       = google_storage_bucket.cache_bucket.name
+      _MANIFEST_DRY_REPO       = var.manifest_dry_repo
+      _MANIFEST_WET_REPO       = var.manifest_wet_repo
+      _WET_BRANCH_NAME         = var.wet_branch_name
+      _CLOUDBUILD_PRIVATE_POOL = var.cloudbuild_private_pool
     },
     var.additional_substitutions
   )
