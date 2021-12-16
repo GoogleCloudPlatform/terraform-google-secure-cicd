@@ -62,3 +62,9 @@ variable "additional_substitutions" {
   type        = map(string)
   default     = {}
 }
+
+variable "cloudbuild_private_pool" {
+  description = "Cloud Build private pool self-link"
+  type        = string
+  default     = ""
+}
