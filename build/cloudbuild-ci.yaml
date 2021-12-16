@@ -18,7 +18,7 @@
 #   Secrets Scanner: secrets scanner
 #   License checking: ???
 # Build
-#   Skaffold build
+#   Docker build
 # After Build
 #   Artifact Structure Test: Container structure test
 #   Image Vulnerabilities: CVE scanner
@@ -30,34 +30,37 @@ tags:
   - "secure-cicd-ci"
 substitutions:
   _ATTESTOR_NAME: "build-attestor"
+  _GAR_REPO_URI: "${_DEFAULT_REGION}-docker.pkg.dev/${PROJECT_ID}/${_GAR_REPOSITORY}"
 options:
-  # Use higher CPU machines so build steps are faster.
-  machineType: 'N1_HIGHCPU_32'
   substitution_option: 'ALLOW_LOOSE'
+  pool:
+    name: $_CLOUDBUILD_PRIVATE_POOL  
 artifacts:
   objects:
     location: gs://$_CACHE_BUCKET_NAME/artifacts
     paths:
       - 'build-artifacts.json'
       - 'build-artifacts-notag.json'
+      - 'skaffold-render.yaml'
 steps:
 
-###############################  Securing Source Code ###########################
+############################### Securing Source Code ###########################
 
 # Secrets Scanner (TODO: Switch to Talisman)
-- name: golang:1.15-buster
-  id: test-source-secrets
-  entrypoint: 'bash'
-  args:
-  - '-xe'
-  - '-c'
-  - |
-    go get -u github.com/ezekg/git-hound
-    git-hound -config policies/githound.yaml sniff > githound-output.txt
-    cat githound-output.txt
-  waitFor: ['-']
+# - name: golang:1.15-buster
+#   id: test-source-secrets
+#   entrypoint: 'bash'
+#   args:
+#   - '-xe'
+#   - '-c'
+#   - |
+#     go get -u github.com/ezekg/git-hound
+#     git-hound -config policies/githound.yaml sniff > githound-output.txt
+#     cat githound-output.txt
+#   waitFor: ['-']
 
-###############################  Build Containers ###########################
+
+############################### Build Containers ###########################
 
 # Create build-installation-image
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
@@ -68,10 +71,9 @@ steps:
     - -c
     - |
       ./mvnw validate
-      # Replace gcr.io/bank-of-anthos to current project in skaffold.yaml
-      sed -i "s|gcr.io/bank-of-anthos|$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY|g" skaffold.yaml
+
       skaffold config set --global local-cluster false
-      skaffold build --default-repo=$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json
+      skaffold build --default-repo=${_GAR_REPO_URI} --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json 
       sed -i "s|:latest||g" /artifacts/build-artifacts.json # remove the "latest" tag (complicates things later)
       cp /artifacts/build-artifacts.json ./build-artifacts.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
       while read p; do
@@ -100,7 +102,6 @@ steps:
       # remove commit hash from string (need either tag or digest, not both)
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
       cp /artifacts/build-artifacts-notag.json ./build-artifacts-notag.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
-
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
         docker pull "$${IMAGE}" # pull the remote image from GAR w/ digest SHA
@@ -125,21 +126,24 @@ steps:
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
+
+        #gcloud artifacts docker images describe $${IMAGE} --show-package-vulnerability --format="value(discoverySummary.discovery.discovery.analysisStatus)"
+
+        # Check CVEs against policy
         /signer \
         -v=10 \
         -alsologtostderr \
         -image="$${IMAGE}" \
         -policy=policies/container-analysis-policy.yaml \
-        -vulnz_timeout=5m \
+        -vulnz_timeout=15m \
         -mode=check-only || error=true
         if [[ $error == true ]]; then echo "Container Analysis failed due to CVE thresholds being triggered"; exit 1; fi
       done
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
-  waitFor:
+  waitFor: 
     - 'build-images'
-    - 'container-structure'
 
 ### Binary Authorization
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
@@ -168,8 +172,6 @@ steps:
             --artifact-url="$${IMAGE}" \
             --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
             --keyversion=$( echo "$${PUBLIC_KEY_ID}" | sed "s|//cloudkms.googleapis.com/v1/||" )
-
-
         fi
       done
   volumes:
@@ -202,37 +204,28 @@ steps:
       gcloud source repos clone $_MANIFEST_DRY_REPO --project=${PROJECT_ID}
 
       # Clone the WET repo
+      cd /workspace
       gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
-      git -C /workspace/$_MANIFEST_WET_REPO branch $_WET_BRANCH_NAME
+      git -C /workspace/$_MANIFEST_WET_REPO branch $_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch already exists"
       git -C /workspace/$_MANIFEST_WET_REPO checkout $_WET_BRANCH_NAME
-      git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_WET_BRANCH_NAME
-      git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase
-      ls /workspace/$_MANIFEST_WET_REPO
+      git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch does not yet exist"
+      git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase || echo "$_WET_BRANCH_NAME branch does not yet exist"
+      
       git -C /workspace/$_MANIFEST_WET_REPO merge master
       mkdir -p /workspace/$_MANIFEST_WET_REPO/manifests
 
-      INDEX=0
-      for IMAGE in "$${IMAGE_NAMES[@]}"; do
-          [[ $$IMAGE =~ $$PATTERN ]]
-          IMG=$${BASH_REMATCH[1]}
+      skaffold config set --global local-cluster false
+      skaffold render --offline=true --digest-source='remote' --filename='skaffold.yaml' --build-artifacts=/artifacts/build-artifacts.json --output='/workspace/$_MANIFEST_WET_REPO/manifests/skaffold-render.yaml' --default-repo=${_GAR_REPO_URI} --loud=true
+      cp /workspace/$_MANIFEST_WET_REPO/manifests/skaffold-render.yaml ./skaffold-render.yaml
 
-          GAR="$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/$${IMG}*"
-          GCR="gcr.io/$PROJECT_ID/$${IMG}*"
-          BOA="gcr.io/bank-of-anthos/$${IMG}*"
-          FULL_IMAGE="$${IMAGES[$$INDEX]}"
-          yq eval '(.spec | select(documentIndex == 0) |.template.spec.containers[].image | select(. == "'$$GAR'" or . == "'$$GCR'" or . == "'$$BOA'")) |= "'$$FULL_IMAGE'"' /workspace/$_MANIFEST_DRY_REPO/$$IMG.yaml > /workspace/$_MANIFEST_WET_REPO/manifests/$$IMG.yaml
-
-          INDEX=$${INDEX}+1
-      done
-
-      ## Go into wet repo and commit changes
+      # Go into wet repo and commit changes
       cd /workspace/$_MANIFEST_WET_REPO
-
-      git branch --set-upstream-to=origin/$_WET_BRANCH_NAME
+      
+      # git branch $_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch already exists"
+      # git checkout $_WET_BRANCH_NAME
       git add .
-      git commit -m 'new deployment of applications'
-      git push
-
+      git commit -m 'new deployment of applications' || echo "Nothing to commit"
+      git push --set-upstream origin $_WET_BRANCH_NAME
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
