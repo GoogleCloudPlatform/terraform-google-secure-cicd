@@ -27,6 +27,7 @@ module "ci_pipeline" {
   runner_build_folder     = "../../../examples/private_cluster_cicd/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
   trigger_branch_name     = ".*"
+  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
 }
 
 module "cd_pipeline" {
@@ -39,6 +40,7 @@ module "cd_pipeline" {
   deploy_branch_clusters  = var.deploy_branch_clusters
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
   cache_bucket_name       = module.ci_pipeline.cache_bucket_name
+  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
   depends_on = [
     module.ci_pipeline
   ]
@@ -50,4 +52,5 @@ module "cloudbuild_private_pool" {
   project_id             = var.project_id
   location               = var.primary_location
   deploy_branch_clusters = var.deploy_branch_clusters
+  machine_type           = "e2-highcpu-32"
 }
