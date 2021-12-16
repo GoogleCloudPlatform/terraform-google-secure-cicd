@@ -22,6 +22,7 @@ steps:
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
 
+# app_cicd
 - id: go-init-app-cicd-example
   waitFor:
     - prepare
@@ -43,6 +44,7 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestAppCICDExample ./... -p 1 -timeout 60m']
 
+# private_cluster_cicd
 - id: go-init-private-cluster-cicd-example
   waitFor:
     - prepare
@@ -64,6 +66,27 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestPrivateClusterCICDExample ./... -p 1 -timeout 60m']
 
+# gke_cloudbuild_private_pool
+- id: go-init-gke-cloudbuild-private-pool-example
+  waitFor:
+    - prepare
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=init go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1']
+- id: go-apply-gke-cloudbuild-private-pool-example
+  waitFor:
+    - go-init-gke-cloudbuild-private-pool-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=apply go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1 -timeout 60m']
+- id: go-verify-gke-cloudbuild-private-pool-example
+  waitFor:
+    - go-apply-gke-cloudbuild-private-pool-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=verify go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1']
+- id: go-destroy-gke-cloudbuild-private-pool-example
+  waitFor:
+    - go-verify-gke-cloudbuild-private-pool-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1 -timeout 60m']
 
 
 
