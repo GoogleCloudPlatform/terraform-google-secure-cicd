@@ -8,7 +8,8 @@
 | app\_source\_repo | Name of repo that contains app source code along with cloudbuild yaml | `string` | `"app-source"` | no |
 | attestor\_names\_prefix | A list of Binary Authorization attestors to create | `list(string)` | n/a | yes |
 | build\_image\_config\_yaml | Name of image builder yaml file | `string` | n/a | yes |
-| cloudbuild\_service\_account\_roles | IAM roles given to the Cloud Build service account to enable security scanning operations | `list(string)` | <pre>[<br>  "roles/artifactregistry.admin",<br>  "roles/binaryauthorization.attestorsVerifier",<br>  "roles/cloudbuild.builds.builder",<br>  "roles/cloudkms.cryptoOperator",<br>  "roles/containeranalysis.notes.attacher",<br>  "roles/containeranalysis.notes.occurrences.viewer",<br>  "roles/source.writer",<br>  "roles/storage.admin"<br>]</pre> | no |
+| cloudbuild\_private\_pool | Cloud Build private pool self-link | `string` | `""` | no |
+| cloudbuild\_service\_account\_roles | IAM roles given to the Cloud Build service account to enable security scanning operations | `list(string)` | <pre>[<br>  "roles/artifactregistry.admin",<br>  "roles/binaryauthorization.attestorsVerifier",<br>  "roles/cloudbuild.builds.builder",<br>  "roles/cloudkms.cryptoOperator",<br>  "roles/containeranalysis.notes.attacher",<br>  "roles/containeranalysis.notes.occurrences.viewer",<br>  "roles/source.writer",<br>  "roles/storage.admin",<br>  "roles/cloudbuild.workerPoolUser",<br>  "roles/ondemandscanning.admin"<br>]</pre> | no |
 | gar\_repo\_name\_suffix | Docker artifact regitery repo to store app build images | `string` | `"app-image-repo"` | no |
 | manifest\_dry\_repo | Name of repo that contains template K8s manifests files | `string` | `"app-dry-manifests"` | no |
 | manifest\_wet\_repo | Name of repo that will receive hydrated K8s manifests files | `string` | `"app-wet-manifests"` | no |

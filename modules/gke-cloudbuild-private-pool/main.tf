@@ -56,8 +56,8 @@ resource "google_cloudbuild_worker_pool" "pool" {
   project  = var.project_id
   location = var.location
   worker_config {
-    disk_size_gb = 100
-    machine_type = var.machine_type
+    disk_size_gb   = 100
+    machine_type   = var.machine_type
     no_external_ip = false
   }
   network_config {
@@ -94,9 +94,7 @@ module "vpn_ha-1" {
   region     = var.location
   network    = google_compute_network.private_pool_vpc.self_link
   name       = "cloudbuild-to-${local.gke_networks[count.index].network}"
-  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${local.gke_networks[count.index].project_id}/regions/${local.gke_networks[count.index].location}/vpnGateways/${local.gke_networks[count.index].network}-to-cloudbuild"
-  #peer_gcp_gateway = module.vpn_ha-2[count.index].self_link
-  router_asn = 65001+(count.index*2)
+  router_asn = 65001 + (count.index * 2)
   router_advertise_config = {
     ip_ranges = {
       "${google_compute_global_address.worker_range.address}/${google_compute_global_address.worker_range.prefix_length}" = "Cloud Build Private Pool"
@@ -104,30 +102,31 @@ module "vpn_ha-1" {
     mode   = "CUSTOM"
     groups = ["ALL_SUBNETS"]
   }
+  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${local.gke_networks[count.index].project_id}/regions/${local.gke_networks[count.index].location}/vpnGateways/${local.gke_networks[count.index].network}-to-cloudbuild"
   tunnels = {
     remote-0 = {
       bgp_peer = {
-        address = "169.254.${1+(count.index*2)}.2"
-        asn     = 65002+(count.index*2)
+        address = "169.254.${1 + (count.index * 2)}.2"
+        asn     = 65002 + (count.index * 2)
       }
-      bgp_peer_options  = null
-      bgp_session_range = "169.254.${1+(count.index*2)}.1/30"
-      ike_version       = 2
-      vpn_gateway_interface = 0
+      bgp_peer_options                = null
+      bgp_session_range               = "169.254.${1 + (count.index * 2)}.1/30"
+      ike_version                     = 2
+      vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
-      shared_secret     = ""
+      shared_secret                   = ""
     }
     remote-1 = {
       bgp_peer = {
-        address = "169.254.${2+(count.index*2)}.2"
-        asn     = 65002+(count.index*2)
+        address = "169.254.${2 + (count.index * 2)}.2"
+        asn     = 65002 + (count.index * 2)
       }
-      bgp_peer_options  = null
-      bgp_session_range = "169.254.${2+(count.index*2)}.1/30"
-      ike_version       = 2
-      vpn_gateway_interface = 1
+      bgp_peer_options                = null
+      bgp_session_range               = "169.254.${2 + (count.index * 2)}.1/30"
+      ike_version                     = 2
+      vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
-      shared_secret     = ""
+      shared_secret                   = ""
     }
   }
 }
@@ -139,43 +138,39 @@ module "vpn_ha-2" {
   version    = "~> 1.3.0"
   project_id = local.gke_networks[count.index].project_id
   region     = local.gke_networks[count.index].location
-  network    = local.gke_networks[count.index].network 
+  network    = local.gke_networks[count.index].network
   name       = "${local.gke_networks[count.index].network}-to-cloudbuild"
-  router_asn = 65002+(count.index*2)
+  router_asn = 65002 + (count.index * 2)
   router_advertise_config = {
     ip_ranges = local.gke_networks[count.index].control_plane_cidrs
-    # {
-    #   "172.16.0.0/28" = "GKE Control Plane"
-    # }
-    mode   = "CUSTOM"
-    groups = ["ALL_SUBNETS"]
+    mode      = "CUSTOM"
+    groups    = ["ALL_SUBNETS"]
   }
   peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.project_id}/regions/${var.location}/vpnGateways/cloudbuild-to-${local.gke_networks[count.index].network}"
-  #peer_gcp_gateway = module.vpn_ha-1[count.index].self_link
   tunnels = {
     remote-0 = {
       bgp_peer = {
-        address = "169.254.${1+(count.index*2)}.1"
-        asn     = 65001+(count.index*2)
+        address = "169.254.${1 + (count.index * 2)}.1"
+        asn     = 65001 + (count.index * 2)
       }
-      bgp_peer_options  = null
-      bgp_session_range = "169.254.${1+(count.index*2)}.2/30"
-      ike_version       = 2
-      vpn_gateway_interface = 0
+      bgp_peer_options                = null
+      bgp_session_range               = "169.254.${1 + (count.index * 2)}.2/30"
+      ike_version                     = 2
+      vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
-      shared_secret     = module.vpn_ha-1[count.index].random_secret
+      shared_secret                   = module.vpn_ha-1[count.index].random_secret
     }
     remote-1 = {
       bgp_peer = {
-        address = "169.254.${2+(count.index*2)}.1"
-        asn     = 65001+(count.index*2)
+        address = "169.254.${2 + (count.index * 2)}.1"
+        asn     = 65001 + (count.index * 2)
       }
-      bgp_peer_options  = null
-      bgp_session_range = "169.254.${2+(count.index*2)}.2/30"
-      ike_version       = 2
-      vpn_gateway_interface = 1
+      bgp_peer_options                = null
+      bgp_session_range               = "169.254.${2 + (count.index * 2)}.2/30"
+      ike_version                     = 2
+      vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
-      shared_secret     = module.vpn_ha-1[count.index].random_secret
+      shared_secret                   = module.vpn_ha-1[count.index].random_secret
     }
   }
 }

@@ -21,10 +21,8 @@ module "example" {
   primary_location = var.primary_location
   deploy_branch_clusters = {
     dev = {
-      cluster               = var.gke_cluster_names["dev"]
-      #cluster               = module.gke_cluster["dev"].name,
-      network               = var.gke_vpc_names["dev"]
-      #network               = module.vpc["dev"].network_name
+      cluster               = var.gke_cluster_names["dev"] #cluster = module.gke_cluster["dev"].name,
+      network               = var.gke_vpc_names["dev"]     #network = module.vpc["dev"].network_name
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/build-attestor"]
@@ -32,10 +30,8 @@ module "example" {
       next_env              = "qa"
     },
     qa = {
-      cluster               = var.gke_cluster_names["qa"]
-      #cluster               = module.gke_cluster["qa"].name,
-      network               = var.gke_vpc_names["qa"]
-      #network               = module.vpc["qa"].network_name
+      cluster               = var.gke_cluster_names["qa"] #cluster = module.gke_cluster["qa"].name,
+      network               = var.gke_vpc_names["qa"]     #network = module.vpc["qa"].network_name
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
@@ -43,10 +39,8 @@ module "example" {
       next_env              = "prod"
     },
     prod = {
-      cluster               = var.gke_cluster_names["prod"]
-      #cluster               = module.gke_cluster["prod"].name,
-      network               = var.gke_vpc_names["prod"]
-      #network               = module.vpc["prod"].network_name
+      cluster               = var.gke_cluster_names["prod"] #cluster = module.gke_cluster["prod"].name,
+      network               = var.gke_vpc_names["prod"]     #network = module.vpc["prod"].network_name
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]

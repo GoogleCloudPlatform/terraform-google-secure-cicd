@@ -33,7 +33,7 @@ resource "google_kms_key_ring" "keyring" {
 
 module "attestors" {
   # temporarily refer to PR for provider version compatibility
-  source   = "github.com/terraform-google-modules/terraform-google-kubernetes-engine//modules/binary-authorization?ref=binauthz-services"
+  source = "github.com/terraform-google-modules/terraform-google-kubernetes-engine//modules/binary-authorization?ref=binauthz-services"
   #version  = "~> 17.3"
   for_each = toset(var.attestor_names_prefix)
 

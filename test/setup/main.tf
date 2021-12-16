@@ -59,11 +59,11 @@ module "project" {
 }
 
 locals {
-  envs = ["dev", "qa", "prod"]
+  envs             = ["dev", "qa", "prod"]
   primary_location = "us-central1"
   ip_increment = {
-    "dev" = 1,
-    "qa" = 2,
+    "dev"  = 1,
+    "qa"   = 2,
     "prod" = 3
   }
 }
@@ -133,12 +133,13 @@ module "vpc" {
 }
 
 data "google_compute_global_address" "worker_range" {
-  name          = "worker-pool-range"
-  project       = module.project.project_id
+  name    = "worker-pool-range"
+  project = module.project.project_id
 }
 
 resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
   for_each = toset(local.envs)
+
   project = module.gke_project[each.value].project_id
   peering = module.gke_cluster[each.value].peering_name
   network = module.vpc[each.value].network_name
@@ -155,7 +156,7 @@ module "gke_cluster" {
   name                        = "${each.value}-private-cluster"
   regional                    = true
   region                      = local.primary_location
-  zones                      = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = module.vpc[each.value].network_name
   subnetwork                  = module.vpc[each.value].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
@@ -167,7 +168,7 @@ module "gke_cluster" {
   enable_private_nodes        = true
   master_ipv4_cidr_block      = "172.16.${local.ip_increment[each.value]}.0/28"
 
-  remove_default_node_pool  = true
+  remove_default_node_pool = true
 
   node_pools = [
     {
