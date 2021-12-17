@@ -34,7 +34,7 @@ substitutions:
 options:
   substitution_option: 'ALLOW_LOOSE'
   pool:
-    name: $_CLOUDBUILD_PRIVATE_POOL  
+    name: $_CLOUDBUILD_PRIVATE_POOL
 artifacts:
   objects:
     location: gs://$_CACHE_BUCKET_NAME/artifacts
@@ -73,7 +73,7 @@ steps:
       ./mvnw validate
 
       skaffold config set --global local-cluster false
-      skaffold build --default-repo=${_GAR_REPO_URI} --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json 
+      skaffold build --default-repo=${_GAR_REPO_URI} --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json
       sed -i "s|:latest||g" /artifacts/build-artifacts.json # remove the "latest" tag (complicates things later)
       cp /artifacts/build-artifacts.json ./build-artifacts.json # allow artifact copy mechanism to capture file (see 'artifacts' above)
       while read p; do
@@ -142,7 +142,7 @@ steps:
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
-  waitFor: 
+  waitFor:
     - 'build-images'
 
 ### Binary Authorization
@@ -210,7 +210,7 @@ steps:
       git -C /workspace/$_MANIFEST_WET_REPO checkout $_WET_BRANCH_NAME
       git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch does not yet exist"
       git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase || echo "$_WET_BRANCH_NAME branch does not yet exist"
-      
+
       git -C /workspace/$_MANIFEST_WET_REPO merge master
       mkdir -p /workspace/$_MANIFEST_WET_REPO/manifests
 
@@ -220,7 +220,7 @@ steps:
 
       # Go into wet repo and commit changes
       cd /workspace/$_MANIFEST_WET_REPO
-      
+
       # git branch $_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch already exists"
       # git checkout $_WET_BRANCH_NAME
       git add .

@@ -91,7 +91,7 @@ steps:
 
 
 
-  tags:
+tags:
 - 'ci'
 - 'integration'
 - 'cd'
