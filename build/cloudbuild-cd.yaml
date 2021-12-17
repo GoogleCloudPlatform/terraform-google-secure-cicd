@@ -78,7 +78,7 @@ steps:
           echo "Checking $$ENDPOINT"
 
           docker run owasp/zap2docker-stable zap-cli quick-scan --self-contained --start-options '-config api.disablekey=true' http://$$ENDPOINT
-          
+
           INDEX=$${INDEX}+1
       done
   waitFor:

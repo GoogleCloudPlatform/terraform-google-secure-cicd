@@ -52,17 +52,17 @@ steps:
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=init go test -v -run TestPrivateClusterCICDExample ./... -p 1']
 - id: go-apply-private-cluster-example
   waitFor:
-    - go-init-private-cluster-example
+    - go-init-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=apply go test -v -run TestPrivateClusterCICDExample ./... -p 1 -timeout 60m']
-- id: go-verify-private-cluster-example
+- id: go-verify-private-cluster-cicd-example
   waitFor:
-    - go-apply-private-cluster-example
+    - go-apply-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=verify go test -v -run TestPrivateClusterCICDExample ./... -p 1']
-- id: go-destroy-private-cluster-example
+- id: go-destroy-private-cluster-cicd-example
   waitFor:
-    - go-verify-private-cluster-example
+    - go-verify-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestPrivateClusterCICDExample ./... -p 1 -timeout 60m']
 
@@ -87,9 +87,6 @@ steps:
     - go-verify-gke-cloudbuild-private-pool-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1 -timeout 60m']
-
-
-
 
 tags:
 - 'ci'
