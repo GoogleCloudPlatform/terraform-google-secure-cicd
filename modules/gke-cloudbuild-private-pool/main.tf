@@ -45,6 +45,7 @@ resource "google_compute_global_address" "worker_range" {
   project       = var.project_id
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
+  address       = var.worker_address
   prefix_length = 16
   network       = google_compute_network.private_pool_vpc.id
 }

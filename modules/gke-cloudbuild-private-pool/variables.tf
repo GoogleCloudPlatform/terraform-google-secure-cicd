@@ -25,6 +25,11 @@ variable "private_pool_vpc_name" {
   default     = "cloudbuild-private-pool-vpc"
 }
 
+variable "worker_address" {
+  type        = string
+  description = "Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix, as it must be /16"
+}
+
 variable "worker_pool_name" {
   type        = string
   description = "Name of Cloud Build Worker Pool"

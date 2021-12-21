@@ -197,7 +197,7 @@ module "gke_cluster" {
       display_name = "VPC"
     },
     {
-      cidr_block   = "${data.google_compute_global_address.worker_range.address}/16"
+      cidr_block   = "10.37.0.0/16"
       display_name = "CLOUDBUILD"
     }
   ]
