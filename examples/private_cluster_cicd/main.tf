@@ -17,10 +17,10 @@
 module "ci_pipeline" {
   source                  = "../../modules/secure-ci"
   project_id              = var.project_id
-  app_source_repo         = "app-source"
-  manifest_dry_repo       = "app-dry-manifests"
-  manifest_wet_repo       = "app-wet-manifests"
-  gar_repo_name_suffix    = "app-image-repo"
+  app_source_repo         = "app-source-pc"
+  manifest_dry_repo       = "app-dry-manifests-pc"
+  manifest_wet_repo       = "app-wet-manifests-pc"
+  gar_repo_name_suffix    = "app-image-repo-pc"
   primary_location        = var.primary_location
   attestor_names_prefix   = ["build", "security", "quality"]
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
@@ -36,7 +36,7 @@ module "cd_pipeline" {
   primary_location = var.primary_location
 
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
-  manifest_wet_repo       = "app-wet-manifests"
+  manifest_wet_repo       = "app-wet-manifests-pc"
   deploy_branch_clusters  = var.deploy_branch_clusters
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
   cache_bucket_name       = module.ci_pipeline.cache_bucket_name
