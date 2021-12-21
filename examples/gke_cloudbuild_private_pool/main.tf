@@ -19,6 +19,7 @@ module "cloudbuild_private_pool" {
 
   project_id             = var.project_id
   location               = var.primary_location
+  private_pool_vpc_name  = "gke-private-pool-example-vpc"
   deploy_branch_clusters = var.deploy_branch_clusters
   worker_address         = "10.37.0.0"
 }

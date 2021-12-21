@@ -22,7 +22,7 @@ variable "project_id" {
 variable "private_pool_vpc_name" {
   type        = string
   description = "Set the name of the private pool VPC"
-  default     = "cloudbuild-private-pool-vpc"
+  default     = "cloudbuild-vpc"
 }
 
 variable "worker_address" {

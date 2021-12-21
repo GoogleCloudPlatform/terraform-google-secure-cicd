@@ -51,6 +51,8 @@ module "cloudbuild_private_pool" {
 
   project_id             = var.project_id
   location               = var.primary_location
+  private_pool_vpc_name  = "cloudbuild-private-cluster-cicd-example-vpc"
+  worker_pool_name       = "private-cluster-example-workerpool"
   deploy_branch_clusters = var.deploy_branch_clusters
   machine_type           = "e2-highcpu-32"
   worker_address         = "10.37.0.0"
