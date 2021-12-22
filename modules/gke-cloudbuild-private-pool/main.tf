@@ -65,6 +65,9 @@ resource "google_compute_network_peering_routes_config" "service_networking_peer
   export_custom_routes = true
   import_custom_routes = true
 
+  depends_on = [
+    google_service_networking_connection.worker_pool_connection
+  ]
 }
 
 # Cloud Build Worker Pool
