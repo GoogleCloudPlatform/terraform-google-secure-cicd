@@ -36,6 +36,12 @@ variable "worker_pool_name" {
   default     = "cloudbuild-private-worker-pool"
 }
 
+variable "vpn_router_name_prefix" {
+  type        = string
+  description = "Prefix for HA VPN router names"
+  default     = ""
+}
+
 variable "location" {
   type        = string
   description = "Region for Cloud Build worker pool"

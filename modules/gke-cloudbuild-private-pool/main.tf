@@ -95,6 +95,8 @@ locals {
       control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
     }
   ])
+
+  vpn_router_name_prefix = var.vpn_router_name_prefix == "" ? "" : "${var.vpn_router_name_prefix}-"
 }
 
 data "google_container_cluster" "cluster" {
@@ -113,7 +115,7 @@ module "vpn_ha-1" {
   project_id = var.project_id
   region     = var.location
   network    = google_compute_network.private_pool_vpc.self_link
-  name       = "cloudbuild-to-${local.gke_networks[count.index].network}"
+  name       = "${local.vpn_router_name_prefix}cloudbuild-to-${local.gke_networks[count.index].network}"
   router_asn = 65001 + (count.index * 2)
   router_advertise_config = {
     ip_ranges = {
@@ -159,7 +161,7 @@ module "vpn_ha-2" {
   project_id = local.gke_networks[count.index].project_id
   region     = local.gke_networks[count.index].location
   network    = local.gke_networks[count.index].network
-  name       = "${local.gke_networks[count.index].network}-to-cloudbuild"
+  name       = "${local.vpn_router_name_prefix}${local.gke_networks[count.index].network}-to-cloudbuild"
   router_asn = 65002 + (count.index * 2)
   router_advertise_config = {
     ip_ranges = local.gke_networks[count.index].control_plane_cidrs
