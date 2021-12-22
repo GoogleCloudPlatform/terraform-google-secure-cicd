@@ -68,6 +68,12 @@ variable "wet_branch_name" {
   default     = "dev"
 }
 
+variable "cache_bucket_name" {
+  type        = string
+  description = "Name of cloudbuild artifact and cache GCS bucket"
+  default     = ""
+}
+
 variable "gar_repo_name_suffix" {
   type        = string
   description = "Docker artifact regitery repo to store app build images"

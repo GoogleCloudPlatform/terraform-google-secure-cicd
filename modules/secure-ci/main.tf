@@ -16,6 +16,7 @@
 
 locals {
   gar_name = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
+  cache_bucket_name = var.cache_bucket_name == "" ? "${var.project_id}_cloudbuild" : var.cache_bucket_name
 }
 
 resource "google_sourcerepo_repository" "repos" {
@@ -26,7 +27,7 @@ resource "google_sourcerepo_repository" "repos" {
 
 resource "google_storage_bucket" "cache_bucket" {
   project                     = var.project_id
-  name                        = "${var.project_id}_cloudbuild"
+  name                        = local.cache_bucket_name
   location                    = var.primary_location
   uniform_bucket_level_access = true
   force_destroy               = true

@@ -21,6 +21,7 @@ module "ci_pipeline" {
   manifest_dry_repo       = "app-dry-manifests-pc"
   manifest_wet_repo       = "app-wet-manifests-pc"
   gar_repo_name_suffix    = "app-image-repo-pc"
+  cache_bucket_name       = "private_cluster_cloudbuild"
   primary_location        = var.primary_location
   attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
