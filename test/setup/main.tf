@@ -113,13 +113,13 @@ module "vpc" {
 
   subnets = [
     {
-      subnet_name   = "gke-subnet"
+      subnet_name   = "gke-subnet-private"
       subnet_ip     = "10.0.0.0/17"
       subnet_region = local.primary_location
     },
   ]
   secondary_ranges = {
-    gke-subnet = [
+    gke-subnet-private = [
       {
         range_name    = "us-central1-01-gke-01-pods"
         ip_cidr_range = "192.168.0.0/18"

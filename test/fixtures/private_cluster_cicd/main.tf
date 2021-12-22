@@ -25,8 +25,8 @@ module "example" {
       network               = var.gke_vpc_names["dev"]     #network = module.vpc["dev"].network_name
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
-      required_attestations = ["projects/${var.project_id}/attestors/build-attestor"]
-      env_attestation       = "projects/${var.project_id}/attestors/security-attestor"
+      required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
+      env_attestation       = "projects/${var.project_id}/attestors/security-pc-attestor"
       next_env              = "qa"
     },
     qa = {
@@ -34,8 +34,8 @@ module "example" {
       network               = var.gke_vpc_names["qa"]     #network = module.vpc["qa"].network_name
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
-      required_attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-      env_attestation       = "projects/${var.project_id}/attestors/quality-attestor"
+      required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
+      env_attestation       = "projects/${var.project_id}/attestors/quality-pc-attestor"
       next_env              = "prod"
     },
     prod = {
@@ -43,7 +43,7 @@ module "example" {
       network               = var.gke_vpc_names["prod"]     #network = module.vpc["prod"].network_name
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
-      required_attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      required_attestations = ["projects/${var.project_id}/attestors/quality-pc-attestor", "projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = ""
       next_env              = ""
     },

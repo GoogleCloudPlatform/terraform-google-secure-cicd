@@ -22,7 +22,7 @@ module "ci_pipeline" {
   manifest_wet_repo       = "app-wet-manifests-pc"
   gar_repo_name_suffix    = "app-image-repo-pc"
   primary_location        = var.primary_location
-  attestor_names_prefix   = ["build", "security", "quality"]
+  attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
   runner_build_folder     = "../../../examples/private_cluster_cicd/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
