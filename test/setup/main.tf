@@ -197,7 +197,7 @@ module "gke_cluster" {
       display_name = "VPC"
     },
     {
-      cidr_block   = "10.37.0.0/16"
+      cidr_block   = "10.39.0.0/16"
       display_name = "CLOUDBUILD"
     }
   ]
