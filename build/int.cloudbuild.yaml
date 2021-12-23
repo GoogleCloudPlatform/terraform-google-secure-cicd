@@ -48,6 +48,7 @@ steps:
 - id: go-init-private-cluster-cicd-example
   waitFor:
     - prepare
+    - go-verify-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=init go test -v -run TestPrivateClusterCICDExample ./... -p 1']
 - id: go-apply-private-cluster-cicd-example
