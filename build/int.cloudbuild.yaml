@@ -70,6 +70,7 @@ steps:
 - id: go-init-gke-cloudbuild-private-pool-example
   waitFor:
     - prepare
+    - go-destroy-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=init go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1']
 - id: go-apply-gke-cloudbuild-private-pool-example
