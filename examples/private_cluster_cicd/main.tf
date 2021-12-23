@@ -57,5 +57,6 @@ module "cloudbuild_private_pool" {
   deploy_branch_clusters = var.deploy_branch_clusters
   machine_type           = "e2-highcpu-32"
   worker_address         = "10.37.0.0"
+  worker_range_name      = "private-cluster-example-worker-range"
   vpn_router_name_prefix = "pc-ex"
 }

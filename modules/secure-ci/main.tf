@@ -15,7 +15,7 @@
  */
 
 locals {
-  gar_name = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
+  gar_name          = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
   cache_bucket_name = var.cache_bucket_name == "" ? "${var.project_id}_cloudbuild" : var.cache_bucket_name
 }
 
@@ -105,4 +105,3 @@ resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" 
   role       = "roles/artifactregistry.admin"
   member     = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
-

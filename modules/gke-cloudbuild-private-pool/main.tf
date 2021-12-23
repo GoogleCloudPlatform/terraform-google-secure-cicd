@@ -41,7 +41,7 @@ resource "google_compute_network" "private_pool_vpc" {
 }
 
 resource "google_compute_global_address" "worker_range" {
-  name          = "worker-pool-range"
+  name          = var.worker_range_name
   project       = var.project_id
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
