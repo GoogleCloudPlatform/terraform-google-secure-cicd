@@ -47,7 +47,7 @@ func TestPrivateClusterCICDExample(t *testing.T) {
 		// projectID := privateClusterCICDT.GetStringOutput("project_id")
 		// gkeProjectIDs := terraform.OutputList(t, privateClusterCICDT.GetTFOptions(), "gke_project_ids")
 
-		
+	
 
 	})
 	// call the test function to execute the integration test
