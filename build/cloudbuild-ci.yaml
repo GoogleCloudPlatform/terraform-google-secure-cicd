@@ -127,8 +127,6 @@ steps:
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
 
-        #gcloud artifacts docker images describe $${IMAGE} --show-package-vulnerability --format="value(discoverySummary.discovery.discovery.analysisStatus)"
-
         # Check CVEs against policy
         /signer \
         -v=10 \
