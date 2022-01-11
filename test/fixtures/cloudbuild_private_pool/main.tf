@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-module "example" {
-  source = "../../../examples/gke_cloudbuild_private_pool"
-
-  project_id       = var.project_id
-  primary_location = var.primary_location
+locals {
   deploy_branch_clusters = {
     dev = {
       cluster               = "dev-private-cluster",
@@ -48,4 +44,27 @@ module "example" {
       next_env              = ""
     },
   }
+}
+
+data "google_container_cluster" "cluster" {
+  for_each = local.deploy_branch_clusters
+  project  = each.value.project_id
+  location = each.value.location
+  name     = each.value.cluster
+}
+
+module "example" {
+  source = "../../../examples/gke_cloudbuild_private_pool"
+
+  project_id       = var.project_id
+  primary_location = var.primary_location
+  
+  gke_networks = distinct([
+    for env in local.deploy_branch_clusters : {
+      network             = env.network
+      location            = env.location
+      project_id          = env.project_id
+      control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
+    }
+  ])
 }

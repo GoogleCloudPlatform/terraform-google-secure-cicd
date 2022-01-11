@@ -20,7 +20,7 @@ module "cloudbuild_private_pool" {
   project_id             = var.project_id
   location               = var.primary_location
   private_pool_vpc_name  = "gke-private-pool-example-vpc"
-  deploy_branch_clusters = var.deploy_branch_clusters
+  gke_networks           = var.gke_networks
   worker_address         = "10.37.0.0"
   worker_range_name      = "gke-private-pool-worker-range"
   vpn_router_name_prefix = "cbpp-ex"

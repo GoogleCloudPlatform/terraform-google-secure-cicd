@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+# Secure-CI
 module "ci_pipeline" {
   source                  = "../../modules/secure-ci"
   project_id              = var.project_id
@@ -31,6 +32,7 @@ module "ci_pipeline" {
   cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
 }
 
+# Secure-CD
 module "cd_pipeline" {
   source           = "../../modules/secure-cd"
   project_id       = var.project_id
@@ -47,6 +49,14 @@ module "cd_pipeline" {
   ]
 }
 
+# Cloud Build Private Pool
+data "google_container_cluster" "cluster" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  location = each.value.location
+  name     = each.value.cluster
+}
+
 module "cloudbuild_private_pool" {
   source = "../../modules/gke-cloudbuild-private-pool"
 
@@ -54,9 +64,16 @@ module "cloudbuild_private_pool" {
   location               = var.primary_location
   private_pool_vpc_name  = "cloudbuild-private-cluster-cicd-example-vpc"
   worker_pool_name       = "private-cluster-example-workerpool"
-  deploy_branch_clusters = var.deploy_branch_clusters
   machine_type           = "e2-highcpu-32"
   worker_address         = "10.39.0.0"
   worker_range_name      = "private-cluster-example-worker-range"
   vpn_router_name_prefix = "pc-ex"
+  gke_networks = distinct([
+    for env in var.deploy_branch_clusters : {
+      network             = env.network
+      location            = env.location
+      project_id          = env.project_id
+      control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
+    }
+  ])
 }
