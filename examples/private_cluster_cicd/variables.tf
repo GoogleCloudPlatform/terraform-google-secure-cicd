@@ -19,11 +19,6 @@ variable "project_id" {
   description = "Project ID for CICD Pipeline Project"
 }
 
-variable "primary_location" {
-  type        = string
-  description = "Default region for resources"
-}
-
 variable "deploy_branch_clusters" {
   type = map(object({
     cluster               = string

@@ -18,7 +18,6 @@ module "example" {
   source = "../../../examples/private_cluster_cicd"
 
   project_id       = var.project_id
-  primary_location = var.primary_location
   deploy_branch_clusters = {
     dev = {
       cluster               = var.gke_cluster_names["dev"] #cluster = module.gke_cluster["dev"].name,

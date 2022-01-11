@@ -23,7 +23,7 @@ module "ci_pipeline" {
   manifest_wet_repo       = "app-wet-manifests-pc"
   gar_repo_name_suffix    = "app-image-repo-pc"
   cache_bucket_name       = "private_cluster_cloudbuild"
-  primary_location        = var.primary_location
+  primary_location        = "us-central1"
   attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
   runner_build_folder     = "../../../examples/private_cluster_cicd/cloud-build-builder"
@@ -36,7 +36,7 @@ module "ci_pipeline" {
 module "cd_pipeline" {
   source           = "../../modules/secure-cd"
   project_id       = var.project_id
-  primary_location = var.primary_location
+  primary_location = "us-central1"
 
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
   manifest_wet_repo       = "app-wet-manifests-pc"
@@ -61,7 +61,7 @@ module "cloudbuild_private_pool" {
   source = "../../modules/gke-cloudbuild-private-pool"
 
   project_id             = var.project_id
-  location               = var.primary_location
+  location               = "us-central1"
   private_pool_vpc_name  = "cloudbuild-private-cluster-cicd-example-vpc"
   worker_pool_name       = "private-cluster-example-workerpool"
   machine_type           = "e2-highcpu-32"
