@@ -22,10 +22,18 @@ resource "google_project_service" "servicenetworking" {
 }
 
 resource "google_compute_network" "private_pool_vpc" {
+  count = var.create_cloudbuild_network ? 1 : 0
+
   name                    = var.private_pool_vpc_name
   project                 = var.project_id
   auto_create_subnetworks = false
   depends_on              = [google_project_service.servicenetworking]
+}
+
+data "google_compute_network" "workerpool_vpc" {
+  count   = var.create_cloudbuild_network ? 0 : 1
+  name    = var.private_pool_vpc_name
+  project = var.project_id
 }
 
 resource "google_compute_global_address" "worker_range" {
@@ -35,11 +43,11 @@ resource "google_compute_global_address" "worker_range" {
   address_type  = "INTERNAL"
   address       = var.worker_address
   prefix_length = 16
-  network       = google_compute_network.private_pool_vpc.id
+  network       = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc.id : data.google_compute_network.workerpool_vpc.id
 }
 
 resource "google_service_networking_connection" "worker_pool_connection" {
-  network                 = google_compute_network.private_pool_vpc.id
+  network                 = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc.id : data.google_compute_network.workerpool_vpc.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.worker_range.name]
   depends_on              = [google_project_service.servicenetworking]
@@ -48,7 +56,7 @@ resource "google_service_networking_connection" "worker_pool_connection" {
 resource "google_compute_network_peering_routes_config" "service_networking_peering_config" {
   project = var.project_id
   peering = "servicenetworking-googleapis-com"
-  network = google_compute_network.private_pool_vpc.name
+  network = var.private_pool_vpc_name
 
   export_custom_routes = true
   import_custom_routes = true
@@ -69,7 +77,7 @@ resource "google_cloudbuild_worker_pool" "pool" {
     no_external_ip = var.worker_pool_no_external_ip
   }
   network_config {
-    peered_network = google_compute_network.private_pool_vpc.id
+    peered_network = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc.id : data.google_compute_network.workerpool_vpc.id
   }
   depends_on = [google_service_networking_connection.worker_pool_connection]
 }

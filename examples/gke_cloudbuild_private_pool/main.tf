@@ -17,11 +17,12 @@
 module "cloudbuild_private_pool" {
   source = "../../modules/cloudbuild-private-pool"
 
-  project_id             = var.project_id
-  location               = var.primary_location
-  private_pool_vpc_name  = "gke-private-pool-example-vpc"
-  worker_address         = "10.37.0.0"
-  worker_range_name      = "gke-private-pool-worker-range"
+  project_id                = var.project_id
+  location                  = var.primary_location
+  create_cloudbuild_network = true
+  private_pool_vpc_name     = "gke-private-pool-example-vpc"
+  worker_address            = "10.37.0.0"
+  worker_range_name         = "gke-private-pool-worker-range"
 }
 
 module "gke_cloudbuild_vpn_0" {

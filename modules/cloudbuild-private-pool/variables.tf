@@ -19,6 +19,11 @@ variable "project_id" {
   description = "Project ID for Cloud Build Private Pool VPC"
 }
 
+variable "create_cloudbuild_network" {
+  type = bool
+  description = "Whether to create a VPC for the Cloud Build Worker Pool. Set to false if providing an existing VPC name in 'private_pool_vpc_name' "
+}
+
 variable "private_pool_vpc_name" {
   type        = string
   description = "Set the name of the private pool VPC"
