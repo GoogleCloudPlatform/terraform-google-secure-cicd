@@ -28,6 +28,7 @@ variable "private_pool_vpc_name" {
 variable "worker_address" {
   type        = string
   description = "Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix, as it must be /16"
+  default     = "10.37.0.0"
 }
 
 variable "worker_pool_name" {
@@ -42,10 +43,10 @@ variable "worker_range_name" {
   default     = "worker-pool-range"
 }
 
-variable "vpn_router_name_prefix" {
-  type        = string
-  description = "Prefix for HA VPN router names"
-  default     = ""
+variable "worker_pool_no_external_ip" {
+  type        = bool
+  description = "Whether to disable external IP on the Cloud Build Worker Pool"
+  default     = true
 }
 
 variable "location" {
@@ -60,26 +61,3 @@ variable "machine_type" {
   default     = "e2-standard-4"
 }
 
-# variable "deploy_branch_clusters" {
-#   type = map(object({
-#     cluster               = string
-#     network               = string
-#     project_id            = string
-#     location              = string
-#     required_attestations = list(string)
-#     env_attestation       = string
-#     next_env              = string
-#   }))
-#   description = "mapping of branch names to cluster deployments"
-#   default     = {}
-# }
-
-variable "gke_networks" {
-  type = list(object({
-    control_plane_cidrs = map(string)
-    location            = string
-    network             = string
-    project_id          = string
-  }))
-  description = "list of GKE cluster networks in which to create VPN connections"
-}
