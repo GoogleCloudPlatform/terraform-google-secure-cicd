@@ -19,16 +19,12 @@ variable "project_id" {
   description = "Project ID for CICD Pipeline Project"
 }
 
-variable "deploy_branch_clusters" {
-  type = map(object({
-    cluster               = string
-    network               = string
-    project_id            = string
-    location              = string
-    required_attestations = list(string)
-    env_attestation       = string
-    next_env              = string
+variable "gke_networks" {
+  type = list(object({
+    control_plane_cidrs = map(string)
+    location            = string
+    network             = string
+    project_id          = string
   }))
-  description = "mapping of branch names to cluster deployments"
-  default     = {}
+  description = "list of GKE cluster networks in which to create VPN connections"
 }

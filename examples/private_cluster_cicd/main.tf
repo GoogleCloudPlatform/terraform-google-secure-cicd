@@ -50,30 +50,76 @@ module "cd_pipeline" {
 }
 
 # Cloud Build Private Pool
-data "google_container_cluster" "cluster" {
-  for_each = var.deploy_branch_clusters
-  project  = each.value.project_id
-  location = each.value.location
-  name     = each.value.cluster
-}
-
 module "cloudbuild_private_pool" {
-  source = "../../modules/gke-cloudbuild-private-pool"
+  source = "../../modules/cloudbuild-private-pool"
 
   project_id             = var.project_id
   location               = "us-central1"
-  private_pool_vpc_name  = "cloudbuild-private-cluster-cicd-example-vpc"
+  private_pool_vpc_name  = "gke-private-pool-example-vpc"
   worker_pool_name       = "private-cluster-example-workerpool"
   machine_type           = "e2-highcpu-32"
+
   worker_address         = "10.39.0.0"
   worker_range_name      = "private-cluster-example-worker-range"
-  vpn_router_name_prefix = "pc-ex"
-  gke_networks = distinct([
-    for env in var.deploy_branch_clusters : {
-      network             = env.network
-      location            = env.location
-      project_id          = env.project_id
-      control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
-    }
-  ])
+}
+
+# Cloud Build Workerpool <-> GKE HA VPNs
+module "gke_cloudbuild_vpn_0" {
+  source   = "../../modules/workerpool-gke-ha-vpn"
+
+  project_id = var.project_id
+  location   = var.primary_location
+
+  gke_project             = var.gke_networks[0].project_id
+  gke_network             = var.gke_networks[0].network
+  gke_location            = var.gke_networks[0].location
+  gke_control_plane_cidrs = var.gke_networks[0].control_plane_cidrs
+
+  workerpool_range = module.cloudbuild_private_pool.workerpool_range
+  gateway_1_asn    = 65001
+  gateway_2_asn    = 65002
+  bgp_range_1      = "169.254.1.0/30"
+  bgp_range_2      = "169.254.2.0/30"
+
+  vpn_router_name_prefix = "cbpp-ex"
+}
+
+module "gke_cloudbuild_vpn_1" {
+  source   = "../../modules/workerpool-gke-ha-vpn"
+
+  project_id = var.project_id
+  location   = var.primary_location
+
+  gke_project             = var.gke_networks[1].project_id
+  gke_network             = var.gke_networks[1].network
+  gke_location            = var.gke_networks[1].location
+  gke_control_plane_cidrs = var.gke_networks[1].control_plane_cidrs
+
+  workerpool_range = module.cloudbuild_private_pool.workerpool_range
+  gateway_1_asn    = 65003
+  gateway_2_asn    = 65004
+  bgp_range_1      = "169.254.3.0/30"
+  bgp_range_2      = "169.254.4.0/30"
+
+  vpn_router_name_prefix = "cbpp-ex"
+}
+
+module "gke_cloudbuild_vpn_2" {
+  source   = "../../modules/workerpool-gke-ha-vpn"
+
+  project_id = var.project_id
+  location   = var.primary_location
+
+  gke_project             = var.gke_networks[2].project_id
+  gke_network             = var.gke_networks[2].network
+  gke_location            = var.gke_networks[2].location
+  gke_control_plane_cidrs = var.gke_networks[2].control_plane_cidrs
+
+  workerpool_range = module.cloudbuild_private_pool.workerpool_range
+  gateway_1_asn    = 65005
+  gateway_2_asn    = 65006
+  bgp_range_1      = "169.254.5.0/30"
+  bgp_range_2      = "169.254.6.0/30"
+
+  vpn_router_name_prefix = "cbpp-ex"
 }

@@ -15,13 +15,71 @@
  */
 
 module "cloudbuild_private_pool" {
-  source = "../../modules/gke-cloudbuild-private-pool"
+  source = "../../modules/cloudbuild-private-pool"
 
   project_id             = var.project_id
   location               = var.primary_location
   private_pool_vpc_name  = "gke-private-pool-example-vpc"
-  gke_networks           = var.gke_networks
   worker_address         = "10.37.0.0"
   worker_range_name      = "gke-private-pool-worker-range"
+}
+
+module "gke_cloudbuild_vpn_0" {
+  source   = "../../modules/workerpool-gke-ha-vpn"
+
+  project_id = var.project_id
+  location   = var.primary_location
+
+  gke_project             = var.gke_networks[0].project_id
+  gke_network             = var.gke_networks[0].network
+  gke_location            = var.gke_networks[0].location
+  gke_control_plane_cidrs = var.gke_networks[0].control_plane_cidrs
+
+  workerpool_range = module.cloudbuild_private_pool.workerpool_range
+  gateway_1_asn    = 65001
+  gateway_2_asn    = 65002
+  bgp_range_1      = "169.254.1.0/30"
+  bgp_range_2      = "169.254.2.0/30"
+
+  vpn_router_name_prefix = "cbpp-ex"
+}
+
+module "gke_cloudbuild_vpn_1" {
+  source   = "../../modules/workerpool-gke-ha-vpn"
+
+  project_id = var.project_id
+  location   = var.primary_location
+
+  gke_project             = var.gke_networks[1].project_id
+  gke_network             = var.gke_networks[1].network
+  gke_location            = var.gke_networks[1].location
+  gke_control_plane_cidrs = var.gke_networks[1].control_plane_cidrs
+
+  workerpool_range = module.cloudbuild_private_pool.workerpool_range
+  gateway_1_asn    = 65003
+  gateway_2_asn    = 65004
+  bgp_range_1      = "169.254.3.0/30"
+  bgp_range_2      = "169.254.4.0/30"
+
+  vpn_router_name_prefix = "cbpp-ex"
+}
+
+module "gke_cloudbuild_vpn_2" {
+  source   = "../../modules/workerpool-gke-ha-vpn"
+
+  project_id = var.project_id
+  location   = var.primary_location
+
+  gke_project             = var.gke_networks[2].project_id
+  gke_network             = var.gke_networks[2].network
+  gke_location            = var.gke_networks[2].location
+  gke_control_plane_cidrs = var.gke_networks[2].control_plane_cidrs
+
+  workerpool_range = module.cloudbuild_private_pool.workerpool_range
+  gateway_1_asn    = 65005
+  gateway_2_asn    = 65006
+  bgp_range_1      = "169.254.5.0/30"
+  bgp_range_2      = "169.254.6.0/30"
+
   vpn_router_name_prefix = "cbpp-ex"
 }
