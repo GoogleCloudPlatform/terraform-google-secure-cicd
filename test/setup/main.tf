@@ -132,11 +132,6 @@ module "vpc" {
   }
 }
 
-data "google_compute_global_address" "worker_range" {
-  name    = "worker-pool-range"
-  project = module.project.project_id
-}
-
 resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
   for_each = toset(local.envs)
 
