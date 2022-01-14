@@ -21,8 +21,8 @@ locals {
       network               = var.gke_vpc_names["dev"]
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
-      required_attestations = ["projects/${var.project_id}/attestors/build-attestor"]
-      env_attestation       = "projects/${var.project_id}/attestors/security-attestor"
+      required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
+      env_attestation       = "projects/${var.project_id}/attestors/security-pc-attestor"
       next_env              = "qa"
     },
     qa = {
@@ -30,8 +30,8 @@ locals {
       network               = var.gke_vpc_names["qa"]
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
-      required_attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
-      env_attestation       = "projects/${var.project_id}/attestors/quality-attestor"
+      required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
+      env_attestation       = "projects/${var.project_id}/attestors/quality-pc-attestor"
       next_env              = "prod"
     },
     prod = {
@@ -39,7 +39,7 @@ locals {
       network               = var.gke_vpc_names["prod"]
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
-      required_attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      required_attestations = ["projects/${var.project_id}/attestors/quality-pc-attestor", "projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = ""
       next_env              = ""
     },
