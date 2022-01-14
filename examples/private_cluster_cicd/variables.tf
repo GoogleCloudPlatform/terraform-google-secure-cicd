@@ -28,3 +28,16 @@ variable "gke_networks" {
   }))
   description = "list of GKE cluster networks in which to create VPN connections"
 }
+
+variable "deploy_branch_clusters" {
+  type = map(object({
+    cluster               = string
+    project_id            = string
+    location              = string
+    required_attestations = list(string)
+    env_attestation       = string
+    next_env              = string
+  }))
+  description = "mapping of branch names to cluster deployments"
+  default     = {}
+}

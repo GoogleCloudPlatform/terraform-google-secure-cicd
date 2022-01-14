@@ -20,7 +20,7 @@ variable "project_id" {
 }
 
 variable "create_cloudbuild_network" {
-  type = bool
+  type        = bool
   description = "Whether to create a VPC for the Cloud Build Worker Pool. Set to false if providing an existing VPC name in 'private_pool_vpc_name' "
 }
 

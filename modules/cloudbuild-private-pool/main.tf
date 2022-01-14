@@ -43,11 +43,11 @@ resource "google_compute_global_address" "worker_range" {
   address_type  = "INTERNAL"
   address       = var.worker_address
   prefix_length = 16
-  network       = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc.id : data.google_compute_network.workerpool_vpc.id
+  network       = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].id : data.google_compute_network.workerpool_vpc[0].id
 }
 
 resource "google_service_networking_connection" "worker_pool_connection" {
-  network                 = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc.id : data.google_compute_network.workerpool_vpc.id
+  network                 = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].id : data.google_compute_network.workerpool_vpc[0].id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.worker_range.name]
   depends_on              = [google_project_service.servicenetworking]
@@ -77,7 +77,7 @@ resource "google_cloudbuild_worker_pool" "pool" {
     no_external_ip = var.worker_pool_no_external_ip
   }
   network_config {
-    peered_network = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc.id : data.google_compute_network.workerpool_vpc.id
+    peered_network = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].id : data.google_compute_network.workerpool_vpc[0].id
   }
   depends_on = [google_service_networking_connection.worker_pool_connection]
 }

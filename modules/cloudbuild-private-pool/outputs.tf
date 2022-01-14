@@ -22,6 +22,6 @@ output "workerpool_range" {
   value = "${google_compute_global_address.worker_range.address}/${google_compute_global_address.worker_range.prefix_length}"
 }
 
-output "gke_networks" {
-  value = local.gke_networks
+output "workerpool_network" {
+  value = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].self_link : data.google_compute_network.workerpool_vpc[0].self_link
 }

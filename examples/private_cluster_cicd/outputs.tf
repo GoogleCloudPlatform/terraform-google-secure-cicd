@@ -48,7 +48,3 @@ output "source_repo_names" {
   description = "Name of the created CSR repos"
   value       = module.ci_pipeline.source_repo_names
 }
-
-output "gke_networks" {
-  value = module.cloudbuild_private_pool.gke_networks
-}

@@ -56,7 +56,8 @@ data "google_container_cluster" "cluster" {
 module "example" {
   source = "../../../examples/private_cluster_cicd"
 
-  project_id       = var.project_id
+  project_id             = var.project_id
+  deploy_branch_clusters = local.deploy_branch_clusters
   gke_networks = distinct([
     for env in local.deploy_branch_clusters : {
       network             = env.network

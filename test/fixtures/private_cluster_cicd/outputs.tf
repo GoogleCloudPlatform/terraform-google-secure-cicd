@@ -33,7 +33,3 @@ output "gke_project_ids" {
   description = "The name of the cloud build trigger for the bank of anthos repo."
   value       = values(var.gke_project_ids)
 }
-
-output "gke_networks" {
-  value = module.example.gke_networks
-}
