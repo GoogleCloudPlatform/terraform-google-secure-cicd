@@ -42,7 +42,7 @@ module "vpn_ha_1" {
         asn     = var.gateway_2_asn
       }
       bgp_peer_options                = null
-      bgp_session_range               = var.bgp_range_1 # 169.254.1.1/30
+      bgp_session_range               = "${cidrhost(var.bgp_range_1, 1)}/30" # 169.254.1.1/30
       ike_version                     = 2
       vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
@@ -54,7 +54,7 @@ module "vpn_ha_1" {
         asn     = var.gateway_2_asn
       }
       bgp_peer_options                = null
-      bgp_session_range               = var.bgp_range_2 # 169.254.2.1/30
+      bgp_session_range               = "${cidrhost(var.bgp_range_2, 1)}/30" # 169.254.2.1/30
       ike_version                     = 2
       vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
@@ -84,7 +84,7 @@ module "vpn_ha_2" {
         asn     = var.gateway_1_asn
       }
       bgp_peer_options                = null
-      bgp_session_range               = var.bgp_range_1 # 169.254.1.2/30
+      bgp_session_range               = "${cidrhost(var.bgp_range_1, 2)}/30" # 169.254.1.2/30
       ike_version                     = 2
       vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
@@ -96,7 +96,7 @@ module "vpn_ha_2" {
         asn     = var.gateway_1_asn
       }
       bgp_peer_options                = null
-      bgp_session_range               = var.bgp_range_1 # 169.254.2.2/30
+      bgp_session_range               = "${cidrhost(var.bgp_range_2, 2)}/30" # 169.254.2.2/30
       ike_version                     = 2
       vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
