@@ -47,20 +47,21 @@ func TestCloudBuildPrivatePoolExample(t *testing.T) {
 		projectID := cloudBuildPrivatePoolT.GetStringOutput("project_id")
 
 		// Worker Pool
-		workerPoolAddress := gcloud.Run(t, fmt.Sprintf("compute addresses describe worker-pool-range --global"))
-		assert.Equal("10.37.0.0", workerPoolAddress.Get("address").String(), fmt.Sprintf("Worker pool address range is 10.37.0.0"))
-		assert.Equal("INTERNAL", workerPoolAddress.Get("addressType").String(), fmt.Sprintf("Worker pool address range is type INTERNAL"))
-		assert.Equal("VPC_PEERING", workerPoolAddress.Get("purpose").String(), fmt.Sprintf("Worker pool address range is for VPC_PEERING"))
+		workerPoolAddress := gcloud.Run(t, fmt.Sprintf("compute addresses describe worker-pool-range --global --project %s", projectID))
+		assert.Equal("10.37.0.0", workerPoolAddress.Get("address").String(), "Worker pool address range is 10.37.0.0")
+		assert.Equal("INTERNAL", workerPoolAddress.Get("addressType").String(), "Worker pool address range is type INTERNAL")
+		assert.Equal("VPC_PEERING", workerPoolAddress.Get("purpose").String(), "Worker pool address range is for VPC_PEERING")
 
-		privatePoolVPC := gcloud.Run(t, fmt.Sprintf("compute networks describe gke-private-pool-example-vpc"))
+		privatePoolVPC := gcloud.Run(t, fmt.Sprintf("compute networks describe gke-private-pool-example-vpc --project %s", projectID))
+		assert.contains(privatePoolVPC.Get("peerings.network").String(), "servicenetworking")
 
-		privatePool := gcloud.Run(t, fmt.Sprintf("builds worker-pools describe cloudbuild-private-worker-pool --region=us-central1"))
-		assert.Equal("RUNNING", privatePool.Get("state").String(), fmt.Sprintf("Worker pool is RUNNING"))
+		privatePool := gcloud.Run(t, fmt.Sprintf("builds worker-pools describe cloudbuild-private-worker-pool --region=us-central1 --project %s", projectID))
+		assert.Equal("RUNNING", privatePool.Get("state").String(), "Worker pool is RUNNING")
 
 		// VPN Tunnels
 		vpnTunnels := [6]string{"cloudbuild-to-gke-private-vpc-dev-remote-0", "cloudbuild-to-gke-private-vpc-dev-remote-1", "cloudbuild-to-gke-private-vpc-prod-remote-0", "cloudbuild-to-gke-private-vpc-prod-remote-1", "cloudbuild-to-gke-private-vpc-qa-remote-0", "cloudbuild-to-gke-private-vpc-qa-remote-1"}
 		for _, tunnel := range vpnTunnels {
-			tunnelStatus := gcloud.Run(t, fmt.Sprintf("compute vpn-tunnels describe %s --region=us-central1", tunnel))
+			tunnelStatus := gcloud.Run(t, fmt.Sprintf("compute vpn-tunnels describe %s --region=us-central1 --project %s", tunnel, projectID))
 			assert.Equal("Tunnel is up and running.", tunnelStatus.Get("detailedStatus").String(), fmt.Sprintf("%s is created and running", tunnel))
 		}
 
