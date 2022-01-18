@@ -43,7 +43,7 @@ module "gke_cloudbuild_vpn_0" {
   bgp_range_1        = "169.254.1.0/30"
   bgp_range_2        = "169.254.2.0/30"
 
-  vpn_router_name_prefix = "cbpp-ex"
+  vpn_router_name_prefix = "cbpp-ex-"
 }
 
 module "gke_cloudbuild_vpn_1" {
@@ -64,7 +64,7 @@ module "gke_cloudbuild_vpn_1" {
   bgp_range_1        = "169.254.3.0/30"
   bgp_range_2        = "169.254.4.0/30"
 
-  vpn_router_name_prefix = "cbpp-ex"
+  vpn_router_name_prefix = "cbpp-ex-"
 }
 
 module "gke_cloudbuild_vpn_2" {
@@ -85,5 +85,5 @@ module "gke_cloudbuild_vpn_2" {
   bgp_range_1        = "169.254.5.0/30"
   bgp_range_2        = "169.254.6.0/30"
 
-  vpn_router_name_prefix = "cbpp-ex"
+  vpn_router_name_prefix = "cbpp-ex-"
 }

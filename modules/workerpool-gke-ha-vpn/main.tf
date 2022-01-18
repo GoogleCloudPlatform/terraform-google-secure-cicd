@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-locals {
-  vpn_router_name_prefix = var.vpn_router_name_prefix == "" ? "" : "${var.vpn_router_name_prefix}-"
-}
-
 # HA VPN
 module "vpn_ha_1" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
@@ -25,7 +21,7 @@ module "vpn_ha_1" {
   project_id = var.project_id
   region     = var.location
   network    = var.workerpool_network
-  name       = "${local.vpn_router_name_prefix}cloudbuild-to-${var.gke_network}"
+  name       = "${var.vpn_router_name_prefixx}cloudbuild-to-${var.gke_network}"
   router_asn = var.gateway_1_asn
   router_advertise_config = {
     ip_ranges = {
@@ -34,7 +30,7 @@ module "vpn_ha_1" {
     mode   = "CUSTOM"
     groups = ["ALL_SUBNETS"]
   }
-  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.gke_project}/regions/${var.gke_location}/vpnGateways/${local.vpn_router_name_prefix}${var.gke_network}-to-cloudbuild"
+  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.gke_project}/regions/${var.gke_location}/vpnGateways/${var.vpn_router_name_prefix}${var.gke_network}-to-cloudbuild"
   tunnels = {
     remote-0 = {
       bgp_peer = {
@@ -69,14 +65,14 @@ module "vpn_ha_2" {
   project_id = var.gke_project
   region     = var.gke_location
   network    = var.gke_network
-  name       = "${local.vpn_router_name_prefix}${var.gke_network}-to-cloudbuild"
+  name       = "${var.vpn_router_name_prefix}${var.gke_network}-to-cloudbuild"
   router_asn = var.gateway_2_asn
   router_advertise_config = {
     ip_ranges = var.gke_control_plane_cidrs
     mode      = "CUSTOM"
     groups    = ["ALL_SUBNETS"]
   }
-  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.project_id}/regions/${var.location}/vpnGateways/${local.vpn_router_name_prefix}cloudbuild-to-${var.gke_network}"
+  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.project_id}/regions/${var.location}/vpnGateways/${var.vpn_router_name_prefix}cloudbuild-to-${var.gke_network}"
   tunnels = {
     remote-0 = {
       bgp_peer = {
