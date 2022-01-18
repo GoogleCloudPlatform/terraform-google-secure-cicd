@@ -21,7 +21,7 @@ module "vpn_ha_1" {
   project_id = var.project_id
   region     = var.location
   network    = var.workerpool_network
-  name       = "${var.vpn_router_name_prefixx}cloudbuild-to-${var.gke_network}"
+  name       = "${var.vpn_router_name_prefix}cloudbuild-to-${var.gke_network}"
   router_asn = var.gateway_1_asn
   router_advertise_config = {
     ip_ranges = {
