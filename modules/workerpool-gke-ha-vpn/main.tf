@@ -30,7 +30,7 @@ module "vpn_ha_1" {
     mode   = "CUSTOM"
     groups = ["ALL_SUBNETS"]
   }
-  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.gke_project}/regions/${var.gke_location}/vpnGateways/${var.vpn_router_name_prefix}${var.gke_network}-to-cloudbuild"
+  peer_gcp_gateway = module.vpn_ha_2.self_link
   tunnels = {
     remote-0 = {
       bgp_peer = {
@@ -72,7 +72,7 @@ module "vpn_ha_2" {
     mode      = "CUSTOM"
     groups    = ["ALL_SUBNETS"]
   }
-  peer_gcp_gateway = "https://compute.googleapis.com/compute/v1/projects/${var.project_id}/regions/${var.location}/vpnGateways/${var.vpn_router_name_prefix}cloudbuild-to-${var.gke_network}"
+  peer_gcp_gateway = module.vpn_ha_1.self_link
   tunnels = {
     remote-0 = {
       bgp_peer = {
