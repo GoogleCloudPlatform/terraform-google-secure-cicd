@@ -22,9 +22,7 @@ import (
 	"testing"
 
 	// import the blueprints test framework modules for testing and assertions
-	// "github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	// "github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,11 +41,6 @@ func TestPrivateClusterCICDExample(t *testing.T) {
 		// invoke the gcloud module in the Blueprints test framework to run a gcloud command that will output resource properties in a JSON format
 		// the tft struct can be used to pull output variables of the TF module being invoked by this test and use the op object (a gjson struct)
 		// to parse through the JSON results and assert the values of the resource against the constants defined above
-
-		// projectID := privateClusterCICDT.GetStringOutput("project_id")
-		// gkeProjectIDs := terraform.OutputList(t, privateClusterCICDT.GetTFOptions(), "gke_project_ids")
-
-
 
 	})
 	// call the test function to execute the integration test

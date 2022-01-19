@@ -24,7 +24,6 @@ import (
 	// import the blueprints test framework modules for testing and assertions
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	// "github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,7 +52,7 @@ func TestCloudBuildPrivatePoolExample(t *testing.T) {
 		assert.Equal("VPC_PEERING", workerPoolAddress.Get("purpose").String(), "Worker pool address range is for VPC_PEERING")
 
 		privatePoolVPC := gcloud.Run(t, fmt.Sprintf("compute networks describe gke-private-pool-example-vpc --project %s", projectID))
-		assert.Contains(privatePoolVPC.Get("peerings.network").String(), "servicenetworking")
+		assert.Contains(privatePoolVPC.Get("peerings[0].network").String(), "servicenetworking")
 
 		privatePool := gcloud.Run(t, fmt.Sprintf("builds worker-pools describe cloudbuild-private-worker-pool --region=us-central1 --project %s", projectID))
 		assert.Equal("RUNNING", privatePool.Get("state").String(), "Worker pool is RUNNING")
