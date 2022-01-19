@@ -48,10 +48,10 @@ rm -r /root/.cache
 #### 3. Install gcloud
 ENV CLOUD_SDK_VERSION="368.0.0"
 ENV CLOUDSDK_INSTALL_DIR /usr/local/gcloud/
-RUN wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
-RUN tar -C /usr/local -xzf "google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
-RUN rm "google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
-ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
+RUN wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz" \
+&& tar -C /usr/local -xzf "google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz" \
+&& rm "google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
+ENV PATH $PATH:/usr/local/google-cloud-sdk/bin
 
 #### Install skaffold and other components via gcloud
 RUN gcloud components install skaffold kubectl kustomize kpt nomos beta
@@ -67,5 +67,7 @@ RUN mv ./yq /usr/local/bin
 # Print out java version
 RUN echo -e "JAVA_VERSION: $(${JAVA_HOME}/bin/java --version)"
 RUN echo -e "PYTHON: $(python --version)\nPIP: $(pip --version)"
+
+RUN gcloud --version
 
 CMD ["/bin/bash"]

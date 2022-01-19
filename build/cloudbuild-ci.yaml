@@ -47,18 +47,6 @@ steps:
 ############################### Securing Source Code ###########################
 
 # Secrets Scanner (TODO: Switch to Talisman)
-# - name: golang:1.15-buster
-#   id: test-source-secrets
-#   entrypoint: 'bash'
-#   args:
-#   - '-xe'
-#   - '-c'
-#   - |
-#     go get -u github.com/ezekg/git-hound
-#     git-hound -config policies/githound.yaml sniff > githound-output.txt
-#     cat githound-output.txt
-#   waitFor: ['-']
-
 
 ############################### Build Containers ###########################
 
