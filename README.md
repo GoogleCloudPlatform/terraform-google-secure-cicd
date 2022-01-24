@@ -1,22 +1,82 @@
-# terraform-google-secure-cicd
+# Secure CI/CD Blueprint
 
-This module was generated from [terraform-google-module-template](https://github.com/terraform-google-modules/terraform-google-module-template/), which by default generates a module that simply creates a GCS bucket. As the module develops, this README should be updated.
+This repository contains Terraform configuration to enable Google Cloud customers to quickly deploy a secure CI/CD pipeline, implementing many of the functions outlined in the [Shifting Left on Security](https://cloud.google.com/solutions/shifting-left-on-security) report.
 
-The resources/services/activations/deletions that this module will create/trigger are:
-
-- Create a GCS bucket with the provided name
+The Terraform modules in this repository provide an opinionated architecture that incorporates and documents best practices for secure application delivery architecture.
 
 ## Usage
 
 Basic usage of this module is as follows:
 
 ```hcl
-module "secure_cicd" {
-  source  = "terraform-google-modules/secure-cicd/google"
-  version = "~> 0.1"
+# Secure-CI
+module "ci_pipeline" {
+  source                  = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-ci"
+  project_id              = var.project_id
+  app_source_repo         = "app-source-pc"
+  manifest_dry_repo       = "app-dry-manifests-pc"
+  manifest_wet_repo       = "app-wet-manifests-pc"
+  gar_repo_name_suffix    = "app-image-repo-pc"
+  cache_bucket_name       = "private_cluster_cloudbuild"
+  primary_location        = "us-central1"
+  attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
+  app_build_trigger_yaml  = "cloudbuild-ci.yaml"
+  runner_build_folder     = "../../../examples/private_cluster_cicd/cloud-build-builder"
+  build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
+  trigger_branch_name     = ".*"
+  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
+}
 
-  project_id  = "<PROJECT ID>"
-  bucket_name = "gcs-test-bucket"
+# Secure-CD
+module "cd_pipeline" {
+  source           = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-cd"
+  project_id       = var.project_id
+  primary_location = "us-central1"
+
+  gar_repo_name           = module.ci_pipeline.app_artifact_repo
+  manifest_wet_repo       = "app-wet-manifests-pc"
+  deploy_branch_clusters  = var.deploy_branch_clusters
+  app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
+  cache_bucket_name       = module.ci_pipeline.cache_bucket_name
+  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
+  depends_on = [
+    module.ci_pipeline
+  ]
+}
+
+# Cloud Build Private Pool
+module "cloudbuild_private_pool" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//cloudbuild-private-pool"
+
+  project_id                = var.project_id
+  location                  = "us-central1"
+  create_cloudbuild_network = true
+  private_pool_vpc_name     = "gke-private-pool-example-vpc"
+  worker_pool_name          = "private-cluster-example-workerpool"
+  machine_type              = "e2-highcpu-32"
+
+  worker_address    = "10.39.0.0"
+  worker_range_name = "private-cluster-example-worker-range"
+}
+
+# Cloud Build Workerpool <-> GKE HA VPN
+module "gke_cloudbuild_vpn" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"
+
+  project_id = var.project_id
+  location   = "us-central1"
+
+  gke_project             = GKE_PROJECT_ID
+  gke_network             = GKE_NETWORK_NAME
+  gke_location            = GKE_LOCATION
+  gke_control_plane_cidrs = ["172.16.1.0/28"]
+
+  workerpool_network = module.cloudbuild_private_pool.workerpool_network
+  workerpool_range   = module.cloudbuild_private_pool.workerpool_range
+  gateway_1_asn      = 65001
+  gateway_2_asn      = 65002
+  bgp_range_1        = "169.254.1.0/30"
+  bgp_range_2        = "169.254.2.0/30"
 }
 ```
 
@@ -24,18 +84,6 @@ Functional examples are included in the
 [examples](./examples/) directory.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Inputs
-
-| Name | Description | Type | Default | Required |
-|------|-------------|:----:|:-----:|:-----:|
-| bucket\_name | The name of the bucket to create | string | n/a | yes |
-| project\_id | The project ID to deploy to | string | n/a | yes |
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| bucket\_name |  |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
@@ -47,15 +95,44 @@ These sections describe requirements for using this module.
 
 The following dependencies must be available:
 
-- [Terraform][terraform] v0.13
-- [Terraform Provider for GCP][terraform-provider-gcp] plugin v3.0
+- [Google Cloud SDK](https://cloud.google.com/sdk/install) version 357.0.0 or later
+- [Terraform][terraform] v1.0
+- [Terraform Provider for GCP][terraform-provider-gcp] plugin v4.3.0
 
 ### Service Account
 
 A service account with the following roles must be used to provision
 the resources of this module:
 
-- Storage Admin: `roles/storage.admin`
+- Project level:
+  - CI/CD project
+      - `roles/storage.admin`
+      - `roles/artifactregistry.admin`
+      - `roles/binaryauthorization.attestorsAdmin`
+      - `roles/cloudbuild.builds.builder`
+      - `roles/cloudkms.admin`
+      - `roles/cloudkms.signerVerifier`
+      - `roles/containeranalysis.admin`
+      - `roles/secretmanager.admin`
+      - `roles/serviceusage.serviceUsageAdmin`
+      - `roles/source.admin`
+      - `roles/composer.serviceAgent`
+      - `roles/viewer`
+      - `roles/resourcemanager.projectIamAdmin`
+      - `roles/cloudbuild.workerPoolOwner`
+  - Data governance project
+    - Cloud KMS Admin:`roles/cloudkms.admin`
+    - Cloud KMS CryptoKey Encrypter:`roles/cloudkms.cryptoKeyEncrypter`
+    - DLP De-identify Templates Editor:`roles/dlp.deidentifyTemplatesEditor`
+    - DLP Inspect Templates Editor:`roles/dlp.inspectTemplatesEditor`
+    - DLP User:`roles/dlp.user`
+    - Data Catalog Admin:`roles/datacatalog.admin`
+    - Project IAM Admin:`roles/resourcemanager.projectIamAdmin`
+    - Secret Manager Admin: `roles/secretmanager.admin`
+    - Service Account Admin:`roles/iam.serviceAccountAdmin`
+    - Service Account Token Creator:`roles/iam.serviceAccountTokenCreator`
+    - Service Usage Admin: `roles/serviceusage.serviceUsageAdmin`
+    - Storage Admin:`roles/storage.admin`
 
 The [Project Factory module][project-factory-module] and the
 [IAM module][iam-module] may be used in combination to provision a
