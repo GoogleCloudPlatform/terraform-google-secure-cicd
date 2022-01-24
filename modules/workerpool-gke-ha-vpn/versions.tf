@@ -14,3 +14,23 @@
  * limitations under the License.
  */
 
+terraform {
+  required_version = ">= 0.12.6"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 3.45"
+    }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = ">= 3.45"
+    }
+  }
+
+  provider_meta "google" {
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:workerpool-gke-ha-vpn/v1.0.0"
+  }
+  provider_meta "google-beta" {
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:workerpool-gke-ha-vpn/v1.0.0"
+  }
+}
