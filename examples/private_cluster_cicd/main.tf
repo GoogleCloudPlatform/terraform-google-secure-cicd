@@ -54,6 +54,7 @@ module "cloudbuild_private_pool" {
   source = "../../modules/cloudbuild-private-pool"
 
   project_id                = var.project_id
+  network_project_id        = var.project_id
   location                  = "us-central1"
   create_cloudbuild_network = true
   private_pool_vpc_name     = "gke-private-pool-example-vpc"

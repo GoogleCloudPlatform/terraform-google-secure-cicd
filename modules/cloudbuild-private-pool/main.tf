@@ -16,7 +16,7 @@
 
 # Networking config
 resource "google_project_service" "servicenetworking" {
-  project            = var.project_id
+  project            = var.network_project_id
   service            = "servicenetworking.googleapis.com"
   disable_on_destroy = false
 }
@@ -25,7 +25,7 @@ resource "google_compute_network" "private_pool_vpc" {
   count = var.create_cloudbuild_network ? 1 : 0
 
   name                    = var.private_pool_vpc_name
-  project                 = var.project_id
+  project                 = var.network_project_id
   auto_create_subnetworks = false
   depends_on              = [google_project_service.servicenetworking]
 }
@@ -33,12 +33,12 @@ resource "google_compute_network" "private_pool_vpc" {
 data "google_compute_network" "workerpool_vpc" {
   count   = var.create_cloudbuild_network ? 0 : 1
   name    = var.private_pool_vpc_name
-  project = var.project_id
+  project = var.network_project_id
 }
 
 resource "google_compute_global_address" "worker_range" {
   name          = var.worker_range_name
-  project       = var.project_id
+  project       = var.network_project_id
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   address       = var.worker_address
@@ -54,7 +54,7 @@ resource "google_service_networking_connection" "worker_pool_connection" {
 }
 
 resource "google_compute_network_peering_routes_config" "service_networking_peering_config" {
-  project = var.project_id
+  project = var.network_project_id
   peering = "servicenetworking-googleapis-com"
   network = var.private_pool_vpc_name
 
