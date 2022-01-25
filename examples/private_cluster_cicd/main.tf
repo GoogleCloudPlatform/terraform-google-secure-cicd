@@ -68,7 +68,7 @@ module "cloudbuild_private_pool" {
 # Cloud Build Workerpool <-> GKE HA VPNs
 locals {
   gke_networks = {
-    for net in var.gke_networks : merge(net, local.vpn_config["${net.network}"]) => net.network
+    for net in var.gke_networks : net.network => merge(net, local.vpn_config[net.network])
   }
   vpn_config = {
     gke-private-vpc-dev = {
