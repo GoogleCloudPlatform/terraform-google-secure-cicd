@@ -110,29 +110,24 @@ the resources of this module:
       - `roles/artifactregistry.admin`
       - `roles/binaryauthorization.attestorsAdmin`
       - `roles/cloudbuild.builds.builder`
+      - `roles/cloudbuild.workerPoolOwner`
       - `roles/cloudkms.admin`
-      - `roles/cloudkms.signerVerifier`
-      - `roles/containeranalysis.admin`
-      - `roles/secretmanager.admin`
+      - `roles/cloudkms.publicKeyViewer`
+      - `roles/containeranalysis.notes.editor`
+      - `roles/compute.networkAdmin`
       - `roles/serviceusage.serviceUsageAdmin`
       - `roles/source.admin`
-      - `roles/composer.serviceAgent`
-      - `roles/viewer`
       - `roles/resourcemanager.projectIamAdmin`
-      - `roles/cloudbuild.workerPoolOwner`
-  - Data governance project
-    - Cloud KMS Admin:`roles/cloudkms.admin`
-    - Cloud KMS CryptoKey Encrypter:`roles/cloudkms.cryptoKeyEncrypter`
-    - DLP De-identify Templates Editor:`roles/dlp.deidentifyTemplatesEditor`
-    - DLP Inspect Templates Editor:`roles/dlp.inspectTemplatesEditor`
-    - DLP User:`roles/dlp.user`
-    - Data Catalog Admin:`roles/datacatalog.admin`
-    - Project IAM Admin:`roles/resourcemanager.projectIamAdmin`
-    - Secret Manager Admin: `roles/secretmanager.admin`
-    - Service Account Admin:`roles/iam.serviceAccountAdmin`
-    - Service Account Token Creator:`roles/iam.serviceAccountTokenCreator`
-    - Service Usage Admin: `roles/serviceusage.serviceUsageAdmin`
-    - Storage Admin:`roles/storage.admin`
+      - `roles/viewer`
+  - GKE projects
+      - `roles/compute.networkAdmin`
+      - `roles/container.admin`
+      - `roles/binaryauthorization.policyEditor`
+      - `roles/resourcemanager.projectIamAdmin`
+      - `roles/iam.serviceAccountAdmin`
+      - `roles/serviceusage.serviceUsageViewer`
+      - `roles/iam.serviceAccountUser`
+>>>>>>> Stashed changes
 
 The [Project Factory module][project-factory-module] and the
 [IAM module][iam-module] may be used in combination to provision a
@@ -143,7 +138,39 @@ service account with the necessary roles applied.
 A project with the following APIs enabled must be used to host the
 resources of this module:
 
-- Google Cloud Storage JSON API: `storage-api.googleapis.com`
+CI/CD Project
+- `cloudresourcemanager.googleapis.com`
+- `cloudbilling.googleapis.com`
+- `storage-api.googleapis.com`
+- `serviceusage.googleapis.com`
+- `cloudbuild.googleapis.com`
+- `containerregistry.googleapis.com`
+- `iamcredentials.googleapis.com`
+- `secretmanager.googleapis.com`
+- `sourcerepo.googleapis.com`
+- `artifactregistry.googleapis.com`
+- `containeranalysis.googleapis.com`
+- `cloudkms.googleapis.com`
+- `binaryauthorization.googleapis.com`
+- `containerscanning.googleapis.com`
+
+GKE Projects:
+- `cloudresourcemanager.googleapis.com`
+- `cloudbilling.googleapis.com`
+- `storage-api.googleapis.com`
+- `serviceusage.googleapis.com`
+- `containerregistry.googleapis.com`
+- `iamcredentials.googleapis.com`
+- `secretmanager.googleapis.com`
+- `artifactregistry.googleapis.com`
+- `containeranalysis.googleapis.com`
+- `cloudkms.googleapis.com`
+- `binaryauthorization.googleapis.com`
+- `containerscanning.googleapis.com`
+- `container.googleapis.com`
+- `cloudtrace.googleapis.com`
+- `monitoring.googleapis.com`
+- `logging.googleapis.com`
 
 The [Project Factory module][project-factory-module] can be used to
 provision a project with the necessary APIs enabled.
