@@ -29,7 +29,7 @@ module "cloudbuild_private_pool" {
 
 locals {
   gke_networks = {
-    for net in var.gke_networks : merge(net, local.vpn_config[net.network]) => net.network
+    for net in var.gke_networks : merge(net, local.vpn_config["${net.network}"]) => net.network
   }
   vpn_config = {
     "gke-private-vpc-dev" = {
