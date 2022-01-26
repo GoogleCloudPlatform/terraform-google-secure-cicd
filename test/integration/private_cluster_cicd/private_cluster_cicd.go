@@ -15,7 +15,7 @@
  */
 
 // define test package name
-package cloudbuild_private_pool
+package private_cluster_cicd
 
 import (
 	"fmt"
@@ -28,33 +28,33 @@ import (
 )
 
 // name the function as Test*
-func TestCloudBuildPrivatePoolExample(t *testing.T) {
+func TestPrivateClusterCICDExample(t *testing.T) {
 	// define constants for all required assertions in the test case
 
 	// initialize Terraform test from the Blueprints test framework
-	cloudBuildPrivatePoolT := tft.NewTFBlueprintTest(t)
+	privateClusterCICDT := tft.NewTFBlueprintTest(t)
 
 	// define and write a custom verifier for this test case call the default verify for confirming no additional changes
-	cloudBuildPrivatePoolT.DefineVerify(func(assert *assert.Assertions) {
+	privateClusterCICDT.DefineVerify(func(assert *assert.Assertions) {
 		// perform default verification ensuring Terraform reports no additional changes on an applied blueprint
-		cloudBuildPrivatePoolT.DefaultVerify(assert)
+		privateClusterCICDT.DefaultVerify(assert)
 
 		// invoke the gcloud module in the Blueprints test framework to run a gcloud command that will output resource properties in a JSON format
 		// the tft struct can be used to pull output variables of the TF module being invoked by this test and use the op object (a gjson struct)
 		// to parse through the JSON results and assert the values of the resource against the constants defined above
 
-		projectID := cloudBuildPrivatePoolT.GetStringOutput("project_id")
+		projectID := privateClusterCICDT.GetStringOutput("project_id")
 
 		// Worker Pool
-		workerPoolAddress := gcloud.Run(t, fmt.Sprintf("compute addresses describe gke-private-pool-worker-range --global --project %s", projectID))
-		assert.Equal("10.37.0.0", workerPoolAddress.Get("address").String(), "Worker pool address range is 10.37.0.0")
+		workerPoolAddress := gcloud.Run(t, fmt.Sprintf("compute addresses describe private-cluster-example-worker-range --global --project %s", projectID))
+		assert.Equal("10.39.0.0", workerPoolAddress.Get("address").String(), "Worker pool address range is 10.39.0.0")
 		assert.Equal("INTERNAL", workerPoolAddress.Get("addressType").String(), "Worker pool address range is type INTERNAL")
 		assert.Equal("VPC_PEERING", workerPoolAddress.Get("purpose").String(), "Worker pool address range is for VPC_PEERING")
 
-		privatePoolVPC := gcloud.Run(t, fmt.Sprintf("compute networks describe workerpool-example-vpc --project %s", projectID))
+		privatePoolVPC := gcloud.Run(t, fmt.Sprintf("compute networks describe gke-private-pool-example-vpc --project %s", projectID))
 		assert.Contains(privatePoolVPC.Get("peerings.0.network").String(), "servicenetworking")
 
-		privatePool := gcloud.Run(t, fmt.Sprintf("builds worker-pools describe cloudbuild-private-worker-pool --region=us-central1 --project %s", projectID))
+		privatePool := gcloud.Run(t, fmt.Sprintf("builds worker-pools describe private-cluster-example-workerpool --region=us-central1 --project %s", projectID))
 		assert.Equal("RUNNING", privatePool.Get("state").String(), "Worker pool is RUNNING")
 
 		// VPN Tunnels
@@ -66,5 +66,5 @@ func TestCloudBuildPrivatePoolExample(t *testing.T) {
 
 	})
 	// call the test function to execute the integration test
-	cloudBuildPrivatePoolT.Test()
+	privateClusterCICDT.Test()
 }
