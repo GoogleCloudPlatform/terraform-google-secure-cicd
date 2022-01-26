@@ -22,7 +22,7 @@ module "cloudbuild_private_pool" {
   location                  = var.primary_location
   worker_pool_name          = "cloudbuild-private-worker-pool"
   create_cloudbuild_network = true
-  private_pool_vpc_name     = "gke-private-pool-example-vpc"
+  private_pool_vpc_name     = "workerpool-example-vpc"
   worker_address            = "10.37.0.0"
   worker_range_name         = "gke-private-pool-worker-range"
 }
