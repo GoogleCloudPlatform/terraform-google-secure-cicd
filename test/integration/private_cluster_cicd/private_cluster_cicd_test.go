@@ -58,7 +58,7 @@ func TestPrivateClusterCICDExample(t *testing.T) {
 		assert.Equal("RUNNING", privatePool.Get("state").String(), "Worker pool is RUNNING")
 
 		// VPN Tunnels
-		vpnTunnels := [6]string{"cloudbuild-to-gke-private-vpc-dev-remote-0", "cloudbuild-to-gke-private-vpc-dev-remote-1", "cloudbuild-to-gke-private-vpc-prod-remote-0", "cloudbuild-to-gke-private-vpc-prod-remote-1", "cloudbuild-to-gke-private-vpc-qa-remote-0", "cloudbuild-to-gke-private-vpc-qa-remote-1"}
+		vpnTunnels := [6]string{"pc-cloudbuild-to-gke-private-vpc-dev-remote-0", "pc-cloudbuild-to-gke-private-vpc-dev-remote-1", "pc-cloudbuild-to-gke-private-vpc-prod-remote-0", "pc-cloudbuild-to-gke-private-vpc-prod-remote-1", "pc-cloudbuild-to-gke-private-vpc-qa-remote-0", "pc-cloudbuild-to-gke-private-vpc-qa-remote-1"}
 		for _, tunnel := range vpnTunnels {
 			tunnelStatus := gcloud.Run(t, fmt.Sprintf("compute vpn-tunnels describe %s --region=us-central1 --project %s", tunnel, projectID))
 			assert.Equal("Tunnel is up and running.", tunnelStatus.Get("detailedStatus").String(), fmt.Sprintf("%s is created and running", tunnel))
