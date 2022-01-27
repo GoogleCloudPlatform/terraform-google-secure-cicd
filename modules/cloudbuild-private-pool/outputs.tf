@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-terraform {
-  required_version = ">= 0.13.0"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = ">= 3.45, < 5.0"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = ">= 3.45, < 5.0"
-    }
-  }
+output "workerpool_id" {
+  value = google_cloudbuild_worker_pool.pool.id
+}
 
-  provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-cd/v1.0.0"
-  }
-  provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-cd/v1.0.0"
-  }
+output "workerpool_range" {
+  value = "${google_compute_global_address.worker_range.address}/${google_compute_global_address.worker_range.prefix_length}"
+}
+
+output "workerpool_network" {
+  value = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].self_link : data.google_compute_network.workerpool_vpc[0].self_link
 }

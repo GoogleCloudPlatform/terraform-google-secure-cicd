@@ -17,19 +17,26 @@ tags:
   - "secure-cicd-cd"
 substitutions:
 options:
-  # Use higher CPU machines so the caching and build steps are faster.
-  machineType: 'N1_HIGHCPU_32'
+  pool:
+    name: $_CLOUDBUILD_PRIVATE_POOL
   substitution_option: 'ALLOW_LOOSE'
+  # machineType: 'E2_HIGHCPU_32'
 artifacts:
   objects:
     location: gs://$_CACHE_BUCKET_NAME/artifacts/$BRANCH_NAME
     paths:
       - '/workspace/svcs-endpoints-filtered.json'
 steps:
+
+############################### Deploy to Cluster ###########################
+
 - name: "gcr.io/cloud-builders/gke-deploy"
   id: "deploy-to-cluster"
   args: ['apply', '-f', 'manifests', '-p', '$_CLUSTER_PROJECT', '-c', '$_CLUSTER_NAME', '-l', '$_DEFAULT_REGION']
 
+############################### Post-Deploy Checks ###########################
+
+# Get endpoint IPs
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "get-svc-endpoints"
   entrypoint: "/bin/bash"
@@ -42,7 +49,7 @@ steps:
       kubectl get svc -ojson > /workspace/svcs.json
 
       ### Do we need a version that runs against private IP'd svcs?
-      ### jq '[.items[] | ({svc: .metadata.name, endpoint: "\(.spec.clusterIPs[]):\(.spec.ports[].port)"}), (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
+      # jq '[.items[] | ({svc: .metadata.name, endpoint: "\(.spec.clusterIPs[]):\(.spec.ports[].port)"}), (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
 
       ### Below only grabs external IP'd svcs
       jq '[.items[] | (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
@@ -54,6 +61,7 @@ steps:
   waitFor:
     - 'deploy-to-cluster'
 
+# ZAProxy Scan
 - name: 'gcr.io/cloud-builders/docker'
   id: "zaproxy-endpoint-scan"
   entrypoint: "bash"
@@ -76,7 +84,7 @@ steps:
   waitFor:
     - 'get-svc-endpoints'
 
-### Binary Authorization
+# Binary Authorization
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "binary-authorization-checkpoint"
   entrypoint: "/bin/bash"
@@ -116,6 +124,8 @@ steps:
       fi
   waitFor:
     - 'zaproxy-endpoint-scan'
+
+############################### Artifact Promotion ###########################
 
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "promote-manifests"

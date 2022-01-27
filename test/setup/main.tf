@@ -39,6 +39,7 @@ module "project" {
     "cloudkms.googleapis.com",
     "binaryauthorization.googleapis.com",
     "containerscanning.googleapis.com",
+    "servicenetworking.googleapis.com"
   ]
   activate_api_identities = [
     {
@@ -58,7 +59,13 @@ module "project" {
 }
 
 locals {
-  envs = ["dev", "qa", "prod"]
+  envs             = ["dev", "qa", "prod"]
+  primary_location = "us-central1"
+  ip_increment = {
+    "dev"  = 1,
+    "qa"   = 2,
+    "prod" = 3
+  }
 }
 
 # GKE Projects
@@ -67,7 +74,7 @@ module "gke_project" {
   source   = "terraform-google-modules/project-factory/google"
   version  = "~> 10.0"
 
-  name                    = "secure-cicd-gke-${each.key}"
+  name                    = "secure-cicd-gke-${each.value}"
   random_project_id       = "true"
   org_id                  = var.org_id
   folder_id               = var.folder_id
@@ -94,4 +101,103 @@ module "gke_project" {
   ]
 }
 
+# VPCs
+module "vpc" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/network/google"
+  version  = "~> 3.0"
 
+  project_id   = module.gke_project[each.value].project_id
+  network_name = "gke-private-vpc-${each.value}"
+  routing_mode = "REGIONAL"
+
+  subnets = [
+    {
+      subnet_name   = "gke-subnet-private"
+      subnet_ip     = "10.0.0.0/17"
+      subnet_region = local.primary_location
+    },
+  ]
+  secondary_ranges = {
+    gke-subnet-private = [
+      {
+        range_name    = "us-central1-01-gke-01-pods"
+        ip_cidr_range = "192.168.0.0/18"
+      },
+      {
+        range_name    = "us-central1-01-gke-01-services"
+        ip_cidr_range = "192.168.64.0/18"
+      },
+    ]
+  }
+}
+
+resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
+  for_each = toset(local.envs)
+
+  project = module.gke_project[each.value].project_id
+  peering = module.gke_cluster[each.value].peering_name
+  network = module.vpc[each.value].network_name
+
+  import_custom_routes = true
+  export_custom_routes = true
+}
+
+module "gke_cluster" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
+
+  project_id                  = module.gke_project[each.value].project_id
+  name                        = "${each.value}-private-cluster"
+  regional                    = true
+  region                      = local.primary_location
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  network                     = module.vpc[each.value].network_name
+  subnetwork                  = module.vpc[each.value].subnets_names[0]
+  ip_range_pods               = "us-central1-01-gke-01-pods"
+  ip_range_services           = "us-central1-01-gke-01-services"
+  create_service_account      = true
+  enable_binary_authorization = true
+  skip_provisioners           = false
+  enable_private_endpoint     = true
+  enable_private_nodes        = true
+  master_ipv4_cidr_block      = "172.16.${local.ip_increment[each.value]}.0/28"
+
+  remove_default_node_pool = true
+
+  node_pools = [
+    {
+      name              = "pool-0"
+      min_count         = 1
+      max_count         = 100
+      local_ssd_count   = 0
+      disk_size_gb      = 100
+      disk_type         = "pd-standard"
+      image_type        = "COS"
+      auto_repair       = true
+      auto_upgrade      = true
+      preemptible       = false
+      max_pods_per_node = 12
+    },
+  ]
+
+  ## Can't create these resources before main project is created (after-apply error)
+  # Enabled read-access to images in GAR repo in CI/CD project
+  # grant_registry_access = true
+  # registry_project_ids  = [module.project.project_id]
+
+  master_authorized_networks = [
+    {
+      cidr_block   = module.vpc[each.value].subnets_ips[0]
+      display_name = "VPC"
+    },
+    {
+      cidr_block   = "10.39.0.0/16"
+      display_name = "CLOUDBUILD"
+    }
+  ]
+
+  depends_on = [
+    module.vpc
+  ]
+}

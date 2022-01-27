@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-terraform {
-  required_version = ">= 0.13.0"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = ">= 3.45, < 5.0"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = ">= 3.45, < 5.0"
-    }
-  }
+variable "project_id" {
+  type        = string
+  description = "Project ID for CICD Pipeline Project"
+}
 
-  provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-cd/v1.0.0"
-  }
-  provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-cd/v1.0.0"
-  }
+variable "primary_location" {
+  type        = string
+  description = "Default region for resources"
+}
+
+variable "gke_networks" {
+  type = list(object({
+    control_plane_cidrs = map(string)
+    location            = string
+    network             = string
+    project_id          = string
+  }))
+  description = "list of GKE cluster networks in which to create VPN connections"
 }

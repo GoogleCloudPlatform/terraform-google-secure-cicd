@@ -68,6 +68,12 @@ variable "wet_branch_name" {
   default     = "dev"
 }
 
+variable "cache_bucket_name" {
+  type        = string
+  description = "Name of cloudbuild artifact and cache GCS bucket"
+  default     = ""
+}
+
 variable "gar_repo_name_suffix" {
   type        = string
   description = "Docker artifact regitery repo to store app build images"
@@ -96,7 +102,9 @@ variable "cloudbuild_service_account_roles" {
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",
     "roles/source.writer",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/cloudbuild.workerPoolUser",
+    "roles/ondemandscanning.admin",
   ]
 }
 
@@ -104,4 +112,10 @@ variable "additional_substitutions" {
   description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
   type        = map(string)
   default     = {}
+}
+
+variable "cloudbuild_private_pool" {
+  description = "Cloud Build private pool self-link"
+  type        = string
+  default     = ""
 }

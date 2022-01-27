@@ -20,25 +20,23 @@ locals {
     "roles/artifactregistry.admin",
     "roles/binaryauthorization.attestorsAdmin",
     "roles/cloudbuild.builds.builder",
+    "roles/cloudbuild.workerPoolOwner",
     "roles/cloudkms.admin",
-    "roles/cloudkms.signerVerifier",
-    "roles/containeranalysis.admin",
-    "roles/secretmanager.admin",
+    "roles/cloudkms.publicKeyViewer",
+    "roles/containeranalysis.notes.editor",
+    "roles/compute.networkAdmin",
     "roles/serviceusage.serviceUsageAdmin",
     "roles/source.admin",
-    "roles/composer.serviceAgent",
-    "roles/viewer",
     "roles/resourcemanager.projectIamAdmin",
+    "roles/viewer"
   ]
   gke_int_required_roles = [
-    "roles/viewer",
-    "roles/compute.admin",
+    "roles/compute.networkAdmin",
     "roles/container.admin",
     "roles/binaryauthorization.policyEditor",
-    "roles/binaryauthorization.attestorsAdmin",
     "roles/resourcemanager.projectIamAdmin",
     "roles/iam.serviceAccountAdmin",
-    "roles/serviceusage.serviceUsageAdmin",
+    "roles/serviceusage.serviceUsageViewer",
     "roles/iam.serviceAccountUser"
   ]
   gke_proj_role_mapping = flatten([

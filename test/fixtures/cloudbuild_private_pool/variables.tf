@@ -14,23 +14,28 @@
  * limitations under the License.
  */
 
-terraform {
-  required_version = ">= 0.13.0"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = ">= 3.45, < 5.0"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = ">= 3.45, < 5.0"
-    }
-  }
+variable "project_id" {
+  description = "The ID of the CI/CD project to provision resources."
+  type        = string
+}
 
-  provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-cd/v1.0.0"
-  }
-  provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-cd/v1.0.0"
-  }
+variable "primary_location" {
+  type        = string
+  description = "Region used for key-ring"
+  default     = "us-central1"
+}
+
+variable "gke_project_ids" {
+  type        = map(string)
+  description = "map of env name to GKE project ID"
+}
+
+variable "gke_vpc_names" {
+  type        = map(string)
+  description = "map of env name to GKE network name"
+}
+
+variable "gke_service_accounts" {
+  type        = map(string)
+  description = "map of env name to GKE service account"
 }

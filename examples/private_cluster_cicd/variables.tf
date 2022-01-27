@@ -19,24 +19,14 @@ variable "project_id" {
   description = "Project ID for CICD Pipeline Project"
 }
 
-variable "primary_location" {
-  type        = string
-  description = "Region used for key-ring"
-}
-
-variable "manifest_wet_repo" {
-  type        = string
-  description = "Name of repo that contains hydrated K8s manifests files"
-}
-
-variable "gar_repo_name" {
-  type        = string
-  description = "Docker artifact registry repo to store app build images"
-}
-
-variable "app_deploy_trigger_yaml" {
-  type        = string
-  description = "Name of application cloudbuild yaml file for deployment"
+variable "gke_networks" {
+  type = list(object({
+    control_plane_cidrs = map(string)
+    location            = string
+    network             = string
+    project_id          = string
+  }))
+  description = "list of GKE cluster networks in which to create VPN connections"
 }
 
 variable "deploy_branch_clusters" {
@@ -50,21 +40,4 @@ variable "deploy_branch_clusters" {
   }))
   description = "mapping of branch names to cluster deployments"
   default     = {}
-}
-
-variable "cache_bucket_name" {
-  description = "cloud build artifact bucket name"
-  type        = string
-}
-
-variable "additional_substitutions" {
-  description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
-  type        = map(string)
-  default     = {}
-}
-
-variable "cloudbuild_private_pool" {
-  description = "Cloud Build private pool self-link"
-  type        = string
-  default     = ""
 }

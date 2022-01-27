@@ -19,6 +19,6 @@ GCLOUD_LOCATION=$(command -v gcloud)
 echo "Using gcloud from $GCLOUD_LOCATION"
 
 gcloud --version
-echo "running gcloud builds submit $1 --project $2 --config=$1/$3 --substitutions=_DEFAULT_REGION=$4,_GAR_REPOSITORY=$5"
+echo "running gcloud builds submit $1 --project $2 --config=$1/$3 --substitutions=_DEFAULT_REGION=$4,_GAR_REPOSITORY=$5 --gcs-source-staging-dir=$6"
 
-gcloud builds submit "$1" --project "$2" --config="$1"/"$3" --substitutions=_DEFAULT_REGION="$4",_GAR_REPOSITORY="$5"
+gcloud builds submit "$1" --project "$2" --config="$1"/"$3" --substitutions=_DEFAULT_REGION="$4",_GAR_REPOSITORY="$5" --gcs-source-staging-dir="$6"

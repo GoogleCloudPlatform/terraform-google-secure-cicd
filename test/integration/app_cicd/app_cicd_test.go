@@ -107,8 +107,6 @@ func TestAppCICDExample(t *testing.T) {
 			binAuthZPolicy := gcloud.Run(t, fmt.Sprintf("container binauthz policy export --project %s", gkeProjectID))
 			cluster := gcloud.Run(t, fmt.Sprintf("container clusters list --project %s", gkeProjectID))
 			clusterName := cluster.Get("0.name").String()
-			// fmt.Println(clusterName)
-			// fmt.Println(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s", clusterName)).String())
 			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.enforcementMode").String(), "ENFORCED_BLOCK_AND_AUDIT_LOG")
 			assert.Contains(binAuthZPolicy.Get("defaultAdmissionRule.evaluationMode").String(), "ALWAYS_DENY")
 			assert.Contains(binAuthZPolicy.Get(fmt.Sprintf("clusterAdmissionRules.us-central1\\.%s.evaluationMode", clusterName)).String(), "REQUIRE_ATTESTATION")

@@ -15,7 +15,8 @@
  */
 
 locals {
-  gar_name = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
+  gar_name          = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
+  cache_bucket_name = var.cache_bucket_name == "" ? "${var.project_id}_cloudbuild" : "${var.project_id}_${var.cache_bucket_name}"
 }
 
 resource "google_sourcerepo_repository" "repos" {
@@ -26,7 +27,7 @@ resource "google_sourcerepo_repository" "repos" {
 
 resource "google_storage_bucket" "cache_bucket" {
   project                     = var.project_id
-  name                        = "${var.project_id}_cloudbuild"
+  name                        = local.cache_bucket_name
   location                    = var.primary_location
   uniform_bucket_level_access = true
   force_destroy               = true
@@ -51,12 +52,13 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
   }
   substitutions = merge(
     {
-      _GAR_REPOSITORY    = local.gar_name
-      _DEFAULT_REGION    = var.primary_location
-      _CACHE_BUCKET_NAME = google_storage_bucket.cache_bucket.name
-      _MANIFEST_DRY_REPO = var.manifest_dry_repo
-      _MANIFEST_WET_REPO = var.manifest_wet_repo
-      _WET_BRANCH_NAME   = var.wet_branch_name
+      _GAR_REPOSITORY          = local.gar_name
+      _DEFAULT_REGION          = var.primary_location
+      _CACHE_BUCKET_NAME       = google_storage_bucket.cache_bucket.name
+      _MANIFEST_DRY_REPO       = var.manifest_dry_repo
+      _MANIFEST_WET_REPO       = var.manifest_wet_repo
+      _WET_BRANCH_NAME         = var.wet_branch_name
+      _CLOUDBUILD_PRIVATE_POOL = var.cloudbuild_private_pool
     },
     var.additional_substitutions
   )
@@ -67,10 +69,10 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
 # Build the Cloud Build builder image
 module "gcloud" {
   source                            = "terraform-google-modules/gcloud/google"
-  version                           = "~> 2.0"
+  version                           = "~> 3.1.0"
   platform                          = "linux"
   create_cmd_entrypoint             = "${path.module}/scripts/cloud-build-submit.sh"
-  create_cmd_body                   = "${var.runner_build_folder} ${var.project_id} ${var.build_image_config_yaml} ${var.primary_location} ${local.gar_name}"
+  create_cmd_body                   = "${var.runner_build_folder} ${var.project_id} ${var.build_image_config_yaml} ${var.primary_location} ${local.gar_name} ${google_storage_bucket.cache_bucket.url}/source"
   use_tf_google_credentials_env_var = var.use_tf_google_credentials_env_var
 }
 
@@ -103,4 +105,3 @@ resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" 
   role       = "roles/artifactregistry.admin"
   member     = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
-

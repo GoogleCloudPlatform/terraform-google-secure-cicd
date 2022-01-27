@@ -35,3 +35,8 @@ suites:
       name: terraform
       root_module_directory: test/fixtures/app_cicd
       command_timeout: 1800
+  - name: private_cluster_cicd
+    driver:
+      name: terraform
+      root_module_directory: test/fixtures/private_cluster_cicd
+      command_timeout: 1800
