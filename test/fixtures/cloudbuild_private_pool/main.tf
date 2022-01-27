@@ -54,7 +54,7 @@ data "google_container_cluster" "cluster" {
 }
 
 module "example" {
-  source = "../../../examples/gke_cloudbuild_private_pool"
+  source = "../../../examples/cloudbuild_private_pool"
 
   project_id       = var.project_id
   primary_location = var.primary_location

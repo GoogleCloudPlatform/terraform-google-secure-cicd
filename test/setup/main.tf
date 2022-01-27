@@ -39,7 +39,7 @@ module "project" {
     "cloudkms.googleapis.com",
     "binaryauthorization.googleapis.com",
     "containerscanning.googleapis.com",
-    "ondemandscanning.googleapis.com"
+    "servicenetworking.googleapis.com"
   ]
   activate_api_identities = [
     {

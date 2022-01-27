@@ -51,7 +51,7 @@ func TestCloudBuildPrivatePoolExample(t *testing.T) {
 		assert.Equal("INTERNAL", workerPoolAddress.Get("addressType").String(), "Worker pool address range is type INTERNAL")
 		assert.Equal("VPC_PEERING", workerPoolAddress.Get("purpose").String(), "Worker pool address range is for VPC_PEERING")
 
-		privatePoolVPC := gcloud.Run(t, fmt.Sprintf("compute networks describe gke-private-pool-example-vpc --project %s", projectID))
+		privatePoolVPC := gcloud.Run(t, fmt.Sprintf("compute networks describe workerpool-example-vpc --project %s", projectID))
 		assert.Contains(privatePoolVPC.Get("peerings.0.network").String(), "servicenetworking")
 
 		privatePool := gcloud.Run(t, fmt.Sprintf("builds worker-pools describe cloudbuild-private-worker-pool --region=us-central1 --project %s", projectID))

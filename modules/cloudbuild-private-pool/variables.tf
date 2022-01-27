@@ -16,7 +16,12 @@
 
 variable "project_id" {
   type        = string
-  description = "Project ID for Cloud Build Private Pool VPC"
+  description = "Project ID for Cloud Build Private Worker Pool"
+}
+
+variable "network_project_id" {
+  type        = string
+  description = "Project ID for Cloud Build network."
 }
 
 variable "create_cloudbuild_network" {
