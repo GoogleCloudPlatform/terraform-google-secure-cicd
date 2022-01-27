@@ -83,6 +83,9 @@ module "gke_cloudbuild_vpn" {
 Functional examples are included in the
 [examples](./examples/) directory.
 
+### Build Configuration
+Example Cloud Build configuration files are located in the [Build](/.build/) folder. Push the `cloudbuild-ci.yaml` configuration to the application source code repository. Push the `cloudbuild-cd.yaml` configuration to the wet manifest repository. These build configurations offer a baseline for adhering to S3C application delivery practices within this blueprint, and are customizable as needed.
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -138,38 +141,36 @@ A project with the following APIs enabled must be used to host the
 resources of this module:
 
 CI/CD Project
-- `cloudresourcemanager.googleapis.com`
-- `cloudbilling.googleapis.com`
-- `storage-api.googleapis.com`
-- `serviceusage.googleapis.com`
-- `cloudbuild.googleapis.com`
-- `containerregistry.googleapis.com`
-- `iamcredentials.googleapis.com`
-- `secretmanager.googleapis.com`
-- `sourcerepo.googleapis.com`
-- `artifactregistry.googleapis.com`
-- `containeranalysis.googleapis.com`
-- `cloudkms.googleapis.com`
-- `binaryauthorization.googleapis.com`
-- `containerscanning.googleapis.com`
+- Cloud Resource Manager API `cloudresourcemanager.googleapis.com`
+- Cloud Billing API `cloudbilling.googleapis.com`
+- Storage API `storage-api.googleapis.com`
+- Service Usage API `serviceusage.googleapis.com`
+- Cloud Build API `cloudbuild.googleapis.com`
+- Container Registry API `containerregistry.googleapis.com`
+- IAM Credentials API `iamcredentials.googleapis.com`
+- Cloud Source Repositories API `sourcerepo.googleapis.com`
+- Artifact Registry API `artifactregistry.googleapis.com`
+- Container Analysis API `containeranalysis.googleapis.com`
+- Cloud KMS API `cloudkms.googleapis.com`
+- Binary Authorization API `binaryauthorization.googleapis.com`
+- Container Scanning API `containerscanning.googleapis.com`
 
 GKE Projects:
-- `cloudresourcemanager.googleapis.com`
-- `cloudbilling.googleapis.com`
-- `storage-api.googleapis.com`
-- `serviceusage.googleapis.com`
-- `containerregistry.googleapis.com`
-- `iamcredentials.googleapis.com`
-- `secretmanager.googleapis.com`
-- `artifactregistry.googleapis.com`
-- `containeranalysis.googleapis.com`
-- `cloudkms.googleapis.com`
-- `binaryauthorization.googleapis.com`
-- `containerscanning.googleapis.com`
-- `container.googleapis.com`
-- `cloudtrace.googleapis.com`
-- `monitoring.googleapis.com`
-- `logging.googleapis.com`
+- Cloud Resource Manager API `cloudresourcemanager.googleapis.com`
+- Cloud Billing API `cloudbilling.googleapis.com`
+- Storage API `storage-api.googleapis.com`
+- Service Usage API `serviceusage.googleapis.com`
+- Container Registry API `containerregistry.googleapis.com`
+- IAM Credentials API `iamcredentials.googleapis.com`
+- Artifact Registry API `artifactregistry.googleapis.com`
+- Container Analysis API `containeranalysis.googleapis.com`
+- Cloud KMS API `cloudkms.googleapis.com`
+- Binary Authorization API `binaryauthorization.googleapis.com`
+- Container Scanning API `containerscanning.googleapis.com`
+- Kubernetes Engine API `container.googleapis.com`
+- Cloud Trace API `cloudtrace.googleapis.com`
+- Cloud Monitoring API `monitoring.googleapis.com`
+- Coud Logging API `logging.googleapis.com`
 
 The [Project Factory module][project-factory-module] can be used to
 provision a project with the necessary APIs enabled.
