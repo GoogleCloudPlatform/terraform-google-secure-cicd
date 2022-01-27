@@ -14,3 +14,26 @@
  * limitations under the License.
  */
 
+output "vpn_gateway_cloudbuild" {
+  value = module.vpn_ha_1.name
+}
+
+output "vpn_gateway_gke" {
+  value = module.vpn_ha_2.name
+}
+
+output "vpn_tunnel_cloudbuild_names" {
+  value = module.vpn_ha_1.tunnel_names
+}
+
+output "vpn_tunnel_gke_names" {
+  value = module.vpn_ha_2.tunnel_names
+}
+
+output "vpn_router_cloudbuild_names" {
+  value = module.vpn_ha_1.router_names
+}
+
+output "vpn_router_gke_names" {
+  value = module.vpn_ha_2.router_names
+}
