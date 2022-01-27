@@ -31,9 +31,9 @@ output "vpn_tunnel_gke_names" {
 }
 
 output "vpn_router_cloudbuild_names" {
-  value = module.vpn_ha_1.router_names
+  value = module.vpn_ha_1.router_name
 }
 
 output "vpn_router_gke_names" {
-  value = module.vpn_ha_2.router_names
+  value = module.vpn_ha_2.router_name
 }
