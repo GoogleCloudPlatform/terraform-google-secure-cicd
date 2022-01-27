@@ -127,7 +127,6 @@ the resources of this module:
       - `roles/iam.serviceAccountAdmin`
       - `roles/serviceusage.serviceUsageViewer`
       - `roles/iam.serviceAccountUser`
->>>>>>> Stashed changes
 
 The [Project Factory module][project-factory-module] and the
 [IAM module][iam-module] may be used in combination to provision a
