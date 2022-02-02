@@ -9,7 +9,7 @@ This module creates:
 
 ## Usage
 
-The `workerpool-gke-ha-vpn` submodule can create an HA VPN connection between the Cloud Build workerpool VPC and a single GKE VPC. The module can be used multiple times to establish connections to multiple 
+The `workerpool-gke-ha-vpn` submodule can create an HA VPN connection between the Cloud Build workerpool VPC and a single GKE VPC. The submodule can be configued for use with multiple clusters across multiple VPCs, as described in the examples below.
 
 ### Connect private pool to a single GKE cluster in single VPC
 ```hcl
@@ -118,7 +118,7 @@ module "gke_cloudbuild_vpn_prod" {
 ```
 
 ### Allowlist Cloud Build workerpool on GKE control plane
-In the destination GKE cluster, append the Cloud Build worker pool address range to the cluster's master authorized networks to enable deployments by the private pool. 
+In the destination GKE cluster, append the Cloud Build worker pool address range to the cluster's master authorized networks to enable deployments by the private pool.
 
 If using the [Google Kubernetes Engine module](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master/modules/private-cluster) to configure GKE, modify the `master_authorized_networks` input based on the example below:
 ```hcl
@@ -137,6 +137,27 @@ Otherwise, [execute a gcloud command](https://cloud.google.com/kubernetes-engine
 gcloud container clusters update CLUSTER_NAME \
     --enable-master-authorized-networks \
     --master-authorized-networks EXISTING_AUTHROIZED_CIDR_1,EXISTING_AUTHROIZED_CIDR_2,<CLOUDBUILD_CIDR>
+```
+
+### GKE Custom Routes configuraton
+
+```hcl
+resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
+  project = <GKE_VPC_PROJECT>
+  network = <GKE_VPC_NAME>
+  peering = module.gke_cluster.peering_name
+
+  import_custom_routes = true
+  export_custom_routes = true
+}
+```
+To retrive the value of the peering connection, use the output value from the [GKE Private Cluster submodule](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master/modules/private-cluster) like shown above.
+
+Or run the command:
+```sh
+gcloud container clusters describe <CLUSTER_NAME> \
+    --region <REGION> \
+    --format='value(privateClusterConfig.peeringName)'
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
