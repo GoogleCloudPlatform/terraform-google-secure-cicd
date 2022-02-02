@@ -1,6 +1,6 @@
 # Secure CI/CD Blueprint
 
-This repository contains Terraform configuration to enable Google Cloud customers to quickly deploy a secure CI/CD pipeline, implementing many of the functions outlined in the [Shifting Left on Security](https://cloud.google.com/solutions/shifting-left-on-security) report.
+This repository contains Terraform modules and example configurations to enable Google Cloud customers to quickly deploy a secure CI/CD pipeline, implementing many of the functions outlined in the [Shifting Left on Security](https://cloud.google.com/solutions/shifting-left-on-security) report.
 
 The Terraform modules in this repository provide an opinionated architecture that incorporates and documents best practices for secure application delivery architecture.
 
