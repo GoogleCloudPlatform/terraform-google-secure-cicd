@@ -12,71 +12,55 @@ Basic usage of this module is as follows:
 # Secure-CI
 module "ci_pipeline" {
   source                  = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-ci"
+
   project_id              = var.project_id
-  app_source_repo         = "app-source-pc"
-  manifest_dry_repo       = "app-dry-manifests-pc"
-  manifest_wet_repo       = "app-wet-manifests-pc"
-  gar_repo_name_suffix    = "app-image-repo-pc"
-  cache_bucket_name       = "private_cluster_cloudbuild"
   primary_location        = "us-central1"
-  attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
+  attestor_names_prefix   = ["build", "security", "quality"]
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
-  runner_build_folder     = "../../../examples/private_cluster_cicd/cloud-build-builder"
+  runner_build_folder     = "../../../examples/app_cicd/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
   trigger_branch_name     = ".*"
-  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
 }
 
 # Secure-CD
 module "cd_pipeline" {
   source           = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-cd"
-  project_id       = var.project_id
-  primary_location = "us-central1"
 
+  project_id              = var.project_id
+  primary_location        = "us-central1"
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
-  manifest_wet_repo       = "app-wet-manifests-pc"
-  deploy_branch_clusters  = var.deploy_branch_clusters
+  manifest_wet_repo       = "app-wet-manifests"
+  deploy_branch_clusters  = {
+    dev = {
+      cluster               = "dev-cluster",
+      project_id            = "gke-proj-dev",
+      location              = "us-central1",
+      required_attestations = ["projects/${var.project_id}/attestors/build-attestor"]
+      env_attestation       = "projects/${var.project_id}/attestors/security-attestor"
+      next_env              = "qa"
+    },
+    qa = {
+      cluster               = "qa-cluster",
+      project_id            = "gke-proj-prod",
+      location              = "us-central1",
+      required_attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      env_attestation       = "projects/${var.project_id}/attestors/quality-attestor"
+      next_env              = "prod"
+    },
+    prod = {
+      cluster               = "prod-cluster",
+      project_id            = "gke-proj-prod",
+      location              = "us-central1",
+      required_attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
+      env_attestation       = ""
+      next_env              = ""
+    },
+  }
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
   cache_bucket_name       = module.ci_pipeline.cache_bucket_name
-  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
   depends_on = [
     module.ci_pipeline
   ]
-}
-
-# Cloud Build Private Pool
-module "cloudbuild_private_pool" {
-  source = "GoogleCloudPlatform/terraform-google-secure-cicd//cloudbuild-private-pool"
-
-  project_id                = var.project_id
-  location                  = "us-central1"
-  create_cloudbuild_network = true
-  private_pool_vpc_name     = "gke-private-pool-example-vpc"
-  worker_pool_name          = "private-cluster-example-workerpool"
-  machine_type              = "e2-highcpu-32"
-
-  worker_address    = "10.39.0.0"
-  worker_range_name = "private-cluster-example-worker-range"
-}
-
-# Cloud Build Workerpool <-> GKE HA VPN
-module "gke_cloudbuild_vpn" {
-  source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"
-
-  project_id = var.project_id
-  location   = "us-central1"
-
-  gke_project             = GKE_PROJECT_ID
-  gke_network             = GKE_NETWORK_NAME
-  gke_location            = GKE_LOCATION
-  gke_control_plane_cidrs = ["172.16.1.0/28"]
-
-  workerpool_network = module.cloudbuild_private_pool.workerpool_network
-  workerpool_range   = module.cloudbuild_private_pool.workerpool_range
-  gateway_1_asn      = 65001
-  gateway_2_asn      = 65002
-  bgp_range_1        = "169.254.1.0/30"
-  bgp_range_2        = "169.254.2.0/30"
 }
 ```
 
@@ -105,7 +89,7 @@ The following dependencies must be available:
 ### Service Account
 
 A service account with the following roles must be used to provision
-the resources of this module:
+the resources of this blueprint:
 
 - Project level:
   - CI/CD project
@@ -124,10 +108,8 @@ the resources of this module:
       - `roles/viewer`
   - GKE projects
       - `roles/compute.networkAdmin`
-      - `roles/container.admin`
       - `roles/binaryauthorization.policyEditor`
       - `roles/resourcemanager.projectIamAdmin`
-      - `roles/iam.serviceAccountAdmin`
       - `roles/serviceusage.serviceUsageViewer`
       - `roles/iam.serviceAccountUser`
 

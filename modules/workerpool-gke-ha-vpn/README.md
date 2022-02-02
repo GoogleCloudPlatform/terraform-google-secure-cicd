@@ -1,3 +1,144 @@
+# Workerpool HA VPN Module
+This submodule uses the [HA VPN](https://github.com/terraform-google-modules/terraform-google-vpn/tree/master/modules/vpn_ha) module to establish a private connection between a Cloud Build worker pool VPC and a GKE VPC. Establishing connectivity through an HA VPN is necessary to enable deployment by Cloud Build to a private GKE cluster.
+
+This module creates:
+* HA VPN Gateways
+* Google Cloud Routers
+* Router Interfaces
+* HA VPN Tunnels
+
+## Usage
+
+The `workerpool-gke-ha-vpn` submodule can create an HA VPN connection between the Cloud Build workerpool VPC and a single GKE VPC. The module can be used multiple times to establish connections to multiple 
+
+### Connect private pool to a single GKE cluster in single VPC
+```hcl
+module "gke_cloudbuild_vpn" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"
+
+  project_id = <CLOUDBUILD_WORKERPOOL_VPC_PROJECT_ID>
+  location   = "us-central1"
+  workerpool_network = "cloudbuild-vpc"
+  workerpool_range   = "10.37.0.0/16"
+
+  gke_project             = <GKE_VPC_PROJECT_ID>
+  gke_network             = <GKE_VPC_NAME>
+  gke_location            = <GKE_REGION>
+  gke_control_plane_cidrs = {
+      "172.16.1.0/28" = "GKE Cluster CIDR"
+  }
+}
+```
+
+### Connect private pool to multiple GKE clusters in single VPC
+```hcl
+module "gke_cloudbuild_vpn" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"
+
+  project_id = <CLOUDBUILD_WORKERPOOL_VPC_PROJECT_ID>
+  location   = "us-central1"
+  workerpool_network = "cloudbuild-vpc"
+  workerpool_range   = "10.37.0.0/16"
+
+  gke_project             = <GKE_NONPROD_VPC_PROJECT_ID>
+  gke_network             = <GKE_NONPROD_VPC_NAME>
+  gke_location            = <GKE_NONPROD_REGION>
+  gke_control_plane_cidrs = {
+      "172.16.1.0/28" = "GKE DEV Cluster CIDR",
+      "172.16.2.0/28" = "GKE QA Cluster CIDR"
+  }
+}
+```
+
+### Connect private pool to multiple GKE clusters in multiple VPCs
+Use the module once for each destination VPC, while maintaining non-conflicting ASNs and BGP ranges used on the VPN gateways.
+```hcl
+module "gke_cloudbuild_vpn_dev" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"
+
+  project_id = <CLOUDBUILD_WORKERPOOL_VPC_PROJECT_ID>
+  location   = "us-central1"
+  workerpool_network = "cloudbuild-vpc"
+  workerpool_range   = "10.37.0.0/16"
+
+  gke_project             = <GKE_DEV_VPC_PROJECT_ID>
+  gke_network             = <GKE_DEV_VPC_NAME>
+  gke_location            = <GKE_DEV_REGION>
+  gke_control_plane_cidrs = {
+      "172.16.1.0/28" = "GKE DEV Cluster CIDR",
+  }
+
+  gateway_1_asn = 65001
+  gateway_2_asn = 65002
+  bgp_range_1   = "169.254.1.0/30"
+  bgp_range_2   = "169.254.2.0/30"
+}
+
+module "gke_cloudbuild_vpn_qa" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"
+
+  project_id = <CLOUDBUILD_WORKERPOOL_VPC_PROJECT_ID>
+  location   = "us-central1"
+  workerpool_network = "cloudbuild-vpc"
+  workerpool_range   = "10.37.0.0/16"
+
+  gke_project             = <GKE_QA_VPC_PROJECT_ID>
+  gke_network             = <GKE_QA_VPC_NAME>
+  gke_location            = <GKE_QA_REGION>
+  gke_control_plane_cidrs = {
+      "172.16.2.0/28" = "GKE QA Cluster CIDR",
+  }
+
+  gateway_1_asn = 65003
+  gateway_2_asn = 65004
+  bgp_range_1   = "169.254.3.0/30"
+  bgp_range_2   = "169.254.4.0/30"
+}
+
+module "gke_cloudbuild_vpn_prod" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"
+
+  project_id = <CLOUDBUILD_WORKERPOOL_VPC_PROJECT_ID>
+  location   = "us-central1"
+  workerpool_network = "cloudbuild-vpc"
+  workerpool_range   = "10.37.0.0/16"
+
+  gke_project             = <GKE_PROD_VPC_PROJECT_ID>
+  gke_network             = <GKE_PROD_VPC_NAME>
+  gke_location            = <GKE_PROD_REGION>
+  gke_control_plane_cidrs = {
+      "172.16.3.0/28" = "GKE PROD Cluster CIDR",
+  }
+
+  gateway_1_asn = 65005
+  gateway_2_asn = 65006
+  bgp_range_1   = "169.254.5.0/30"
+  bgp_range_2   = "169.254.6.0/30"
+}
+```
+
+### Allowlist Cloud Build workerpool on GKE control plane
+In the destination GKE cluster, append the Cloud Build worker pool address range to the cluster's master authorized networks to enable deployments by the private pool. 
+
+If using the [Google Kubernetes Engine module](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master/modules/private-cluster) to configure GKE, modify the `master_authorized_networks` input based on the example below:
+```hcl
+...
+  master_authorized_networks = [
+    {
+      cidr_block   = "<CLOUDBUILD_CIDR>"
+      display_name = "CLOUDBUILD"
+    }
+  ]
+...
+```
+
+Otherwise, [execute a gcloud command](https://cloud.google.com/kubernetes-engine/docs/how-to/authorized-networks#add) to do so in an otherwise deployed cluster:
+```sh
+gcloud container clusters update CLUSTER_NAME \
+    --enable-master-authorized-networks \
+    --master-authorized-networks EXISTING_AUTHROIZED_CIDR_1,EXISTING_AUTHROIZED_CIDR_2,<CLOUDBUILD_CIDR>
+```
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
 

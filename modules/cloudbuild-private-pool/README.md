@@ -1,3 +1,43 @@
+# Cloud Build Private Pool Module
+
+This submodule creates a [`Cloud Build Private pool`](https://cloud.google.com/build/docs/private-pools/private-pools-overview) and associated networking resources to enable deployment to private GKE clusters.
+
+This module creates:
+* Cloud Build worker pool
+* Global Address
+* Service Networking peering connnection
+* Peering routing configuration
+* Optionally, a Cloud Build VPC
+
+## Usage
+
+The `cloudbuild-private-pool` submodule can create a VPC for the Cloud Build worker pool, or use an existing VPC.
+
+### Creating a standalone worker pool VPC
+```hcl
+module "cloudbuild_private_pool" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//cloudbuild-private-pool"
+
+  project_id                = <PROJECT_ID>
+  network_project_id        = <PROJECT_ID>
+  location                  = "us-central1"
+  create_cloudbuild_network = true
+}
+```
+
+### Using an existing VPC
+```hcl
+module "cloudbuild_private_pool" {
+  source = "GoogleCloudPlatform/terraform-google-secure-cicd//cloudbuild-private-pool"
+
+  project_id                = <CLOUDBUILD_PROJECT_ID>
+  network_project_id        = <VPC_PROJECT_ID>
+  private_pool_vpc_name     = "existing-vpc-name"
+  location                  = "us-central1"
+  create_cloudbuild_network = false
+}
+```
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
 
