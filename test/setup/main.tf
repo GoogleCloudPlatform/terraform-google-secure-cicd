@@ -105,7 +105,7 @@ module "gke_project" {
 module "vpc" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/network/google"
-  version  = "~> 3.0"
+  version  = "~> 4.0"
 
   project_id   = module.gke_project[each.value].project_id
   network_name = "gke-private-vpc-${each.value}"
@@ -146,7 +146,6 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
 module "gke_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version  = "~> 18.0"
 
   project_id                  = module.gke_project[each.value].project_id
   name                        = "${each.value}-private-cluster"
