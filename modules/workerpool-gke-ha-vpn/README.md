@@ -151,13 +151,24 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
   export_custom_routes = true
 }
 ```
-To retrive the value of the peering connection, use the output value from the [GKE Private Cluster submodule](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master/modules/private-cluster) like shown above.
+To retrive the value of the peering connection, use the output value from the [GKE Private Cluster submodule](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/master/modules/private-cluster) as shown above.
 
-Or run the command:
-```sh
-gcloud container clusters describe <CLUSTER_NAME> \
-    --region <REGION> \
-    --format='value(privateClusterConfig.peeringName)'
+Or use a [`google_container_cluster` Data Source](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/container_cluster) as follows:
+```hcl
+data "google_container_cluster" "my_cluster" {
+  project  = <GKE_PROJECT>
+  name     = <GKE_CLUSTER_NAME>
+  location = <GKE_LOCATION>
+}
+
+resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
+  project = <GKE_VPC_PROJECT>
+  network = <GKE_VPC_NAME>
+  peering = data.gogole_container_cluster.my_cluster.private_cluster_config.peering_name
+
+  import_custom_routes = true
+  export_custom_routes = true
+}
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
