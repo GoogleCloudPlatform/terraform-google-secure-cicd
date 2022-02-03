@@ -51,7 +51,7 @@ module "example" {
 module "vpc" {
   for_each = var.gke_project_ids
   source   = "terraform-google-modules/network/google"
-  version  = "~> 3.0"
+  version  = "~> 4.0"
 
   project_id   = var.gke_project_ids[each.key]
   network_name = "gke-vpc-${each.key}"
@@ -81,6 +81,7 @@ module "vpc" {
 module "gke_cluster" {
   for_each = var.gke_project_ids
   source   = "terraform-google-modules/kubernetes-engine/google"
+  version  = "19.0.0"
 
   project_id                  = var.gke_project_ids[each.key]
   name                        = "${each.key}-cluster"

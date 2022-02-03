@@ -16,7 +16,7 @@
 
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
-  version = "~> 10.0"
+  version = "~> 11.0"
 
   name              = "ci-secure-cicd"
   random_project_id = "true"
@@ -72,7 +72,7 @@ locals {
 module "gke_project" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/project-factory/google"
-  version  = "~> 10.0"
+  version  = "~> 11.0"
 
   name                    = "secure-cicd-gke-${each.value}"
   random_project_id       = "true"
@@ -105,7 +105,7 @@ module "gke_project" {
 module "vpc" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/network/google"
-  version  = "~> 3.0"
+  version  = "~> 4.0"
 
   project_id   = module.gke_project[each.value].project_id
   network_name = "gke-private-vpc-${each.value}"
