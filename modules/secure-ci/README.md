@@ -1,12 +1,14 @@
 # Secure CI Module
 This module creates a number of Google Cloud Source Repositories and a Cloud Build Trigger to facilitate a software build process with security checks.
 
+To securely build container images, this pipeline focuses on implementing the "Securing artifacts before deployment" section of the [Shifting left on security repot](https://cloud.google.com/solutions/shifting-left-on-security). The modules implements security best practices such as: using artifact repositories to store immutable container images, running container analysis scans to test container structure and check for CVEs, and signing approved images with Binary Authorization attestors to enable secure deployment.
+
 This module creates:
 * Cloud Source Repositories for: application source code, template Kubernetes manifests, and hydrated Kubernetes manifests
 * Cloud Build Trigger to execute the integration pipeline upon pushing code changes to the application source code repository
 * Storage Bucket to store build artifacts
 * Artifact Registry repository for built container images
-* Cloud KMS keyring to support attestors 
+* Cloud KMS keyring to support attestors
 * Binary Authorization attestors
 
 ## Usage

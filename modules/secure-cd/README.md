@@ -1,10 +1,11 @@
 # Secure CD Module
 This module creates a number of Google Cloud Build triggers to facilitate deployment of container images to GKE clusters.
 
+To securely deploy container images, this pipeline focuses on implementing the "Securing deployed artifacts" and "Securing artifact promotions" sections of the [Shifting left on security repot](https://cloud.google.com/solutions/shifting-left-on-security). This module implements security best practices by automating the deployment and promotion of updated container images across multiple GKE clusters, and "failing fast" upon security violation. Users configure a GKE cluster's required attesttions and at which stages a container will receive that attestation based on succesful deployment. The [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd-yaml) contains user-customizable post-deployment security checks to prevent promotion upon discovery of a vulnerability.
+
 This module creates:
-* Cloud Build Trigger, one for each specified deployment environment (usually one per cluster)
-* A Binary Authorizatoin Policy in each project with a GKE cluster, specifying which attestations are required to run containers in each cluster
-* 
+* [Cloud Build Triggers](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers), one for each specified deployment environment (usually one per cluster)
+* A [Binary Authorization Policy](https://cloud.google.com/binary-authorization/docs) in each project with a GKE cluster, specifying which attestations are required to run containers in each cluster
 
 ## Usage
 Basic usage of this module is as follows:
