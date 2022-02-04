@@ -1,3 +1,33 @@
+# Secure CI Module
+This module creates a number of Google Cloud Source Repositories and a Cloud Build Trigger to facilitate a software build process with security checks.
+
+This module creates:
+* Cloud Source Repositories for: application source code, template Kubernetes manifests, and hydrated Kubernetes manifests
+* Cloud Build Trigger to execute the integration pipeline upon pushing code changes to the application source code repository
+* Storage Bucket to store build artifacts
+* Artifact Registry repository for built container images
+* Cloud KMS keyring to support attestors 
+* Binary Authorization attestors
+
+## Usage
+Basic usage of this module is as follows:
+```hcl
+module "ci_pipeline" {
+  source                  = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-ci"
+
+  project_id              = var.project_id
+  primary_location        = "us-central1"
+  attestor_names_prefix   = ["build", "security", "quality"]
+  app_build_trigger_yaml  = "cloudbuild-ci.yaml"
+  runner_build_folder     = "../../../examples/app_cicd/cloud-build-builder"
+  build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
+  trigger_branch_name     = ".*"
+}
+```
+### Build Configuration
+The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci-yaml) build configuration runs container structure and vulnerability scans, and creates Binary Authorization attestations based on their results. Add the configuration file to the root of the `app_source_repo` to trigger the CI phase.
+
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
 
