@@ -1,7 +1,7 @@
 # Secure CI Module
 This module creates a number of Google Cloud Source Repositories and a Cloud Build Trigger to facilitate a software build process with security checks.
 
-To securely build container images, this pipeline focuses on implementing the "Securing artifacts before deployment" section of the [Shifting left on security repot](https://cloud.google.com/solutions/shifting-left-on-security). The modules implements security best practices such as: using artifact repositories to store immutable container images, running container analysis scans to test container structure and check for CVEs, and signing approved images with Binary Authorization attestors to enable secure deployment.
+To securely build container images, this pipeline focuses on implementing the "Securing artifacts before deployment" section of the [Shifting left on security report](https://cloud.google.com/solutions/shifting-left-on-security). The modules implements security best practices such as: using artifact repositories to store immutable container images, running container analysis scans to test container structure and check for CVEs, and signing approved images with Binary Authorization attestors to enable secure deployment.
 
 This module creates:
 * Cloud Source Repositories for: application source code, template Kubernetes manifests, and hydrated Kubernetes manifests
@@ -27,7 +27,7 @@ module "ci_pipeline" {
 }
 ```
 ### Build Configuration
-The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci-yaml) build configuration runs container structure and vulnerability scans, and creates Binary Authorization attestations based on their results. Add the configuration file to the root of the `app_source_repo` to trigger the CI phase.
+The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci.yaml) build configuration runs container structure and vulnerability scans, and creates Binary Authorization attestations based on their results. Add the configuration file to the root of the `app_source_repo` to trigger the CI phase.
 
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
