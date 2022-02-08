@@ -1,6 +1,6 @@
 # Cloud Build Private Pool Module
 
-This submodule creates a [`Cloud Build Private pool`](https://cloud.google.com/build/docs/private-pools/private-pools-overview) and associated networking resources to enable deployment to private GKE clusters.
+This submodule creates a [Cloud Build Private pool](https://cloud.google.com/build/docs/private-pools/private-pools-overview) and associated networking resources to enable deployment to private GKE clusters.
 
 This module creates:
 * Cloud Build worker pool
