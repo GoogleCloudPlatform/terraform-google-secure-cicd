@@ -51,7 +51,7 @@ module "gke_cloudbuild_vpn" {
 ```
 
 ### Connect private pool to multiple GKE clusters in multiple VPCs
-Use the module once for each destination VPC, while maintaining non-conflicting ASNs and BGP ranges used on the VPN gateways.
+Use the module once for each destination VPC, while maintaining non-conflicting ASNs and BGP ranges on the VPN gateways.
 ```hcl
 module "gke_cloudbuild_vpn_dev" {
   source = "GoogleCloudPlatform/terraform-google-secure-cicd//workerpool-gke-ha-vpn"

@@ -68,7 +68,7 @@ Functional examples are included in the
 [examples](./examples/) directory.
 
 ### Build Configuration
-Example Cloud Build configuration files are located in the [Build](/.build/) folder. Push the `cloudbuild-ci.yaml` configuration to the application source code repository. Push the `cloudbuild-cd.yaml` configuration to the wet manifest repository. These build configurations offer a baseline for adhering to S3C application delivery practices within this blueprint, and are customizable as needed.
+Example Cloud Build configuration files are located in the [Build](./build/) folder. Push the `cloudbuild-ci.yaml` configuration to the application source code repository. Push the `cloudbuild-cd.yaml` configuration to the wet manifest repository. These build configurations offer a baseline for adhering to S3C application delivery practices within this blueprint, and are customizable as needed.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
