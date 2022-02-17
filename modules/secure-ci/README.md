@@ -20,6 +20,7 @@ module "ci_pipeline" {
   project_id              = var.project_id
   primary_location        = "us-central1"
   attestor_names_prefix   = ["build", "security", "quality"]
+  build_attestor          = "build-attestor"
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
   runner_build_folder     = "../../../examples/app_cicd/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
