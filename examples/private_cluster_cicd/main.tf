@@ -25,6 +25,7 @@ module "ci_pipeline" {
   cache_bucket_name       = "private_cluster_cloudbuild"
   primary_location        = "us-central1"
   attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
+  build_attestor          = "build-pc-attestor"
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
   runner_build_folder     = "../../../examples/private_cluster_cicd/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"

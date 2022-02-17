@@ -119,3 +119,8 @@ variable "cloudbuild_private_pool" {
   type        = string
   default     = ""
 }
+
+variable "build_attestor" {
+  description = "Name of attestor for verifying CI phase"
+  type        = string
+}
