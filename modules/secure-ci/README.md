@@ -39,6 +39,7 @@ The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci-yaml) build config
 | app\_build\_trigger\_yaml | Name of application cloudbuild yaml file | `string` | n/a | yes |
 | app\_source\_repo | Name of repo that contains app source code along with cloudbuild yaml | `string` | `"app-source"` | no |
 | attestor\_names\_prefix | A list of Binary Authorization attestors to create | `list(string)` | n/a | yes |
+| build\_attestor | Name of attestor for verifying CI phase | `string` | n/a | yes |
 | build\_image\_config\_yaml | Name of image builder yaml file | `string` | n/a | yes |
 | cache\_bucket\_name | Name of cloudbuild artifact and cache GCS bucket | `string` | `""` | no |
 | cloudbuild\_private\_pool | Cloud Build private pool self-link | `string` | `""` | no |
