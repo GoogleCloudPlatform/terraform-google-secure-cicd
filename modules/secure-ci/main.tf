@@ -58,7 +58,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
       _MANIFEST_DRY_REPO       = var.manifest_dry_repo
       _MANIFEST_WET_REPO       = var.manifest_wet_repo
       _WET_BRANCH_NAME         = var.wet_branch_name
-      _ATTESTOR_NAME           = var.build_attestor
+      _ATTESTOR_NAME           = module.attestors[var.attestor_names_prefix[0]].attestor
       _CLOUDBUILD_PRIVATE_POOL = var.cloudbuild_private_pool
     },
     var.additional_substitutions
