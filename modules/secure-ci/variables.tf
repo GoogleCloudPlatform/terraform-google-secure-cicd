@@ -25,7 +25,7 @@ variable "primary_location" {
 }
 
 variable "attestor_names_prefix" {
-  description = "A list of Binary Authorization attestors to create"
+  description = "A list of Binary Authorization attestors to create. The first attestor specified in this list will be used as the build-attestor during the CI phase."
   type        = list(string)
 }
 

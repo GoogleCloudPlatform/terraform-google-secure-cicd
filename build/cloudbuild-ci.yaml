@@ -29,7 +29,7 @@ timeout: "3600s" # 1 hour
 tags:
   - "secure-cicd-ci"
 substitutions:
-  _ATTESTOR_NAME: "build-attestor"
+  _ATTESTOR_FULL_NAME: "projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}"
   _GAR_REPO_URI: "${_DEFAULT_REGION}-docker.pkg.dev/${PROJECT_ID}/${_GAR_REPOSITORY}"
 options:
   substitution_option: 'ALLOW_LOOSE'
@@ -143,20 +143,20 @@ steps:
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       # Public Key for attestor
-      PUBLIC_KEY_ID=$(gcloud container binauthz attestors describe ${_ATTESTOR_NAME} \
+      PUBLIC_KEY_ID=$(gcloud container binauthz attestors describe ${_ATTESTOR_FULL_NAME} \
         --format='value(userOwnedGrafeasNote.publicKeys[0].id)')
 
       for IMAGE in "$${IMAGES[@]}"; do
         HAS_ATTESTATION=$(gcloud container binauthz attestations list \
             --project="${PROJECT_ID}" \
-            --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
+            --attestor="${_ATTESTOR_FULL_NAME}" \
             --artifact-url="$${IMAGE}" \
             --format="value(name)")
 
         if [ -z $${HAS_ATTESTATION} ]; then
           gcloud beta container binauthz attestations sign-and-create \
             --artifact-url="$${IMAGE}" \
-            --attestor="projects/${PROJECT_ID}/attestors/${_ATTESTOR_NAME}" \
+            --attestor="${_ATTESTOR_FULL_NAME}" \
             --keyversion=$( echo "$${PUBLIC_KEY_ID}" | sed "s|//cloudkms.googleapis.com/v1/||" )
         fi
       done
