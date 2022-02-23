@@ -62,9 +62,11 @@ sed -i 's/dev-kubernetes-manifests/app-dry-manifests/g' app-dry-manifests/skaffo
 ```
 13. Push `app-dry-manifests` changes
 ```sh
+cd app-dry-manifests/
 git add .
 git commit -m "initial commit"
 git push
+cd ..
 ```
 
 14. Copy `cloudbuild-ci.yaml` to `app-source` repo
