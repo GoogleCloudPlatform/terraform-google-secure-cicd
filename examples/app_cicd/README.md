@@ -6,6 +6,7 @@ We will use the Bank of Anthos sample application as the target code on which to
 
 ## Prerequisites
 * GKE cluster(s) to deploy workloads, specified using the `deploy_branch_clusters` variable. See the [secure-cd module](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/tree/main/modules/secure-cd) for details on specifying the `deploy_branch_clusters` object.
+* Run `gcloud auth application-default login` before following the steps below.
 
 ## Setup
 
