@@ -32,7 +32,7 @@ terraform init
 
 5. In `main.tf`, set the variable `runner_builder_folder` to the relative path of the `cloud-build-builder` subfolder.
 ```tf
-  runner_build_folder     = "cloud-build-builder" 
+  runner_build_folder     = "cloud-build-builder"
 ```
 
 6. Run `terraform apply` within this example directory.
@@ -114,14 +114,14 @@ git push
 ### Container Structure Test
 Default checks in the `container-structure-test` step of the CI phase may fail on some containers. To ignore the violations and pass the checks for demonstration purposes, comment out the violated policies defined in the [policies/container-structure-policy.yaml](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/examples/app_cicd/policies/container-structure-policy.yaml) file and push the changes to the `app-source` repo, triggering a new build.
 
-### Deploying from Cloud Shell 
+### Deploying from Cloud Shell
 Sometimes when running Terraform from Google Cloud Shell, the system may encounter the following error or similar:
 ```
 dial tcp [IP_V6_ADDRESS]:443: connect: cannot assign requested address
 ```
 This is a [known issue](https://github.com/hashicorp/terraform-provider-google/issues/6782) addressed in the Google Terraform provider open source issues.
 
-Run [this command](https://github.com/hashicorp/terraform-provider-google/issues/6782#issuecomment-874574409) in Cloud Shell as a workaround: 
+Run [this command](https://github.com/hashicorp/terraform-provider-google/issues/6782#issuecomment-874574409) in Cloud Shell as a workaround:
 ```sh
 sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 net.ipv6.conf.default.disable_ipv6=1 net.ipv6.conf.lo.disable_ipv6=1 > /dev/null
 export APIS="googleapis.com www.googleapis.com storage.googleapis.com iam.googleapis.com container.googleapis.com cloudresourcemanager.googleapis.com"
