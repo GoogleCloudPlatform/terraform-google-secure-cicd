@@ -26,12 +26,12 @@ fileExistenceTests:
   uid: 0
   gid: 0
   isExecutableBy: 'group'
-- name: 'Debian Sources do NOT exist'
-  path: '/etc/apt/sources.list'
-  shouldExist: true # TODO Set this to "false" to fail the test
-- name: 'Bash shell is available' # NOTE: In real world, remove bash, sources and ssh to improve security
-  path: '/bin/bash'
-  shouldExist: true # TODO Set this to "false" to fail the test
+# - name: 'Debian Sources do NOT exist'
+#   path: '/etc/apt/sources.list'
+#   shouldExist: true # TODO Set this to "false" to fail the test
+# - name: 'Bash shell is available' # NOTE: In real world, remove bash, sources and ssh to improve security
+#   path: '/bin/bash'
+#   shouldExist: true # TODO Set this to "false" to fail the test
 - name: 'No SSH'
   path: '/usr/bin/ssh'
   shouldExist: false
