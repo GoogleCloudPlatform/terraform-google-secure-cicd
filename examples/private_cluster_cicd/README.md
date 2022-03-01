@@ -54,6 +54,7 @@ cp -R terraform-google-secure-cicd/examples/app_cicd/policies bank-of-anthos/pol
 | deploy\_branch\_clusters | mapping of branch names to cluster deployments | <pre>map(object({<br>    cluster               = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>  }))</pre> | `{}` | no |
 | gke\_networks | list of GKE cluster networks in which to create VPN connections | <pre>list(object({<br>    control_plane_cidrs = map(string)<br>    location            = string<br>    network             = string<br>    project_id          = string<br>  }))</pre> | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
+| runner\_build\_folder | Path of the cloud-build-builder folder | `string` | `"cloud-build-builder"` | no |
 
 ## Outputs
 
