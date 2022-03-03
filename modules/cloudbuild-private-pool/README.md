@@ -51,7 +51,7 @@ module "cloudbuild_private_pool" {
 | project\_id | Project ID for Cloud Build Private Worker Pool | `string` | n/a | yes |
 | worker\_address | Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix, as it must be /16 | `string` | `"10.37.0.0"` | no |
 | worker\_pool\_name | Name of Cloud Build Worker Pool | `string` | `"cloudbuild-private-worker-pool"` | no |
-| worker\_pool\_no\_external\_ip | Whether to disable external IP on the Cloud Build Worker Pool | `bool` | `true` | no |
+| worker\_pool\_no\_external\_ip | Whether to disable external IP on the Cloud Build Worker Pool | `bool` | `false` | no |
 | worker\_range\_name | Name of Cloud Build Worker IP address range | `string` | `"worker-pool-range"` | no |
 
 ## Outputs
