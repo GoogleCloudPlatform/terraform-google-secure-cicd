@@ -56,7 +56,7 @@ variable "worker_range_name" {
 variable "worker_pool_no_external_ip" {
   type        = bool
   description = "Whether to disable external IP on the Cloud Build Worker Pool"
-  default     = true
+  default     = false
 }
 
 variable "location" {
