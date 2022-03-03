@@ -30,43 +30,38 @@ terraform init
 ```
 4. Create a `terraform.tfvars` file to provide values for `project_id` and `deploy_branch_clusters`. Optionally override any variables if necessary.
 
-5. In `main.tf`, set the variable `runner_builder_folder` to the relative path of the `cloud-build-builder` subfolder.
-```tf
-  runner_build_folder     = "cloud-build-builder"
-```
-
-6. Run `terraform apply` within this example directory.
+5. Run `terraform apply` within this example directory.
 
 ### Sample application configuration
-7. Export CI/CD project ID
+6. Export CI/CD project ID
 ```sh
 export PROJECT_ID=<CICD Project ID>
 ```
-8. Return to working directory
+7. Return to working directory
 ```sh
 cd ../../..
 ```
-9. Clone the Bank of Anthos sample application repo
+8. Clone the Bank of Anthos sample application repo
 ```sh
 git clone --branch v0.5.3 https://github.com/GoogleCloudPlatform/bank-of-anthos.git
 ```
-10. Clone the `app-dry-manifests` repo
+9. Clone the `app-dry-manifests` repo
 ```sh
 gcloud source repos clone app-dry-manifests --project=$PROJECT_ID
 ```
-11. Copy the Bank of Anthos Kubernetes manifests to the `app-dry-manifests` repo
+10. Copy the Bank of Anthos Kubernetes manifests to the `app-dry-manifests` repo
 ```sh
 cp bank-of-anthos/dev-kubernetes-manifests/* app-dry-manifests/
 ```
-12. Copy the Skaffold config to the `app-dry-manifests` repo
+11. Copy the Skaffold config to the `app-dry-manifests` repo
 ```sh
 cp bank-of-anthos/skaffold.yaml app-dry-manifests/
 ```
-13. Replace Skaffold manifest paths with repo path
+12. Replace Skaffold manifest paths with repo path
 ```sh
 sed -i 's/dev-kubernetes-manifests/app-dry-manifests/g' app-dry-manifests/skaffold.yaml
 ```
-14. Push `app-dry-manifests` changes
+13. Push `app-dry-manifests` changes
 ```sh
 cd app-dry-manifests/
 git add .
@@ -75,35 +70,35 @@ git push
 cd ..
 ```
 
-15. Copy `cloudbuild-ci.yaml` to `app-source` repo
+14. Copy `cloudbuild-ci.yaml` to `app-source` repo
 ```sh
 cp terraform-google-secure-cicd/build/cloudbuild-ci.yaml bank-of-anthos/
 ```
-16. Copy `policies` folder to `app-source` repo
+15. Copy `policies` folder to `app-source` repo
 ```sh
 cp -R terraform-google-secure-cicd/examples/app_cicd/policies bank-of-anthos/policies
 ```
 
-17. Add `app-source` repo as new remote for Bank of Anthos source code and push
+16. Add `app-source` repo as new remote for Bank of Anthos source code and push
 ```sh
 cd bank-of-anthos
 git remote add google https://source.developers.google.com/p/$PROJECT_ID/r/app-source
 git push --all google
 ```
-18. Return to working directory
+17. Return to working directory
 ```sh
 cd ..
 ```
-19. Clone `app-wet-manifests` repo
+18. Clone `app-wet-manifests` repo
 ```sh
 gcloud source repos clone app-wet-manifests --project=$PROJECT_ID
 ```
 
-20. Copy `cloudbuild-cd.yaml` to `app-wet-manifests` repo
+19. Copy `cloudbuild-cd.yaml` to `app-wet-manifests` repo
 ```sh
 cp terraform-google-secure-cicd/build/cloudbuild-cd.yaml app-wet-manifests/
 ```
-21. Push changes in `app-wet-manifests` repo
+20. Push changes in `app-wet-manifests` repo
 ```sh
 cd app-wet-manifests
 git add .

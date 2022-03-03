@@ -30,12 +30,7 @@ terraform init
 ```
 4. Create a `terraform.tfvars` file to provide values for `project_id` and `deploy_branch_clusters` and `gke_networks` Optionally override any variables if necessary.
 
-5. In `main.tf`, set the variable `runner_builder_folder` to the relative path of the `cloud-build-builder` subfolder.
-```tf
-  runner_build_folder     = "cloud-build-builder"
-```
-
-6. Run `terraform apply` within this example directory.
+5. Run `terraform apply` within this example directory.
 
 Follow steps 6 onward in the [app_cicd example instructions](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/examples/app_cicd/README.md).
 
@@ -43,7 +38,7 @@ Replace step 16:
 
 16. Copy `policies` folder to `app-source` repo
 ```sh
-cp -R terraform-google-secure-cicd/examples/app_cicd/policies bank-of-anthos/policies
+cp -R terraform-google-secure-cicd/examples/private_cluster_cicd/policies bank-of-anthos/policies
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
