@@ -17,8 +17,8 @@
 module "example" {
   source = "../../../examples/app_cicd"
 
-  project_id          = var.project_id
-  primary_location    = var.primary_location
+  project_id       = var.project_id
+  primary_location = var.primary_location
   deploy_branch_clusters = {
     dev = {
       cluster               = "dev-cluster",

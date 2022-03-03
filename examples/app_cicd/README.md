@@ -135,7 +135,6 @@ done
 | deploy\_branch\_clusters | mapping of branch names to cluster deployments | <pre>map(object({<br>    cluster               = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>  }))</pre> | `{}` | no |
 | primary\_location | Region used for key-ring | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
-| runner\_build\_folder | Path of the cloud-build-builder folder | `string` | `"cloud-build-builder"` | no |
 
 ## Outputs
 
