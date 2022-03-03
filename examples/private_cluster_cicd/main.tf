@@ -26,7 +26,7 @@ module "ci_pipeline" {
   primary_location        = "us-central1"
   attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
-  runner_build_folder     = "../../../examples/private_cluster_cicd/cloud-build-builder"
+  runner_build_folder     = "${path.module}/cloud-build-builder"
   build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
   trigger_branch_name     = ".*"
   cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
