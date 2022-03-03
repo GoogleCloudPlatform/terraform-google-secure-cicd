@@ -41,9 +41,3 @@ variable "deploy_branch_clusters" {
   description = "mapping of branch names to cluster deployments"
   default     = {}
 }
-
-variable "runner_build_folder" {
-  type        = string
-  description = "Path of the cloud-build-builder folder"
-  default     = "cloud-build-builder"
-}

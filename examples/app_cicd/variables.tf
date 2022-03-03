@@ -24,12 +24,6 @@ variable "primary_location" {
   description = "Region used for key-ring"
 }
 
-variable "runner_build_folder" {
-  type        = string
-  description = "Path of the cloud-build-builder folder"
-  default     = "cloud-build-builder"
-}
-
 variable "deploy_branch_clusters" {
   type = map(object({
     cluster               = string

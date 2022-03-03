@@ -57,7 +57,6 @@ module "example" {
   source = "../../../examples/private_cluster_cicd"
 
   project_id             = var.project_id
-  runner_build_folder    = "../../../examples/private_cluster_cicd/cloud-build-builder"
   deploy_branch_clusters = local.deploy_branch_clusters
   gke_networks = distinct([
     for env in local.deploy_branch_clusters : {

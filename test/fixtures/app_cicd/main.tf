@@ -19,7 +19,6 @@ module "example" {
 
   project_id          = var.project_id
   primary_location    = var.primary_location
-  runner_build_folder = "../../../examples/app_cicd/cloud-build-builder"
   deploy_branch_clusters = {
     dev = {
       cluster               = "dev-cluster",
