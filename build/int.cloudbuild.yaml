@@ -32,7 +32,7 @@ steps:
   waitFor:
     - go-init-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage apply --verbose -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage apply --verbose']
 - id: go-verify-app-cicd-example
   waitFor:
     - go-apply-app-cicd-example
@@ -42,7 +42,7 @@ steps:
   waitFor:
     - go-verify-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage destroy --verbose -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage destroy --verbose']
 
 # cloudbuild_private_pool
 - id: go-init-cloudbuild_private_pool-example
