@@ -101,9 +101,12 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.0.0-20211201040309-6b30c1e509c9 h1:xdEWeGU6h6oD9topFbSyPzS/gq2NkPUUS0kLVbYodjk=
 github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.0.0-20211201040309-6b30c1e509c9/go.mod h1:tWoaVHXM9sZyzxgX2+UHtzdJkav+uTnTJiz42N8FONc=
+github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.0.0-20220315183512-768ecce22bc3 h1:c8lHOEIPnbIjCQT7CKCc09rGAXofLBlA4U+MdqTKKBM=
+github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.0.0-20220315183512-768ecce22bc3/go.mod h1:cdqqfBObgqdv4oyKGBS8Lwan5XVisYV9RvZ7JuXTx44=
 github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20190822182118-27a4ced34534/go.mod h1:iroGtC8B3tQiqtds1l+mgk/BBOrxbqjH+eUfFQYRc14=
 github.com/GoogleContainerTools/kpt-functions-catalog/functions/go/list-setters v0.1.0/go.mod h1:ju1d4EAij/igLgN+0er7tPc1nTKn/PTjY00buPEsx0Q=
 github.com/GoogleContainerTools/kpt-functions-sdk/go v0.0.0-20210810181223-632b30549de6/go.mod h1:k86q33ABlA9TnUqRmHH9dnKY2Edh8YbxjRyPfjlM8jE=
+github.com/GoogleContainerTools/kpt-functions-sdk/go v0.0.0-20220301220754-6964a09d6cd2/go.mod h1:lJYiqfBOl6AOiefK9kmkhinbffIysu+nnclOBwKEPlQ=
 github.com/Microsoft/go-winio v0.4.11/go.mod h1:VhR8bwka0BXejwEJY73c50VrPtXAaKcyvVC4A4RozmA=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
 github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5/go.mod h1:tTuCMEN+UleMWgg9dVx4Hu52b1bJo+59jBh3ajtinzw=
