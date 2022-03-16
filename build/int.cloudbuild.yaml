@@ -27,22 +27,22 @@ steps:
   waitFor:
     - prepare
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=init go test -v -run TestAppCICDExample ./... -p 1']
+  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage init --verbose']
 - id: go-apply-app-cicd-example
   waitFor:
     - go-init-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=apply go test -v -run TestAppCICDExample ./... -p 1 -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage apply --verbose']
 - id: go-verify-app-cicd-example
   waitFor:
     - go-apply-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=verify go test -v -run TestAppCICDExample ./... -p 1']
+  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage verify --verbose']
 - id: go-destroy-app-cicd-example
   waitFor:
     - go-verify-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestAppCICDExample ./... -p 1 -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage destroy --verbose']
 
 # cloudbuild_private_pool
 - id: go-init-cloudbuild_private_pool-example
@@ -50,22 +50,22 @@ steps:
     - prepare
     - go-destroy-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=init go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1']
+  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage init --verbose']
 - id: go-apply-cloudbuild_private_pool-example
   waitFor:
     - go-init-cloudbuild_private_pool-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=apply go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1 -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage apply --verbose']
 - id: go-verify-cloudbuild_private_pool-example
   waitFor:
     - go-apply-cloudbuild_private_pool-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=verify go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1']
+  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage verify --verbose']
 - id: go-destroy-cloudbuild_private_pool-example
   waitFor:
     - go-verify-cloudbuild_private_pool-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestCloudBuildPrivatePoolExample ./... -p 1 -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage destroy --verbose']
 
 # private_cluster_cicd
 - id: go-init-private-cluster-cicd-example
@@ -73,22 +73,22 @@ steps:
     - prepare
     - go-destroy-cloudbuild_private_pool-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=init go test -v -run TestPrivateClusterCICDExample ./... -p 1']
+  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage init --verbose']
 - id: go-apply-private-cluster-cicd-example
   waitFor:
     - go-init-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=apply go test -v -run TestPrivateClusterCICDExample ./... -p 1 -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage apply --verbose']
 - id: go-verify-private-cluster-cicd-example
   waitFor:
     - go-apply-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=verify go test -v -run TestPrivateClusterCICDExample ./... -p 1']
+  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage verify --verbose']
 - id: go-destroy-private-cluster-cicd-example
   waitFor:
     - go-verify-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && source_test_env && init_credentials && cd test/integration && RUN_STAGE=teardown go test -v -run TestPrivateClusterCICDExample ./... -p 1 -timeout 60m']
+  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage destroy --verbose']
 
 
 tags:
@@ -98,4 +98,4 @@ tags:
 - 'deployment'
 substitutions:
   _DOCKER_IMAGE_DEVELOPER_TOOLS: 'cft/developer-tools'
-  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '1.0'
+  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '1.4'
