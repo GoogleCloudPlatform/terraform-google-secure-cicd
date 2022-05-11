@@ -28,9 +28,9 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:workerpool-gke-ha-vpn/v1.0.0"
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:workerpool-gke-ha-vpn/v0.1.0"
   }
   provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:workerpool-gke-ha-vpn/v1.0.0"
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:workerpool-gke-ha-vpn/v0.1.0"
   }
 }
