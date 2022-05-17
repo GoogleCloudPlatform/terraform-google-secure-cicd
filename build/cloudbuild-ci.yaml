@@ -188,13 +188,13 @@ steps:
       # Clone the WET repo
       cd /workspace
       gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
-      DEFAULT_BRANCH = ($$(git -C /workspace/$_MANIFEST_WET_REPO remote show origin | grep 'HEAD branch' | cut -d' ' -f5))
+      DEFAULT_BRANCH=$(git -C /workspace/$_MANIFEST_WET_REPO remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
       git -C /workspace/$_MANIFEST_WET_REPO branch $_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch already exists"
       git -C /workspace/$_MANIFEST_WET_REPO checkout $_WET_BRANCH_NAME
       git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch does not yet exist"
       git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase || echo "$_WET_BRANCH_NAME branch does not yet exist"
 
-      git -C /workspace/$_MANIFEST_WET_REPO merge $${DEFAULT_BRANCH}
+      git -C /workspace/$_MANIFEST_WET_REPO merge "$${DEFAULT_BRANCH}"
       mkdir -p /workspace/$_MANIFEST_WET_REPO/manifests
 
       skaffold config set --global local-cluster false
