@@ -86,13 +86,13 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   }
   substitutions = merge(
     {
-      _GAR_REPOSITORY          = var.gar_repo_name
+      # _GAR_REPOSITORY          = var.gar_repo_name
       _DEFAULT_REGION          = each.value.location
-      _MANIFEST_WET_REPO       = var.manifest_wet_repo
+      # _MANIFEST_WET_REPO       = var.manifest_wet_repo
       _CLUSTER_NAME            = each.value.cluster
       _CLUSTER_PROJECT         = each.value.project_id
       _CLOUDBUILD_FILENAME     = var.app_deploy_trigger_yaml
-      _CACHE_BUCKET_NAME       = var.cache_bucket_name
+      # _CACHE_BUCKET_NAME       = var.cache_bucket_name
       _NEXT_ENV                = each.value.next_env
       _ATTESTOR_NAME           = each.value.env_attestation
       _CLOUDBUILD_PRIVATE_POOL = var.cloudbuild_private_pool

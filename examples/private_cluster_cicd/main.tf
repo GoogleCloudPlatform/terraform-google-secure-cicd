@@ -38,15 +38,15 @@ module "cd_pipeline" {
   project_id       = var.project_id
   primary_location = "us-central1"
 
-  gar_repo_name           = module.ci_pipeline.app_artifact_repo
+  # gar_repo_name           = module.ci_pipeline.app_artifact_repo
   manifest_wet_repo       = "app-wet-manifests-pc"
   deploy_branch_clusters  = var.deploy_branch_clusters
   app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
-  cache_bucket_name       = module.ci_pipeline.cache_bucket_name
+  # cache_bucket_name       = module.ci_pipeline.cache_bucket_name
   cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
-  depends_on = [
-    module.ci_pipeline
-  ]
+  # depends_on = [
+  #   module.ci_pipeline
+  # ]
 }
 
 # Cloud Build Private Pool

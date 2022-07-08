@@ -24,15 +24,15 @@ variable "primary_location" {
   description = "Region used for key-ring"
 }
 
-variable "manifest_wet_repo" {
-  type        = string
-  description = "Name of repo that contains hydrated K8s manifests files"
-}
+# variable "manifest_wet_repo" {
+#   type        = string
+#   description = "Name of repo that contains hydrated K8s manifests files"
+# }
 
-variable "gar_repo_name" {
-  type        = string
-  description = "Docker artifact registry repo to store app build images"
-}
+# variable "gar_repo_name" {
+#   type        = string
+#   description = "Docker artifact registry repo to store app build images"
+# }
 
 variable "app_deploy_trigger_yaml" {
   type        = string
@@ -52,10 +52,10 @@ variable "deploy_branch_clusters" {
   default     = {}
 }
 
-variable "cache_bucket_name" {
-  description = "cloud build artifact bucket name"
-  type        = string
-}
+# variable "cache_bucket_name" {
+#   description = "cloud build artifact bucket name"
+#   type        = string
+# }
 
 variable "additional_substitutions" {
   description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
