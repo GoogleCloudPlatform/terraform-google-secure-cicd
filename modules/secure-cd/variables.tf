@@ -24,10 +24,10 @@ variable "primary_location" {
   description = "Region used for key-ring"
 }
 
-# variable "manifest_wet_repo" {
-#   type        = string
-#   description = "Name of repo that contains hydrated K8s manifests files"
-# }
+variable "manifest_wet_repo" {
+  type        = string
+  description = "Name of repo that contains hydrated K8s manifests files"
+}
 
 # variable "gar_repo_name" {
 #   type        = string
