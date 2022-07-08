@@ -35,6 +35,42 @@ locals {
   )
 }
 
+resource "google_clouddeploy_target" "deploy_target" {
+  for_each = var.deploy_branch_clusters
+
+  name        = "${each.value.cluster}-target"
+  description = "Target for ${each.key} environment"
+  location    = each.value.location
+  project     = var.project_id
+
+  gke {
+    cluster = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
+  }
+
+  execution_configs {
+    workerPool = var.cloudbuild_private_pool
+    
+  }
+}
+
+resource "google_clouddeploy_delivery_pipeline" "pipeline" {
+  name        = "pipeline" #TODO paramaterize
+  description = "Pipeline for application" #TODO parameterize
+  project     = var.project_id
+  location    = var.primary_location
+
+  serial_pipeline {
+    dynamic "stages" {
+      for_each = var.deploy_branch_clusters
+      content {
+        target_id = google_clouddeploy_target.deploy_target[stages.key].name
+      }
+    }
+  }
+
+  
+}
+
 data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
