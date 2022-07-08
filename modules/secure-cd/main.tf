@@ -48,7 +48,7 @@ resource "google_clouddeploy_target" "deploy_target" {
   }
 
   execution_configs {
-    workerPool = var.cloudbuild_private_pool
+    worker_pool = var.cloudbuild_private_pool
     
   }
 }
