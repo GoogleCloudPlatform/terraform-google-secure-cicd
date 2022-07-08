@@ -175,7 +175,7 @@ steps:
     - '-xe'
     - -c
     - |
-      gcloud deploy releases create $SHORT_SHA --delivery-pipeline=${_CLOUD_DEPLOY_PIPELINE_NAME} --build_artifacts=/artifacts/build-artifacts.json
+      gcloud deploy releases create $SHORT_SHA --delivery-pipeline=${_CLOUDDEPLOY_PIPELINE_NAME} --build_artifacts=/artifacts/build-artifacts.json
 
       # git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
       # git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
