@@ -16,25 +16,25 @@
 
 locals {
   deploy_branch_clusters = {
-    dev = {
+    "01-dev" = {
       cluster               = "dev-private-cluster",
       network               = var.gke_vpc_names["dev"]
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/security-pc-attestor"
-      next_env              = "qa"
+      next_env              = "02-qa"
     },
-    qa = {
+    "02-qa" = {
       cluster               = "qa-private-cluster",
       network               = var.gke_vpc_names["qa"]
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/quality-pc-attestor"
-      next_env              = "prod"
+      next_env              = "03-prod"
     },
-    prod = {
+    "03-prod" = {
       cluster               = "prod-private-cluster",
       network               = var.gke_vpc_names["prod"]
       project_id            = var.gke_project_ids["prod"],

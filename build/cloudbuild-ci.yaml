@@ -167,49 +167,16 @@ steps:
     - 'container-structure'
     - 'container-scanner'
 
-### Hydrate manifests and push to wet repo
+## Create Cloud Deploy Release to trigger render and deploy to first env
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
-  id: "commit-upstream"
+  id: "cloud-deploy-release"
   entrypoint: "/bin/bash"
   args:
     - '-xe'
     - -c
     - |
-      gcloud deploy releases create $SHORT_SHA --delivery-pipeline=${_CLOUDDEPLOY_PIPELINE_NAME} --build_artifacts=/artifacts/build-artifacts.json
-
-      # git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
-      # git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
-
-      # cd /workspace
-
-      # # Clone the DRY repo
-      # gcloud config set project ${PROJECT_ID}
-      # gcloud source repos clone $_MANIFEST_DRY_REPO --project=${PROJECT_ID}
-
-      # # Clone the WET repo
-      # cd /workspace
-      # gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
-      # DEFAULT_BRANCH = ($$(git -C /workspace/$_MANIFEST_WET_REPO remote show origin | grep 'HEAD branch' | cut -d' ' -f5))
-      # git -C /workspace/$_MANIFEST_WET_REPO branch $_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch already exists"
-      # git -C /workspace/$_MANIFEST_WET_REPO checkout $_WET_BRANCH_NAME
-      # git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch does not yet exist"
-      # git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase || echo "$_WET_BRANCH_NAME branch does not yet exist"
-
-      # git -C /workspace/$_MANIFEST_WET_REPO merge $${DEFAULT_BRANCH}
-      # mkdir -p /workspace/$_MANIFEST_WET_REPO/manifests
-
-      # skaffold config set --global local-cluster false
-      # skaffold render --offline=true --digest-source='remote' --filename='skaffold.yaml' --build-artifacts=/artifacts/build-artifacts.json --output='/workspace/$_MANIFEST_WET_REPO/manifests/skaffold-render.yaml' --default-repo=${_GAR_REPO_URI} --loud=true
-      # cp /workspace/$_MANIFEST_WET_REPO/manifests/skaffold-render.yaml ./skaffold-render.yaml
-
-      # # Go into wet repo and commit changes
-      # cd /workspace/$_MANIFEST_WET_REPO
-
-      # # git branch $_WET_BRANCH_NAME || echo "$_WET_BRANCH_NAME branch already exists"
-      # # git checkout $_WET_BRANCH_NAME
-      # git add .
-      # git commit -m 'new deployment of applications' || echo "Nothing to commit"
-      # git push --set-upstream origin $_WET_BRANCH_NAME
+      RELEASE_NAME='release-$SHORT_SHA'
+      gcloud deploy releases create $${RELEASE_NAME} --delivery-pipeline=${_CLOUDDEPLOY_PIPELINE_NAME} --build-artifacts=/artifacts/build-artifacts.json --region=${_DEFAULT_REGION}
   volumes:
     - path: '/artifacts'
       name: 'artifacts'

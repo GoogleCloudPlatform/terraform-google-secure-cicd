@@ -29,10 +29,10 @@ variable "manifest_wet_repo" {
   description = "Name of repo that contains hydrated K8s manifests files"
 }
 
-# variable "gar_repo_name" {
-#   type        = string
-#   description = "Docker artifact registry repo to store app build images"
-# }
+variable "gar_repo_name" {
+  type        = string
+  description = "Docker artifact registry repo to store app build images"
+}
 
 variable "app_deploy_trigger_yaml" {
   type        = string
@@ -52,10 +52,10 @@ variable "deploy_branch_clusters" {
   default     = {}
 }
 
-# variable "cache_bucket_name" {
-#   description = "cloud build artifact bucket name"
-#   type        = string
-# }
+variable "cache_bucket_name" {
+  description = "cloud build artifact bucket name"
+  type        = string
+}
 
 variable "additional_substitutions" {
   description = "Parameters to be substituted in the build specification. All keys should begin with an underscore."
@@ -67,4 +67,9 @@ variable "cloudbuild_private_pool" {
   description = "Cloud Build private pool self-link"
   type        = string
   default     = ""
+}
+
+variable "clouddeploy_pipeline_name" {
+  description = "Cloud Deploy pipeline name"
+  type        = string
 }

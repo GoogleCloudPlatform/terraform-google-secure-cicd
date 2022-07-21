@@ -27,6 +27,7 @@ module "project" {
   activate_apis = [
     "cloudresourcemanager.googleapis.com",
     "cloudbilling.googleapis.com",
+    "clouddeploy.googleapis.com",
     "storage-api.googleapis.com",
     "serviceusage.googleapis.com",
     "cloudbuild.googleapis.com",
@@ -39,7 +40,8 @@ module "project" {
     "cloudkms.googleapis.com",
     "binaryauthorization.googleapis.com",
     "containerscanning.googleapis.com",
-    "servicenetworking.googleapis.com"
+    "servicenetworking.googleapis.com",
+    "pubsub.googleapis.com",
   ]
   activate_api_identities = [
     {
@@ -151,35 +153,38 @@ module "gke_cluster" {
   name                        = "${each.value}-private-cluster"
   regional                    = true
   region                      = local.primary_location
-  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  # zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = module.vpc[each.value].network_name
   subnetwork                  = module.vpc[each.value].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
   ip_range_services           = "us-central1-01-gke-01-services"
+  horizontal_pod_autoscaling  = true
   create_service_account      = true
   enable_binary_authorization = true
-  skip_provisioners           = false
+  # skip_provisioners           = false
   enable_private_endpoint     = true
   enable_private_nodes        = true
   master_ipv4_cidr_block      = "172.16.${local.ip_increment[each.value]}.0/28"
 
-  remove_default_node_pool = true
+  enable_vertical_pod_autoscaling = true
 
-  node_pools = [
-    {
-      name              = "pool-0"
-      min_count         = 1
-      max_count         = 100
-      local_ssd_count   = 0
-      disk_size_gb      = 100
-      disk_type         = "pd-standard"
-      image_type        = "COS_CONTAINERD"
-      auto_repair       = true
-      auto_upgrade      = true
-      preemptible       = false
-      max_pods_per_node = 12
-    },
-  ]
+  # remove_default_node_pool = true
+
+  # node_pools = [
+  #   {
+  #     name              = "pool-0"
+  #     min_count         = 1
+  #     max_count         = 100
+  #     local_ssd_count   = 0
+  #     disk_size_gb      = 100
+  #     disk_type         = "pd-standard"
+  #     image_type        = "COS_CONTAINERD"
+  #     auto_repair       = true
+  #     auto_upgrade      = true
+  #     preemptible       = false
+  #     max_pods_per_node = 12
+  #   },
+  # ]
 
   ## Can't create these resources before main project is created (after-apply error)
   # Enabled read-access to images in GAR repo in CI/CD project

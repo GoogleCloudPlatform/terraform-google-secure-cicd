@@ -98,6 +98,8 @@ variable "cloudbuild_service_account_roles" {
     "roles/artifactregistry.admin",
     "roles/binaryauthorization.attestorsVerifier",
     "roles/cloudbuild.builds.builder",
+    "roles/clouddeploy.developer",
+    "roles/clouddeploy.releaser",
     "roles/cloudkms.cryptoOperator",
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",

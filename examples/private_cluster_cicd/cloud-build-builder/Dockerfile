@@ -46,7 +46,7 @@ if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi 
 rm -r /root/.cache
 
 #### 3. Install gcloud
-ENV CLOUD_SDK_VERSION="368.0.0"
+ENV CLOUD_SDK_VERSION="391.0.0"
 ENV CLOUDSDK_INSTALL_DIR /usr/local/gcloud/
 RUN wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz" \
 && tar -C /usr/local -xzf "google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz" \
