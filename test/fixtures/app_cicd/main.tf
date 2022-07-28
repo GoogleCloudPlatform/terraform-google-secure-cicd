@@ -20,7 +20,7 @@ module "example" {
   project_id       = var.project_id
   primary_location = var.primary_location
   deploy_branch_clusters = {
-    dev = {
+    "01-dev" = {
       cluster               = "dev-cluster",
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
@@ -28,7 +28,7 @@ module "example" {
       env_attestation       = "projects/${var.project_id}/attestors/security-attestor"
       next_env              = "qa"
     },
-    qa = {
+    "02-qa" = {
       cluster               = "qa-cluster",
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
@@ -36,7 +36,7 @@ module "example" {
       env_attestation       = "projects/${var.project_id}/attestors/quality-attestor"
       next_env              = "prod"
     },
-    prod = {
+    "03-prod" = {
       cluster               = "prod-cluster",
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,

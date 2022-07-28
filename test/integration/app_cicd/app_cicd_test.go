@@ -88,12 +88,12 @@ func TestAppCICDExample(t *testing.T) {
 
 		/////// SECURE-CD ///////
 		// Deploy Triggers
-		cdTriggers := [3]string{"deploy-trigger-dev-dev-cluster", "deploy-trigger-qa-qa-cluster", "deploy-trigger-prod-prod-cluster"}
+		cdTriggers := [2]string{"deploy-trigger-dev-cluster", "deploy-trigger-qa-cluster"}
 
 		for _, cdTrigger := range cdTriggers {
 			gcbCD := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", cdTrigger, projectID))
 			assert.Contains(gcbCD.Get("name").String(), cdTrigger, "Trigger name is valid")
-			assert.Equal(projectID, gcbCD.Get("triggerTemplate.projectId").String(), "Trigger is in correct project")
+			assert.Contains(gcbCD.Get("pubsubConfig.topic").String(), "clouddeploy-operations", "pubsub topic is valid")
 			assert.Contains(gcbCD.Get("substitutions._CLUSTER_PROJECT").String(), "secure-cicd-gke-", "_CLUSTER_PROJECT trigger substitution is valid")
 		}
 

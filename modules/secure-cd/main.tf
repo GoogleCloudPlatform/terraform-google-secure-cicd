@@ -124,7 +124,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   }
 
   project = var.project_id
-  name    = "deploy-trigger-${each.key}-${each.value.cluster}"
+  name    = "deploy-trigger-${each.value.cluster}"
 
   pubsub_config {
     topic = google_pubsub_topic.clouddeploy_topic["clouddeploy-operations"].id
