@@ -83,8 +83,8 @@ resource "google_clouddeploy_target" "deploy_target" {
   }
 
   execution_configs {
-    usages = [ "RENDER", "DEPLOY" ]
-    worker_pool = var.cloudbuild_private_pool
+    usages          = ["RENDER", "DEPLOY"]
+    worker_pool     = var.cloudbuild_private_pool
     service_account = google_service_account.clouddeploy_execution_sa.email
   }
 }
@@ -104,7 +104,7 @@ resource "google_clouddeploy_delivery_pipeline" "pipeline" {
     }
   }
 
-  
+
 }
 
 data "google_project" "app_cicd_project" {
@@ -112,9 +112,9 @@ data "google_project" "app_cicd_project" {
 }
 
 resource "google_pubsub_topic" "clouddeploy_topic" {
-  for_each = toset([ "clouddeploy-resources", "clouddeploy-operations", "clouddeploy-approvals" ])
-  name = each.value
-  project = var.project_id
+  for_each = toset(["clouddeploy-resources", "clouddeploy-operations", "clouddeploy-approvals"])
+  name     = each.value
+  project  = var.project_id
 }
 
 resource "google_cloudbuild_trigger" "deploy_trigger" {
@@ -122,43 +122,43 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
     for env, config in var.deploy_branch_clusters : env => config
     if config.next_env != ""
   }
-  
-  project  = var.project_id
-  name     = "deploy-trigger-${each.key}-${each.value.cluster}"
+
+  project = var.project_id
+  name    = "deploy-trigger-${each.key}-${each.value.cluster}"
 
   pubsub_config {
     topic = google_pubsub_topic.clouddeploy_topic["clouddeploy-operations"].id
   }
 
   source_to_build {
-    uri = "https://source.developers.google.com/p/${var.project_id}/r/${var.cloudbuild_cd_repo}"
-    ref = "master"
+    uri       = "https://source.developers.google.com/p/${var.project_id}/r/${var.cloudbuild_cd_repo}"
+    ref       = "master"
     repo_type = "CLOUD_SOURCE_REPOSITORIES"
   }
 
   git_file_source {
-    path = "cloudbuild-cd.yaml"
+    path      = "cloudbuild-cd.yaml"
     repo_type = "CLOUD_SOURCE_REPOSITORIES"
   }
 
 
   substitutions = merge(
     {
-      _GAR_REPOSITORY          = var.gar_repo_name
-      _DEFAULT_REGION          = each.value.location
-      _CLUSTER_NAME            = each.value.cluster
-      _CLUSTER_PROJECT         = each.value.project_id
-      _CLOUDBUILD_FILENAME     = var.app_deploy_trigger_yaml
-      _CACHE_BUCKET_NAME       = var.cache_bucket_name
-      _NEXT_ENV                = each.value.next_env
-      _ATTESTOR_NAME           = each.value.env_attestation
-      _CLOUDBUILD_PRIVATE_POOL = var.cloudbuild_private_pool
+      _GAR_REPOSITORY            = var.gar_repo_name
+      _DEFAULT_REGION            = each.value.location
+      _CLUSTER_NAME              = each.value.cluster
+      _CLUSTER_PROJECT           = each.value.project_id
+      _CLOUDBUILD_FILENAME       = var.app_deploy_trigger_yaml
+      _CACHE_BUCKET_NAME         = var.cache_bucket_name
+      _NEXT_ENV                  = each.value.next_env
+      _ATTESTOR_NAME             = each.value.env_attestation
+      _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
       _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name
-      _ACTION_TYPE                = "$(body.message.attributes.Action)"
-      _RESOURCE_TYPE              = "$(body.message.attributes.ResourceType)"
-      _DELIVERY_PIPELINE_ID       = "$(body.message.attributes.DeliveryPipelineId)"
-      _TARGET_ID                  = "$(body.message.attributes.TargetId)"
-      _RELEASE_ID                 = "$(body.message.attributes.ReleaseId)"
+      _ACTION_TYPE               = "$(body.message.attributes.Action)"
+      _RESOURCE_TYPE             = "$(body.message.attributes.ResourceType)"
+      _DELIVERY_PIPELINE_ID      = "$(body.message.attributes.DeliveryPipelineId)"
+      _TARGET_ID                 = "$(body.message.attributes.TargetId)"
+      _RELEASE_ID                = "$(body.message.attributes.ReleaseId)"
 
     },
     var.additional_substitutions
@@ -198,11 +198,11 @@ resource "google_project_iam_member" "gke_dev" {
   member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
 }
 
-# Cloud Deploy Service Agent 
+# Cloud Deploy Service Agent
 resource "google_project_iam_member" "clouddeploy_service_agent" {
-  project  = var.project_id
-  role     = "roles/clouddeploy.serviceAgent"
-  member   = "serviceAccount:service-${data.google_project.app_cicd_project.number}@gcp-sa-clouddeploy.iam.gserviceaccount.com"
+  project = var.project_id
+  role    = "roles/clouddeploy.serviceAgent"
+  member  = "serviceAccount:service-${data.google_project.app_cicd_project.number}@gcp-sa-clouddeploy.iam.gserviceaccount.com"
 }
 
 # IAM membership for Binary Authorization service agents in GKE projects on attestors

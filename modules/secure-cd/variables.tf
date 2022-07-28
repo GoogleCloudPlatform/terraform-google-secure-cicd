@@ -24,9 +24,9 @@ variable "primary_location" {
   description = "Region used for key-ring"
 }
 
-variable "manifest_wet_repo" {
+variable "cloudbuild_cd_repo" {
   type        = string
-  description = "Name of repo that contains hydrated K8s manifests files"
+  description = "Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks"
 }
 
 variable "gar_repo_name" {

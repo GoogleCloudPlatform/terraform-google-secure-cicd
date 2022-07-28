@@ -55,7 +55,6 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
       _GAR_REPOSITORY            = local.gar_name
       _DEFAULT_REGION            = var.primary_location
       _CACHE_BUCKET_NAME         = google_storage_bucket.cache_bucket.name
-      _MANIFEST_DRY_REPO         = var.manifest_dry_repo
       _ATTESTOR_NAME             = module.attestors[var.attestor_names_prefix[0]].attestor
       _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
       _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name

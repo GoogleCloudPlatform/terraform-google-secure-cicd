@@ -149,10 +149,10 @@ module "gke_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
 
-  project_id                  = module.gke_project[each.value].project_id
-  name                        = "${each.value}-private-cluster"
-  regional                    = true
-  region                      = local.primary_location
+  project_id = module.gke_project[each.value].project_id
+  name       = "${each.value}-private-cluster"
+  regional   = true
+  region     = local.primary_location
   # zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = module.vpc[each.value].network_name
   subnetwork                  = module.vpc[each.value].subnets_names[0]
@@ -162,9 +162,9 @@ module "gke_cluster" {
   create_service_account      = true
   enable_binary_authorization = true
   # skip_provisioners           = false
-  enable_private_endpoint     = true
-  enable_private_nodes        = true
-  master_ipv4_cidr_block      = "172.16.${local.ip_increment[each.value]}.0/28"
+  enable_private_endpoint = true
+  enable_private_nodes    = true
+  master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.value]}.0/28"
 
   enable_vertical_pod_autoscaling = true
 
