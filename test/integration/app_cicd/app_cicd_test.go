@@ -36,8 +36,7 @@ func TestAppCICDExample(t *testing.T) {
 	const garRepoNameSuffix    = "app-image-repo"
 	const primaryLocation      = "us-central1"
 	const appSourceRepoName    = "app-source"
-	const manifestDryRepoName  = "app-dry-manifests"
-	const manifestWetRepoName  = "app-wet-manifests"
+	const cloudbuildCDRepoName = "cloudbuild-cd-config"
 
 	// initialize Terraform test from the Blueprints test framework
 	appCICDT := tft.NewTFBlueprintTest(t)
@@ -79,7 +78,7 @@ func TestAppCICDExample(t *testing.T) {
 		}
 
 		// CSR
-		repos := [3]string{appSourceRepoName, manifestDryRepoName, manifestWetRepoName}
+		repos := [2]string{appSourceRepoName, cloudbuildCDRepoName}
 
 		for _, repo := range repos {
 			csr := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", repo, projectID))
@@ -98,7 +97,6 @@ func TestAppCICDExample(t *testing.T) {
 			assert.Contains(gcbCD.Get("name").String(), cdTrigger, "Trigger name is valid")
 			assert.Equal(manifestWetRepoName, gcbCD.Get("triggerTemplate.repoName").String(), "repoName triggerTemplate is valid")
 			assert.Equal(projectID, gcbCD.Get("triggerTemplate.projectId").String(), "Trigger is in correct project")
-			assert.Equal(manifestWetRepoName, gcbCD.Get("substitutions._MANIFEST_WET_REPO").String(), "_MANIFEST_WET_REPO trigger substitution is valid")
 			assert.Contains(gcbCD.Get("substitutions._CLUSTER_PROJECT").String(), "secure-cicd-gke-", "_CLUSTER_PROJECT trigger substitution is valid")
 		}
 
