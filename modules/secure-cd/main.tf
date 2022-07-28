@@ -199,10 +199,17 @@ resource "google_project_iam_member" "gke_dev" {
 }
 
 # Cloud Deploy Service Agent
-resource "google_project_iam_member" "clouddeploy_service_agent" {
+resource "google_project_service_identity" "clouddeploy_service_agent" {
+  provider = google-beta
+
+  project = var.project_id
+  service = "clouddeploy.googleapis.com"
+}
+
+resource "google_project_iam_member" "clouddeploy_service_agent_role" {
   project = var.project_id
   role    = "roles/clouddeploy.serviceAgent"
-  member  = "serviceAccount:service-${data.google_project.app_cicd_project.number}@gcp-sa-clouddeploy.iam.gserviceaccount.com"
+  member  = "serviceAccount:${google_project_service_identity.clouddeploy_service_agent.email}"
 }
 
 # IAM membership for Binary Authorization service agents in GKE projects on attestors
