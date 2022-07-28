@@ -81,13 +81,12 @@ module "vpc" {
 module "gke_cluster" {
   for_each = var.gke_project_ids
   source   = "terraform-google-modules/kubernetes-engine/google"
-  version  = "19.0.0"
 
   project_id                  = var.gke_project_ids[each.key]
   name                        = "${each.key}-cluster"
   regional                    = true
   region                      = var.primary_location
-  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  # zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = module.vpc[each.key].network_name
   subnetwork                  = module.vpc[each.key].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
