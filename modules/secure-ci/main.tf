@@ -20,7 +20,7 @@ locals {
 }
 
 resource "google_sourcerepo_repository" "repos" {
-  for_each = toset([var.manifest_wet_repo, var.manifest_dry_repo, var.app_source_repo])
+  for_each = toset([var.cloudbuild_cd_repo, var.app_source_repo])
   name     = each.key
   project  = var.project_id
 }
@@ -56,8 +56,6 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
       _DEFAULT_REGION            = var.primary_location
       _CACHE_BUCKET_NAME         = google_storage_bucket.cache_bucket.name
       _MANIFEST_DRY_REPO         = var.manifest_dry_repo
-      _MANIFEST_WET_REPO         = var.manifest_wet_repo
-      _WET_BRANCH_NAME           = var.wet_branch_name
       _ATTESTOR_NAME             = module.attestors[var.attestor_names_prefix[0]].attestor
       _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
       _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name

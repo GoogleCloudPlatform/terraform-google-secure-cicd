@@ -30,7 +30,6 @@ locals {
     "roles/source.admin",
     "roles/storage.admin",
     "roles/resourcemanager.projectIamAdmin",
-    "roles/viewer"
   ]
   gke_int_required_roles = [
     "roles/compute.networkAdmin",

@@ -131,7 +131,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   }
 
   source_to_build {
-    uri = "https://source.developers.google.com/p/${var.project_id}/r/${var.manifest_wet_repo}"
+    uri = "https://source.developers.google.com/p/${var.project_id}/r/${var.cloudbuild_cd_repo}"
     ref = "master"
     repo_type = "CLOUD_SOURCE_REPOSITORIES"
   }
@@ -141,15 +141,11 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
     repo_type = "CLOUD_SOURCE_REPOSITORIES"
   }
 
-  # trigger_template {
-  #   branch_name = each.key
-  #   repo_name   = var.manifest_wet_repo
-  # }
+
   substitutions = merge(
     {
       _GAR_REPOSITORY          = var.gar_repo_name
       _DEFAULT_REGION          = each.value.location
-      # _MANIFEST_WET_REPO       = var.manifest_wet_repo
       _CLUSTER_NAME            = each.value.cluster
       _CLUSTER_PROJECT         = each.value.project_id
       _CLOUDBUILD_FILENAME     = var.app_deploy_trigger_yaml
@@ -169,10 +165,6 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   )
 
   filter = "_RESOURCE_TYPE.matches('Rollout') && _ACTION_TYPE.matches('Succeed') && _DELIVERY_PIPELINE_ID.matches('${var.clouddeploy_pipeline_name}') && _TARGET_ID.matches('${google_clouddeploy_target.deploy_target[each.key].name}')"
-  # filter = "_DELIVERY_PIPELINE_ID.matches('${var.clouddeploy_pipeline_name}') && _DEPLOY_TARGET.matches('${google_clouddeploy_target.deploy_target[each.key].name}')"
-
-  # filename = var.app_deploy_trigger_yaml
-
 }
 
 # Binary Authorization Policy
