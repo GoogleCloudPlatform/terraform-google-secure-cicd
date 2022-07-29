@@ -16,27 +16,27 @@
 
 locals {
   deploy_branch_clusters = {
-    dev = {
+    "01-dev" = {
       cluster               = "dev-private-cluster",
-      network               = var.gke_vpc_names["dev"]
+      network               = var.gke_private_vpc_names["dev"]
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/security-pc-attestor"
-      next_env              = "qa"
+      next_env              = "02-qa"
     },
-    qa = {
+    "02-qa" = {
       cluster               = "qa-private-cluster",
-      network               = var.gke_vpc_names["qa"]
+      network               = var.gke_private_vpc_names["qa"]
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/quality-pc-attestor"
-      next_env              = "prod"
+      next_env              = "03-prod"
     },
-    prod = {
+    "03-prod" = {
       cluster               = "prod-private-cluster",
-      network               = var.gke_vpc_names["prod"]
+      network               = var.gke_private_vpc_names["prod"]
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/quality-pc-attestor", "projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
@@ -69,14 +69,14 @@ module "example" {
 }
 
 resource "google_project_iam_member" "cluster_service_account-gcr" {
-  for_each = var.gke_service_accounts
+  for_each = var.gke_private_service_accounts
   project  = var.project_id
   role     = "roles/storage.objectViewer"
   member   = "serviceAccount:${each.value}"
 }
 
 resource "google_project_iam_member" "cluster_service_account-artifact-registry" {
-  for_each = var.gke_service_accounts
+  for_each = var.gke_private_service_accounts
   project  = var.project_id
   role     = "roles/artifactregistry.reader"
   member   = "serviceAccount:${each.value}"

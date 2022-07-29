@@ -23,3 +23,8 @@ output "binauthz_policy_required_attestations" {
   description = "Binary Authorization policy required attestation in GKE projects"
   value       = [for policy in google_binary_authorization_policy.deployment_policy : policy.cluster_admission_rules.*.require_attestations_by]
 }
+
+output "delivery_pipeline_name" {
+  description = "Name of the Cloud Deploy delivery pipeline"
+  value       = google_clouddeploy_delivery_pipeline.pipeline.name
+}

@@ -36,8 +36,7 @@ func TestAppCICDExample(t *testing.T) {
 	const garRepoNameSuffix    = "app-image-repo"
 	const primaryLocation      = "us-central1"
 	const appSourceRepoName    = "app-source"
-	const manifestDryRepoName  = "app-dry-manifests"
-	const manifestWetRepoName  = "app-wet-manifests"
+	const cloudbuildCDRepoName = "cloudbuild-cd-config"
 
 	// initialize Terraform test from the Blueprints test framework
 	appCICDT := tft.NewTFBlueprintTest(t)
@@ -59,8 +58,6 @@ func TestAppCICDExample(t *testing.T) {
 		gcbCI := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", sourceTriggerName, projectID))
 
 		assert.Equal(sourceTriggerName, gcbCI.Get("name").String(), "Cloud Build Trigger name is valid")
-		assert.Equal(manifestDryRepoName, gcbCI.Get("substitutions._MANIFEST_DRY_REPO").String(), "Manifest Dry Repo trigger substitution is valid")
-		assert.Equal(manifestWetRepoName, gcbCI.Get("substitutions._MANIFEST_WET_REPO").String(), "Manifest Wet Repo trigger substitution is valid")
 		assert.Contains(gcbCI.Get("substitutions._DEFAULT_REGION").String(), primaryLocation, "Default Region trigger substitution is valid")
 		assert.Equal(appSourceRepoName, gcbCI.Get("triggerTemplate.repoName").String(), "Attached CSR repo is valid")
 
@@ -79,7 +76,7 @@ func TestAppCICDExample(t *testing.T) {
 		}
 
 		// CSR
-		repos := [3]string{appSourceRepoName, manifestDryRepoName, manifestWetRepoName}
+		repos := [2]string{appSourceRepoName, cloudbuildCDRepoName}
 
 		for _, repo := range repos {
 			csr := gcloud.Run(t, fmt.Sprintf("source repos describe %s --project %s", repo, projectID))
@@ -91,14 +88,12 @@ func TestAppCICDExample(t *testing.T) {
 
 		/////// SECURE-CD ///////
 		// Deploy Triggers
-		cdTriggers := [3]string{"deploy-trigger-dev-dev-cluster", "deploy-trigger-qa-qa-cluster", "deploy-trigger-prod-prod-cluster"}
+		cdTriggers := [2]string{"deploy-trigger-dev-cluster", "deploy-trigger-qa-cluster"}
 
 		for _, cdTrigger := range cdTriggers {
 			gcbCD := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", cdTrigger, projectID))
 			assert.Contains(gcbCD.Get("name").String(), cdTrigger, "Trigger name is valid")
-			assert.Equal(manifestWetRepoName, gcbCD.Get("triggerTemplate.repoName").String(), "repoName triggerTemplate is valid")
-			assert.Equal(projectID, gcbCD.Get("triggerTemplate.projectId").String(), "Trigger is in correct project")
-			assert.Equal(manifestWetRepoName, gcbCD.Get("substitutions._MANIFEST_WET_REPO").String(), "_MANIFEST_WET_REPO trigger substitution is valid")
+			assert.Contains(gcbCD.Get("pubsubConfig.topic").String(), "clouddeploy-operations", "pubsub topic is valid")
 			assert.Contains(gcbCD.Get("substitutions._CLUSTER_PROJECT").String(), "secure-cicd-gke-", "_CLUSTER_PROJECT trigger substitution is valid")
 		}
 

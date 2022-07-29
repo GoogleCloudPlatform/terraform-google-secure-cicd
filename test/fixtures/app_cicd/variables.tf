@@ -42,3 +42,8 @@ variable "gke_project_ids" {
   type        = map(string)
   description = "map of env name to GKE project ID"
 }
+
+variable "gke_service_accounts" {
+  type        = map(string)
+  description = "map of env name to GKE service account"
+}

@@ -31,6 +31,12 @@ import (
 func TestPrivateClusterCICDExample(t *testing.T) {
 	// define constants for all required assertions in the test case
 
+	const sourceTriggerName    = "app-source-trigger"
+	const garRepoNameSuffix    = "app-image-repo"
+	const primaryLocation      = "us-central1"
+	const appSourceRepoName    = "app-source"
+	const cloudbuildCDRepoName = "cloudbuild-cd-config"
+
 	// initialize Terraform test from the Blueprints test framework
 	privateClusterCICDT := tft.NewTFBlueprintTest(t)
 
