@@ -47,59 +47,16 @@ module "example" {
   }
 }
 
-# VPCs
-module "vpc" {
-  for_each = var.gke_project_ids
-  source   = "terraform-google-modules/network/google"
-  version  = "~> 4.0"
-
-  project_id   = var.gke_project_ids[each.key]
-  network_name = "gke-vpc-${each.key}"
-  routing_mode = "REGIONAL"
-
-  subnets = [
-    {
-      subnet_name   = "gke-subnet"
-      subnet_ip     = "10.0.0.0/17"
-      subnet_region = var.primary_location
-    },
-  ]
-  secondary_ranges = {
-    gke-subnet = [
-      {
-        range_name    = "us-central1-01-gke-01-pods"
-        ip_cidr_range = "192.168.0.0/18"
-      },
-      {
-        range_name    = "us-central1-01-gke-01-services"
-        ip_cidr_range = "192.168.64.0/18"
-      },
-    ]
-  }
+resource "google_project_iam_member" "cluster_service_account-gcr" {
+  for_each = var.gke_service_accounts
+  project  = var.project_id
+  role     = "roles/storage.objectViewer"
+  member   = "serviceAccount:${each.value}"
 }
 
-module "gke_cluster" {
-  for_each = var.gke_project_ids
-  source   = "terraform-google-modules/kubernetes-engine/google"
-
-  project_id                  = var.gke_project_ids[each.key]
-  name                        = "${each.key}-cluster"
-  regional                    = true
-  region                      = var.primary_location
-  # zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
-  network                     = module.vpc[each.key].network_name
-  subnetwork                  = module.vpc[each.key].subnets_names[0]
-  ip_range_pods               = "us-central1-01-gke-01-pods"
-  ip_range_services           = "us-central1-01-gke-01-services"
-  create_service_account      = true
-  enable_binary_authorization = true
-  skip_provisioners           = false
-
-  # Enabled read-access to images in GAR repo in CI/CD project
-  grant_registry_access = true
-  registry_project_ids  = [var.project_id]
-
-  depends_on = [
-    module.vpc
-  ]
+resource "google_project_iam_member" "cluster_service_account-artifact-registry" {
+  for_each = var.gke_service_accounts
+  project  = var.project_id
+  role     = "roles/artifactregistry.reader"
+  member   = "serviceAccount:${each.value}"
 }
