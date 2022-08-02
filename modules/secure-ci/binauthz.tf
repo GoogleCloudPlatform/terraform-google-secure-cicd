@@ -15,11 +15,11 @@
  */
 
 resource "random_string" "keyring_name" {
-  length  = 4
-  special = false
-  number  = true
-  upper   = false
-  lower   = true
+  length   = 4
+  special  = false
+  numeric  = true
+  upper    = false
+  lower    = true
 }
 
 resource "google_kms_key_ring" "keyring" {
