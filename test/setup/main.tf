@@ -143,7 +143,7 @@ module "gke_cluster" {
   name                        = "${each.key}-cluster"
   regional                    = true
   region                      = local.primary_location
-  # zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = module.vpc[each.key].network_name
   subnetwork                  = module.vpc[each.key].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
@@ -213,7 +213,7 @@ module "gke_private_cluster" {
   name       = "${each.value}-private-cluster"
   regional   = true
   region     = local.primary_location
-  # zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
   network                     = module.vpc_private_cluster[each.value].network_name
   subnetwork                  = module.vpc_private_cluster[each.value].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
