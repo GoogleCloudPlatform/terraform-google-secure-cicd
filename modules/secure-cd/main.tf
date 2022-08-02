@@ -138,12 +138,6 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
 
   filename = "cloudbuild-cd.yaml"
 
-  # git_file_source {
-  #   path      = "cloudbuild-cd.yaml"
-  #   repo_type = "CLOUD_SOURCE_REPOSITORIES"
-  # }
-
-
   substitutions = merge(
     {
       _GAR_REPOSITORY            = var.gar_repo_name
