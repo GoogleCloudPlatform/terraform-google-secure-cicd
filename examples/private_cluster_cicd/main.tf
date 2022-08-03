@@ -25,7 +25,7 @@ module "ci_pipeline" {
   app_source_repo           = "app-source-pc"
   cloudbuild_cd_repo        = "cloudbuild-cd-config-pc"
   gar_repo_name_suffix      = "app-image-repo-pc"
-  cache_bucket_name         = "private_cluster_cloudbuild"
+  cache_bucket_name         = "private-cluster-cloudbuild"
   primary_location          = "us-central1"
   attestor_names_prefix     = ["build-pc", "security-pc", "quality-pc"]
   app_build_trigger_yaml    = "cloudbuild-ci.yaml"

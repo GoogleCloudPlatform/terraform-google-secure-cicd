@@ -26,7 +26,7 @@ module "ci_pipeline" {
   gar_repo_name_suffix      = "app-image-repo"
   primary_location          = "us-central1"
   attestor_names_prefix     = ["build", "security", "quality"]
-  cache_bucket_name         = "app_cloudbuild"
+  cache_bucket_name         = "app-cloudbuild"
   app_build_trigger_yaml    = "cloudbuild-ci.yaml"
   runner_build_folder       = "${path.module}/cloud-build-builder"
   build_image_config_yaml   = "cloudbuild-skaffold-build-image.yaml"
