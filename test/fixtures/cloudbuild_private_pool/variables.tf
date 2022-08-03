@@ -30,12 +30,12 @@ variable "gke_project_ids" {
   description = "map of env name to GKE project ID"
 }
 
-variable "gke_vpc_names" {
+variable "gke_private_vpc_names" {
   type        = map(string)
   description = "map of env name to GKE network name"
 }
 
-variable "gke_service_accounts" {
+variable "gke_private_service_accounts" {
   type        = map(string)
   description = "map of env name to GKE service account"
 }
