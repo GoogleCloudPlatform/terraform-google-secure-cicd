@@ -26,6 +26,7 @@ locals {
     "roles/containeranalysis.notes.editor",
     "roles/compute.networkAdmin",
     "roles/iam.serviceAccountAdmin",
+    "roles/pubsub.editor",
     "roles/serviceusage.serviceUsageAdmin",
     "roles/source.admin",
     "roles/storage.admin",
