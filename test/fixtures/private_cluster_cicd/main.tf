@@ -68,6 +68,7 @@ module "example" {
   ])
 }
 
+# Artifact IAM
 resource "google_project_iam_member" "cluster_service_account-gcr" {
   for_each = var.gke_private_service_accounts
   project  = var.project_id
