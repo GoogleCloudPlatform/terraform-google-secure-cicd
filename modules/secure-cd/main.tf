@@ -87,6 +87,10 @@ resource "google_clouddeploy_target" "deploy_target" {
     worker_pool     = var.cloudbuild_private_pool
     service_account = google_service_account.clouddeploy_execution_sa.email
   }
+
+  depends_on = [
+    google_project_iam_member.clouddeploy_service_agent_role
+  ]
 }
 
 resource "google_clouddeploy_delivery_pipeline" "pipeline" {
