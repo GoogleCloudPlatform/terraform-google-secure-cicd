@@ -97,7 +97,7 @@ module "vpc_private_cluster" {
     },
   ]
   secondary_ranges = {
-    gke-subnet-private = [
+    gke-subnet-cbpp = [
       {
         range_name    = "us-central1-01-gke-01-pods"
         ip_cidr_range = "192.168.0.0/18"
