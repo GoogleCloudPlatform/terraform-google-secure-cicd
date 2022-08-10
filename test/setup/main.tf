@@ -62,12 +62,6 @@ module "project" {
 
 locals {
   envs             = ["dev", "qa", "prod"]
-  primary_location = "us-central1"
-  ip_increment = {
-    "dev"  = 1,
-    "qa"   = 2,
-    "prod" = 3
-  }
 }
 
 # GKE Projects
