@@ -32,19 +32,19 @@ locals {
     for net in var.gke_networks : net.network => merge(net, local.vpn_config[net.network])
   }
   vpn_config = {
-    "gke-private-vpc-dev" = {
+    "gke-cbpp-vpc-dev" = {
       gateway_1_asn = 65001,
       gateway_2_asn = 65002,
       bgp_range_1   = "169.254.1.0/30",
       bgp_range_2   = "169.254.2.0/30"
     },
-    "gke-private-vpc-qa" = {
+    "gke-cbpp-vpc-qa" = {
       gateway_1_asn = 65003,
       gateway_2_asn = 65004,
       bgp_range_1   = "169.254.3.0/30",
       bgp_range_2   = "169.254.4.0/30"
     },
-    "gke-private-vpc-prod" = {
+    "gke-cbpp-vpc-prod" = {
       gateway_1_asn = 65005,
       gateway_2_asn = 65006,
       bgp_range_1   = "169.254.5.0/30",

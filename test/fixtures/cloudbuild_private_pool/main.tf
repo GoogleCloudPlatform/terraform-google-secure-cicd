@@ -17,7 +17,7 @@
 locals {
   deploy_branch_clusters = {
     "01-dev" = {
-      cluster               = "dev-private-cluster",
+      cluster               = "dev-cbpp-cluster",
       network               = module.vpc_private_cluster["dev"].network_name
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
@@ -26,7 +26,7 @@ locals {
       next_env              = "02-qa"
     },
     "02-qa" = {
-      cluster               = "qa-private-cluster",
+      cluster               = "qa-cbpp-cluster",
       network               = module.vpc_private_cluster["qa"].network_name
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
@@ -35,7 +35,7 @@ locals {
       next_env              = "03-prod"
     },
     "03-prod" = {
-      cluster               = "prod-private-cluster",
+      cluster               = "prod-cbpp-cluster",
       network               = module.vpc_private_cluster["prod"].network_name
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
