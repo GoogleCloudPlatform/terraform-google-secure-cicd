@@ -18,7 +18,7 @@ locals {
   deploy_branch_clusters = {
     "01-dev" = {
       cluster               = "dev-private-cluster",
-      network               = var.gke_private_vpc_names["dev"]
+      network               = module.vpc_private_cluster["dev"].network_name
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
@@ -27,7 +27,7 @@ locals {
     },
     "02-qa" = {
       cluster               = "qa-private-cluster",
-      network               = var.gke_private_vpc_names["qa"]
+      network               = module.vpc_private_cluster["qa"].network_name
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
@@ -36,7 +36,7 @@ locals {
     },
     "03-prod" = {
       cluster               = "prod-private-cluster",
-      network               = var.gke_private_vpc_names["prod"]
+      network               = module.vpc_private_cluster["prod"].network_name
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/quality-pc-attestor", "projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
@@ -83,7 +83,7 @@ module "vpc_private_cluster" {
   version  = "~> 4.0"
 
   project_id   = var.gke_project_ids[each.key]
-  network_name = "gke-private-vpc-${each.value}"
+  network_name = "gke-private-vpc-${each.key}"
   routing_mode = "REGIONAL"
 
   subnets = [
@@ -91,7 +91,7 @@ module "vpc_private_cluster" {
       subnet_name           = "gke-subnet-private"
       subnet_ip             = "10.0.0.0/17"
       subnet_region         = var.primary_location
-      subnet_private_access = false
+      subnet_private_access = true
 
     },
   ]
@@ -126,12 +126,12 @@ module "gke_private_cluster" {
   version  = "~> 22.1.0"
 
   project_id                  = var.gke_project_ids[each.key]
-  name                        = "${each.value}-private-cluster"
+  name                        = "${each.key}-private-cluster"
   regional                    = true
   region                      = var.primary_location
   zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
-  network                     = module.vpc_private_cluster[each.value].network_name
-  subnetwork                  = module.vpc_private_cluster[each.value].subnets_names[0]
+  network                     = module.vpc_private_cluster[each.key].network_name
+  subnetwork                  = module.vpc_private_cluster[each.key].subnets_names[0]
   ip_range_pods               = "us-central1-01-gke-01-pods"
   ip_range_services           = "us-central1-01-gke-01-services"
   horizontal_pod_autoscaling  = true

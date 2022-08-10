@@ -77,7 +77,7 @@ module "vpc" {
       subnet_name           = "gke-subnet"
       subnet_ip             = "10.0.0.0/17"
       subnet_region         = var.primary_location
-      subnet_private_access = false
+      subnet_private_access = true
     },
   ]
   secondary_ranges = {
