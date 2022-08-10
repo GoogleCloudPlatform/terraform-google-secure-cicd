@@ -24,7 +24,12 @@ output "binauthz_policy_required_attestations" {
   value       = [for policy in google_binary_authorization_policy.deployment_policy : policy.cluster_admission_rules.*.require_attestations_by]
 }
 
-output "delivery_pipeline_name" {
-  description = "Name of the Cloud Deploy delivery pipeline"
-  value       = google_clouddeploy_delivery_pipeline.pipeline.name
+output "clouddeploy_delivery_pipeline_id" {
+  description = "ID of the Cloud Deploy delivery pipeline"
+  value       = google_clouddeploy_delivery_pipeline.pipeline.id
+}
+
+output "clouddeploy_target_id" {
+  description = "ID(s) of Cloud Deploy targets"
+  value       = [for target in google_clouddeploy_target.deploy_target : target.id]
 }

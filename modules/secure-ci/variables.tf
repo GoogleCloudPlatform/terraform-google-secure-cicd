@@ -113,5 +113,5 @@ variable "cloudbuild_private_pool" {
 variable "clouddeploy_pipeline_name" {
   description = "Cloud Deploy pipeline name"
   type        = string
-  default     = ""
+  default     = "deploy-pipeline"
 }

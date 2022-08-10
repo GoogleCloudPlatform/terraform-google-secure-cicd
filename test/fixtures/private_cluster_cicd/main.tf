@@ -44,6 +44,13 @@ locals {
       next_env              = ""
     },
   }
+
+  ip_increment = {
+    "dev"  = 1,
+    "qa"   = 2,
+    "prod" = 3
+  }
+
 }
 
 data "google_container_cluster" "cluster" {
@@ -68,16 +75,92 @@ module "example" {
   ])
 }
 
-resource "google_project_iam_member" "cluster_service_account-gcr" {
-  for_each = var.gke_private_service_accounts
-  project  = var.project_id
-  role     = "roles/storage.objectViewer"
-  member   = "serviceAccount:${each.value}"
+###### Private Clusters ######
+# Private Cluster VPCs
+module "vpc_private_cluster" {
+  for_each = var.gke_project_ids
+  source   = "terraform-google-modules/network/google"
+  version  = "~> 4.0"
+
+  project_id   = var.gke_project_ids[each.key]
+  network_name = "gke-private-vpc-${each.value}"
+  routing_mode = "REGIONAL"
+
+  subnets = [
+    {
+      subnet_name           = "gke-subnet-private"
+      subnet_ip             = "10.0.0.0/17"
+      subnet_region         = var.primary_location
+      subnet_private_access = false
+
+    },
+  ]
+  secondary_ranges = {
+    gke-subnet-private = [
+      {
+        range_name    = "us-central1-01-gke-01-pods"
+        ip_cidr_range = "192.168.0.0/18"
+      },
+      {
+        range_name    = "us-central1-01-gke-01-services"
+        ip_cidr_range = "192.168.64.0/18"
+      },
+    ]
+  }
 }
 
-resource "google_project_iam_member" "cluster_service_account-artifact-registry" {
-  for_each = var.gke_private_service_accounts
-  project  = var.project_id
-  role     = "roles/artifactregistry.reader"
-  member   = "serviceAccount:${each.value}"
+resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
+  for_each = var.gke_project_ids
+
+  project = each.value
+  peering = module.gke_private_cluster[each.key].peering_name
+  network = module.vpc_private_cluster[each.key].network_name
+
+  import_custom_routes = true
+  export_custom_routes = true
+}
+
+module "gke_private_cluster" {
+  for_each = var.gke_project_ids
+  source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
+  version  = "~> 22.1.0"
+
+  project_id                  = var.gke_project_ids[each.key]
+  name                        = "${each.value}-private-cluster"
+  regional                    = true
+  region                      = var.primary_location
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  network                     = module.vpc_private_cluster[each.value].network_name
+  subnetwork                  = module.vpc_private_cluster[each.value].subnets_names[0]
+  ip_range_pods               = "us-central1-01-gke-01-pods"
+  ip_range_services           = "us-central1-01-gke-01-services"
+  horizontal_pod_autoscaling  = true
+  create_service_account      = true
+  enable_binary_authorization = true
+  skip_provisioners           = true
+
+  enable_private_endpoint = true
+  enable_private_nodes    = true
+  master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.key]}.0/28"
+
+  enable_vertical_pod_autoscaling = true
+
+  # Enabled read-access to images in GAR repo in CI/CD project
+  grant_registry_access = true
+  registry_project_ids  = [var.project_id]
+
+  master_authorized_networks = [
+    {
+      cidr_block   = module.vpc_private_cluster[each.key].subnets_ips[0]
+      display_name = "VPC"
+    },
+    {
+      cidr_block   = "10.39.0.0/16"
+      display_name = "CLOUDBUILD"
+    }
+  ]
+
+  depends_on = [
+    module.vpc_private_cluster
+  ]
 }

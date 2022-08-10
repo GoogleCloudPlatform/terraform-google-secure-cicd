@@ -37,6 +37,8 @@ locals {
   cd_sa_required_roles = [
     "roles/clouddeploy.jobRunner",
   ]
+
+  clouddeploy_pubsub_topic_name = "clouddeploy-operations"
 }
 
 # Cluod Deploy Execution Service Account
@@ -115,12 +117,14 @@ data "google_project" "app_cicd_project" {
   project_id = var.project_id
 }
 
+# Set up Cloud Deploy notifications
+# (https://cloud.google.com/deploy/docs/subscribe-deploy-notifications)
 resource "google_pubsub_topic" "clouddeploy_topic" {
-  for_each = toset(["clouddeploy-resources", "clouddeploy-operations", "clouddeploy-approvals"])
-  name     = each.value
+  name     = local.clouddeploy_pubsub_topic_name
   project  = var.project_id
 }
 
+# Trigger post-deploy checks on successful Cloud Deploy rollout
 resource "google_cloudbuild_trigger" "deploy_trigger" {
   for_each = {
     for env, config in var.deploy_branch_clusters : env => config
@@ -131,12 +135,12 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   name    = "deploy-trigger-${each.value.cluster}"
 
   pubsub_config {
-    topic = google_pubsub_topic.clouddeploy_topic["clouddeploy-operations"].id
+    topic = google_pubsub_topic.clouddeploy_topic.id
   }
 
   source_to_build {
     uri       = "https://source.developers.google.com/p/${var.project_id}/r/${var.cloudbuild_cd_repo}"
-    ref       = "master"
+    ref       = "main"
     repo_type = "CLOUD_SOURCE_REPOSITORIES"
   }
 
@@ -154,6 +158,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
       _ATTESTOR_NAME             = each.value.env_attestation
       _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
       _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name
+      # Create substitutions to parse incoming Pub/sub messages from Cloud Deploy
       _ACTION_TYPE               = "$(body.message.attributes.Action)"
       _RESOURCE_TYPE             = "$(body.message.attributes.ResourceType)"
       _DELIVERY_PIPELINE_ID      = "$(body.message.attributes.DeliveryPipelineId)"
@@ -164,6 +169,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
     var.additional_substitutions
   )
 
+  # Only trigger the post-deployment check on relevant Cloud Deploy activity (successful rollout to a target)
   filter = "_RESOURCE_TYPE.matches('Rollout') && _ACTION_TYPE.matches('Succeed') && _DELIVERY_PIPELINE_ID.matches('${var.clouddeploy_pipeline_name}') && _TARGET_ID.matches('${google_clouddeploy_target.deploy_target[each.key].name}')"
 }
 

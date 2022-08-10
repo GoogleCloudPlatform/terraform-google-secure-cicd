@@ -40,32 +40,32 @@ output "gke_project_ids" {
   value       = zipmap(local.envs, [for env in local.envs : module.gke_project[env].project_id])
 }
 
-output "gke_vpc_names" {
-  description = "List of GKE project IDs"
-  value       = zipmap(local.envs, [for env in local.envs : module.vpc[env].network_name])
-}
+# output "gke_vpc_names" {
+#   description = "List of GKE project IDs"
+#   value       = zipmap(local.envs, [for env in local.envs : module.vpc[env].network_name])
+# }
 
-output "gke_service_accounts" {
-  description = "List of GKE service accounts"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_cluster[env].service_account])
-}
+# output "gke_service_accounts" {
+#   description = "List of GKE service accounts"
+#   value       = zipmap(local.envs, [for env in local.envs : module.gke_cluster[env].service_account])
+# }
 
-output "gke_cluster_names" {
-  description = "List of GKE clusters"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_cluster[env].name])
-}
+# output "gke_cluster_names" {
+#   description = "List of GKE clusters"
+#   value       = zipmap(local.envs, [for env in local.envs : module.gke_cluster[env].name])
+# }
 
-output "gke_private_vpc_names" {
-  description = "List of GKE project IDs"
-  value       = zipmap(local.envs, [for env in local.envs : module.vpc_private_cluster[env].network_name])
-}
+# output "gke_private_vpc_names" {
+#   description = "List of GKE project IDs"
+#   value       = zipmap(local.envs, [for env in local.envs : module.vpc_private_cluster[env].network_name])
+# }
 
-output "gke_private_service_accounts" {
-  description = "List of GKE private cluster service accounts"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_private_cluster[env].service_account])
-}
+# output "gke_private_service_accounts" {
+#   description = "List of GKE private cluster service accounts"
+#   value       = zipmap(local.envs, [for env in local.envs : module.gke_private_cluster[env].service_account])
+# }
 
-output "gke_private_cluster_names" {
-  description = "List of GKE private clusters"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_private_cluster[env].name])
-}
+# output "gke_private_cluster_names" {
+#   description = "List of GKE private clusters"
+#   value       = zipmap(local.envs, [for env in local.envs : module.gke_private_cluster[env].name])
+# }
