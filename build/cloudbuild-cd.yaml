@@ -28,12 +28,6 @@ artifacts:
       - '/workspace/svcs-endpoints-filtered.json'
 steps:
 
-############################### Deploy to Cluster ###########################
-
-# - name: "gcr.io/cloud-builders/gke-deploy"
-#   id: "deploy-to-cluster"
-#   args: ['apply', '-f', 'manifests', '-p', '$_CLUSTER_PROJECT', '-c', '$_CLUSTER_NAME', '-l', '$_DEFAULT_REGION']
-
 ############################### Post-Deploy Checks ###########################
 
 # Get endpoint IPs
@@ -47,9 +41,6 @@ steps:
       gcloud config set project $_CLUSTER_PROJECT
       gcloud container clusters get-credentials $_CLUSTER_NAME --region=$_DEFAULT_REGION
       kubectl get svc -ojson > /workspace/svcs.json
-
-      ### Do we need a version that runs against private IP'd svcs?
-      # jq '[.items[] | ({svc: .metadata.name, endpoint: "\(.spec.clusterIPs[]):\(.spec.ports[].port)"}), (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
 
       ### Below only grabs external IP'd svcs
       jq '[.items[] | (select(.status.loadBalancer.ingress != null) | {svc: .metadata.name, endpoint: "\(.status.loadBalancer.ingress[].ip):\(.spec.ports[].port)"})]' /workspace/svcs.json > /workspace/svcs-endpoints-filtered.json
@@ -135,31 +126,6 @@ steps:
     - -c
     - |
       gcloud deploy releases promote --release=$_RELEASE_ID --delivery-pipeline=$_CLOUDDEPLOY_PIPELINE_NAME --region=$_DEFAULT_REGION
-
-      # Only run this step if there is a next environment supplied in the trigger substitutions
-      # This step will be skipped for the final environment, when there are no more promotions to perform
-      # if [ -n "${_NEXT_ENV}" ]; then
-      #   git config --global user.email "cicd-agent@secure-cicd.com" # TODO: variable with custom domain group alias
-      #   git config --global user.name "Secure CICD Build Agent (automated)" # TODO: app name var
-
-      #   # Clone the WET repo
-      #   cd /workspace
-      #   gcloud source repos clone $_MANIFEST_WET_REPO --project=${PROJECT_ID}
-      #   git -C /workspace/$_MANIFEST_WET_REPO branch $_NEXT_ENV
-      #   git -C /workspace/$_MANIFEST_WET_REPO checkout $_NEXT_ENV
-      #   git -C /workspace/$_MANIFEST_WET_REPO branch --set-upstream-to=origin/$_NEXT_ENV || echo "$_NEXT_ENV branch does not yet exist"
-      #   git -C /workspace/$_MANIFEST_WET_REPO pull --no-rebase || echo "$_NEXT_ENV branch does not yet exist"
-
-      #   cd /workspace/$_MANIFEST_WET_REPO
-
-      #   # Merge manifests up
-      #   git status
-      #   git merge origin/$BRANCH_NAME
-      #   git add .
-      #   git push -u origin $_NEXT_ENV
-      # else
-      #   echo "_NEXT_ENV not specified. No further environment to promote to"
-      # fi
 
   waitFor:
     - 'binary-authorization-checkpoint'
