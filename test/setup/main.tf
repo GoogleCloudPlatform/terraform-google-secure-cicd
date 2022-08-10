@@ -61,7 +61,7 @@ module "project" {
 }
 
 locals {
-  envs             = ["dev", "qa", "prod"]
+  envs = ["dev", "qa", "prod"]
 }
 
 # GKE Projects
