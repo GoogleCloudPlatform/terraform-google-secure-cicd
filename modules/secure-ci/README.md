@@ -44,7 +44,7 @@ The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci.yaml) build config
 | cloudbuild\_cd\_repo | Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks | `string` | `"cloudbuild-cd-config"` | no |
 | cloudbuild\_private\_pool | Cloud Build private pool self-link | `string` | `""` | no |
 | cloudbuild\_service\_account\_roles | IAM roles given to the Cloud Build service account to enable security scanning operations | `list(string)` | <pre>[<br>  "roles/artifactregistry.admin",<br>  "roles/binaryauthorization.attestorsVerifier",<br>  "roles/cloudbuild.builds.builder",<br>  "roles/clouddeploy.developer",<br>  "roles/clouddeploy.releaser",<br>  "roles/cloudkms.cryptoOperator",<br>  "roles/containeranalysis.notes.attacher",<br>  "roles/containeranalysis.notes.occurrences.viewer",<br>  "roles/source.writer",<br>  "roles/storage.admin",<br>  "roles/cloudbuild.workerPoolUser",<br>  "roles/ondemandscanning.admin"<br>]</pre> | no |
-| clouddeploy\_pipeline\_name | Cloud Deploy pipeline name | `string` | `""` | no |
+| clouddeploy\_pipeline\_name | Cloud Deploy pipeline name | `string` | `"deploy-pipeline"` | no |
 | gar\_repo\_name\_suffix | Docker artifact regitery repo to store app build images | `string` | `"app-image-repo"` | no |
 | primary\_location | Region used for key-ring | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |

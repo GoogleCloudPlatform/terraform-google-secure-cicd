@@ -120,8 +120,8 @@ data "google_project" "app_cicd_project" {
 # Set up Cloud Deploy notifications
 # (https://cloud.google.com/deploy/docs/subscribe-deploy-notifications)
 resource "google_pubsub_topic" "clouddeploy_topic" {
-  name     = local.clouddeploy_pubsub_topic_name
-  project  = var.project_id
+  name    = local.clouddeploy_pubsub_topic_name
+  project = var.project_id
 }
 
 # Trigger post-deploy checks on successful Cloud Deploy rollout
@@ -159,11 +159,11 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
       _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
       _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name
       # Create substitutions to parse incoming Pub/sub messages from Cloud Deploy
-      _ACTION_TYPE               = "$(body.message.attributes.Action)"
-      _RESOURCE_TYPE             = "$(body.message.attributes.ResourceType)"
-      _DELIVERY_PIPELINE_ID      = "$(body.message.attributes.DeliveryPipelineId)"
-      _TARGET_ID                 = "$(body.message.attributes.TargetId)"
-      _RELEASE_ID                = "$(body.message.attributes.ReleaseId)"
+      _ACTION_TYPE          = "$(body.message.attributes.Action)"
+      _RESOURCE_TYPE        = "$(body.message.attributes.ResourceType)"
+      _DELIVERY_PIPELINE_ID = "$(body.message.attributes.DeliveryPipelineId)"
+      _TARGET_ID            = "$(body.message.attributes.TargetId)"
+      _RELEASE_ID           = "$(body.message.attributes.ReleaseId)"
 
     },
     var.additional_substitutions

@@ -71,7 +71,8 @@ The template [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd.yaml) build config
 | Name | Description |
 |------|-------------|
 | binauthz\_policy\_required\_attestations | Binary Authorization policy required attestation in GKE projects |
-| delivery\_pipeline\_name | Name of the Cloud Deploy delivery pipeline |
+| clouddeploy\_delivery\_pipeline\_id | ID of the Cloud Deploy delivery pipeline |
+| clouddeploy\_target\_id | ID(s) of Cloud Deploy targets |
 | deploy\_trigger\_names | Names of CD Cloud Build triggers |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
