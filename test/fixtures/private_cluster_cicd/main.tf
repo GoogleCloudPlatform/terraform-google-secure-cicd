@@ -17,28 +17,28 @@
 locals {
   deploy_branch_clusters = {
     "01-dev" = {
-      cluster               = "dev-private-cluster",
-      network               = module.vpc_private_cluster["dev"].network_name
+      cluster               = module.gke_private_cluster["dev"].name,
+      network               = module.vpc_private_cluster["dev"].network_name,
       project_id            = var.gke_project_ids["dev"],
-      location              = var.primary_location,
+      location              = module.gke_private_cluster["dev"].region,
       required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/security-pc-attestor"
       next_env              = "02-qa"
     },
     "02-qa" = {
-      cluster               = "qa-private-cluster",
-      network               = module.vpc_private_cluster["qa"].network_name
+      cluster               = module.gke_private_cluster["qa"].name,
+      network               = module.vpc_private_cluster["qa"].network_name,
       project_id            = var.gke_project_ids["qa"],
-      location              = var.primary_location,
+      location              = module.gke_private_cluster["qa"].region,
       required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/quality-pc-attestor"
       next_env              = "03-prod"
     },
     "03-prod" = {
-      cluster               = "prod-private-cluster",
-      network               = module.vpc_private_cluster["prod"].network_name
+      cluster               = module.gke_private_cluster["prod"].name,
+      network               = module.vpc_private_cluster["prod"].network_name,
       project_id            = var.gke_project_ids["prod"],
-      location              = var.primary_location,
+      location              = module.gke_private_cluster["prod"].region,
       required_attestations = ["projects/${var.project_id}/attestors/quality-pc-attestor", "projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = ""
       next_env              = ""
@@ -73,10 +73,6 @@ module "example" {
       control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
     }
   ])
-
-  depends_on = [
-    module.gke_private_cluster
-  ]
 }
 
 ###### Private Clusters ######
