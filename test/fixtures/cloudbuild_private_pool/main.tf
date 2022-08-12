@@ -45,19 +45,38 @@ locals {
     },
   }
 
+  gke_networks = [
+    {
+      network    = module.vpc_private_cluster["dev"].network_name,
+      location   = module.gke_private_cluster["dev"].region,
+      project_id = var.gke_project_ids["dev"],
+      control_plane_cidrs = {
+        (module.gke_private_cluster["dev"].master_ipv4_cidr_block) = "GKE dev control plane"
+      }
+    },
+    {
+      network    = module.vpc_private_cluster["qa"].network_name,
+      location   = module.gke_private_cluster["qa"].region,
+      project_id = var.gke_project_ids["qa"],
+      control_plane_cidrs = {
+        (module.gke_private_cluster["qa"].master_ipv4_cidr_block) = "GKE qa control plane"
+      }
+    },
+    {
+      network    = module.vpc_private_cluster["prod"].network_name,
+      location   = module.gke_private_cluster["prod"].region,
+      project_id = var.gke_project_ids["prod"],
+      control_plane_cidrs = {
+        (module.gke_private_cluster["prod"].master_ipv4_cidr_block) = "GKE prod control plane"
+      }
+    }
+  ]
+
   ip_increment = {
     "dev"  = 1,
     "qa"   = 2,
     "prod" = 3
   }
-
-}
-
-data "google_container_cluster" "cluster" {
-  for_each = local.deploy_branch_clusters
-  project  = each.value.project_id
-  location = each.value.location
-  name     = each.value.cluster
 }
 
 module "example" {
@@ -65,15 +84,7 @@ module "example" {
 
   project_id       = var.project_id
   primary_location = var.primary_location
-
-  gke_networks = distinct([
-    for env in local.deploy_branch_clusters : {
-      network             = env.network
-      location            = env.location
-      project_id          = env.project_id
-      control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
-    }
-  ])
+  gke_networks     = local.gke_networks
 }
 
 ###### Private Clusters ######
