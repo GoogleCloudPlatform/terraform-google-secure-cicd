@@ -28,7 +28,7 @@ module "vpn_ha_1" {
       (var.workerpool_range) = "Cloud Build Private Pool"
     }
     mode   = "CUSTOM"
-    groups = []
+    groups = ["ALL_SUBNETS"]
   }
   peer_gcp_gateway = module.vpn_ha_2.self_link
   tunnels = {
@@ -70,7 +70,7 @@ module "vpn_ha_2" {
   router_advertise_config = {
     ip_ranges = var.gke_control_plane_cidrs
     mode      = "CUSTOM"
-    groups    = []
+    groups    = ["ALL_SUBNETS"]
   }
   peer_gcp_gateway = module.vpn_ha_1.self_link
   tunnels = {

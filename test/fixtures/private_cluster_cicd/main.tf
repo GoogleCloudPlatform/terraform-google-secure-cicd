@@ -73,6 +73,10 @@ module "example" {
       control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
     }
   ])
+
+  depends_on = [
+    module.gke_private_cluster
+  ]
 }
 
 ###### Private Clusters ######
