@@ -61,7 +61,13 @@ module "project" {
 }
 
 locals {
-  envs = ["dev", "qa", "prod"]
+  envs             = ["dev", "qa", "prod"]
+  primary_location = "us-central1"
+  ip_increment = {
+    "dev"  = 1,
+    "qa"   = 2,
+    "prod" = 3
+  }
 }
 
 # GKE Projects
@@ -97,7 +103,148 @@ module "gke_project" {
   ]
 }
 
+###### Public Clusters ######
+# VPCs
+module "vpc" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/network/google"
+  version  = "~> 4.0"
+
+  project_id   = module.gke_project[each.value].project_id
+  network_name = "gke-vpc-${each.key}"
+  routing_mode = "REGIONAL"
+
+  subnets = [
+    {
+      subnet_name   = "gke-subnet"
+      subnet_ip     = "10.0.0.0/17"
+      subnet_region = local.primary_location
+    },
+  ]
+  secondary_ranges = {
+    gke-subnet = [
+      {
+        range_name    = "us-central1-01-gke-01-pods"
+        ip_cidr_range = "192.168.0.0/18"
+      },
+      {
+        range_name    = "us-central1-01-gke-01-services"
+        ip_cidr_range = "192.168.64.0/18"
+      },
+    ]
+  }
+}
+
+module "gke_cluster" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/kubernetes-engine/google"
+
+  project_id                  = module.gke_project[each.value].project_id
+  name                        = "${each.key}-cluster"
+  regional                    = true
+  region                      = local.primary_location
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  network                     = module.vpc[each.key].network_name
+  subnetwork                  = module.vpc[each.key].subnets_names[0]
+  ip_range_pods               = "us-central1-01-gke-01-pods"
+  ip_range_services           = "us-central1-01-gke-01-services"
+  create_service_account      = true
+  enable_binary_authorization = true
+  skip_provisioners           = false
+
+  # Enabled read-access to images in GAR repo in CI/CD project
+  # grant_registry_access = true
+  # registry_project_ids  = [var.project_id]
+
+  depends_on = [
+    module.vpc
+  ]
+}
 
 
+###### Private Clusters ######
+# Private Cluster VPCs
+module "vpc_private_cluster" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/network/google"
+  version  = "~> 4.0"
 
+  project_id   = module.gke_project[each.value].project_id
+  network_name = "gke-private-vpc-${each.value}"
+  routing_mode = "REGIONAL"
 
+  subnets = [
+    {
+      subnet_name   = "gke-subnet-private"
+      subnet_ip     = "10.0.0.0/17"
+      subnet_region = local.primary_location
+    },
+  ]
+  secondary_ranges = {
+    gke-subnet-private = [
+      {
+        range_name    = "us-central1-01-gke-01-pods"
+        ip_cidr_range = "192.168.0.0/18"
+      },
+      {
+        range_name    = "us-central1-01-gke-01-services"
+        ip_cidr_range = "192.168.64.0/18"
+      },
+    ]
+  }
+}
+
+resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
+  for_each = toset(local.envs)
+
+  project = module.gke_project[each.value].project_id
+  peering = module.gke_private_cluster[each.value].peering_name
+  network = module.vpc_private_cluster[each.value].network_name
+
+  import_custom_routes = true
+  export_custom_routes = true
+}
+
+module "gke_private_cluster" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
+
+  project_id                  = module.gke_project[each.value].project_id
+  name                        = "${each.value}-private-cluster"
+  regional                    = true
+  region                      = local.primary_location
+  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
+  network                     = module.vpc_private_cluster[each.value].network_name
+  subnetwork                  = module.vpc_private_cluster[each.value].subnets_names[0]
+  ip_range_pods               = "us-central1-01-gke-01-pods"
+  ip_range_services           = "us-central1-01-gke-01-services"
+  horizontal_pod_autoscaling  = true
+  create_service_account      = true
+  enable_binary_authorization = true
+
+  enable_private_endpoint = true
+  enable_private_nodes    = true
+  master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.value]}.0/28"
+
+  enable_vertical_pod_autoscaling = true
+
+  ## Can't create these resources before main project is created (after-apply error)
+  # Enabled read-access to images in GAR repo in CI/CD project
+  # grant_registry_access = true
+  # registry_project_ids  = [module.project.project_id]
+
+  master_authorized_networks = [
+    {
+      cidr_block   = module.vpc_private_cluster[each.value].subnets_ips[0]
+      display_name = "VPC"
+    },
+    {
+      cidr_block   = "10.39.0.0/16"
+      display_name = "CLOUDBUILD"
+    }
+  ]
+
+  depends_on = [
+    module.vpc_private_cluster
+  ]
+}

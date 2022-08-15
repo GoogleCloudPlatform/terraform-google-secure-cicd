@@ -17,67 +17,40 @@
 locals {
   deploy_branch_clusters = {
     "01-dev" = {
-      cluster               = module.gke_private_cluster["dev"].name,
-      network               = module.vpc_private_cluster["dev"].network_name,
+      cluster               = "dev-private-cluster",
+      network               = var.gke_private_vpc_names["dev"]
       project_id            = var.gke_project_ids["dev"],
-      location              = module.gke_private_cluster["dev"].region,
+      location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/security-pc-attestor"
       next_env              = "02-qa"
     },
     "02-qa" = {
-      cluster               = module.gke_private_cluster["qa"].name,
-      network               = module.vpc_private_cluster["qa"].network_name,
+      cluster               = "qa-private-cluster",
+      network               = var.gke_private_vpc_names["qa"]
       project_id            = var.gke_project_ids["qa"],
-      location              = module.gke_private_cluster["qa"].region,
+      location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/quality-pc-attestor"
       next_env              = "03-prod"
     },
     "03-prod" = {
-      cluster               = module.gke_private_cluster["prod"].name,
-      network               = module.vpc_private_cluster["prod"].network_name,
+      cluster               = "prod-private-cluster",
+      network               = var.gke_private_vpc_names["prod"]
       project_id            = var.gke_project_ids["prod"],
-      location              = module.gke_private_cluster["prod"].region,
+      location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/quality-pc-attestor", "projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = ""
       next_env              = ""
     },
   }
+}
 
-  gke_networks = [
-    {
-      network    = module.vpc_private_cluster["dev"].network_name,
-      location   = module.gke_private_cluster["dev"].region,
-      project_id = var.gke_project_ids["dev"],
-      control_plane_cidrs = {
-        (module.gke_private_cluster["dev"].master_ipv4_cidr_block) = "GKE dev control plane"
-      }
-    },
-    {
-      network    = module.vpc_private_cluster["qa"].network_name,
-      location   = module.gke_private_cluster["qa"].region,
-      project_id = var.gke_project_ids["qa"],
-      control_plane_cidrs = {
-        (module.gke_private_cluster["qa"].master_ipv4_cidr_block) = "GKE qa control plane"
-      }
-    },
-    {
-      network    = module.vpc_private_cluster["prod"].network_name,
-      location   = module.gke_private_cluster["prod"].region,
-      project_id = var.gke_project_ids["prod"],
-      control_plane_cidrs = {
-        (module.gke_private_cluster["prod"].master_ipv4_cidr_block) = "GKE prod control plane"
-      }
-    }
-  ]
-
-  ip_increment = {
-    "dev"  = 1,
-    "qa"   = 2,
-    "prod" = 3
-  }
-
+data "google_container_cluster" "cluster" {
+  for_each = local.deploy_branch_clusters
+  project  = each.value.project_id
+  location = each.value.location
+  name     = each.value.cluster
 }
 
 module "example" {
@@ -85,95 +58,26 @@ module "example" {
 
   project_id             = var.project_id
   deploy_branch_clusters = local.deploy_branch_clusters
-  gke_networks           = local.gke_networks
-}
-
-###### Private Clusters ######
-# Private Cluster VPCs
-module "vpc_private_cluster" {
-  for_each = var.gke_project_ids
-  source   = "terraform-google-modules/network/google"
-  version  = "~> 4.0"
-
-  project_id   = var.gke_project_ids[each.key]
-  network_name = "gke-private-vpc-${each.key}"
-  routing_mode = "REGIONAL"
-
-  subnets = [
-    {
-      subnet_name           = "gke-subnet-private"
-      subnet_ip             = "10.0.0.0/17"
-      subnet_region         = var.primary_location
-      subnet_private_access = true
-
-    },
-  ]
-  secondary_ranges = {
-    gke-subnet-private = [
-      {
-        range_name    = "us-central1-01-gke-01-pods"
-        ip_cidr_range = "192.168.0.0/18"
-      },
-      {
-        range_name    = "us-central1-01-gke-01-services"
-        ip_cidr_range = "192.168.64.0/18"
-      },
-    ]
-  }
-}
-
-resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
-  for_each = var.gke_project_ids
-
-  project = each.value
-  peering = module.gke_private_cluster[each.key].peering_name
-  network = module.vpc_private_cluster[each.key].network_name
-
-  import_custom_routes = true
-  export_custom_routes = true
-}
-
-module "gke_private_cluster" {
-  for_each = var.gke_project_ids
-  source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version  = "~> 22.1.0"
-
-  project_id                  = var.gke_project_ids[each.key]
-  name                        = "${each.key}-private-cluster"
-  regional                    = true
-  region                      = var.primary_location
-  zones                       = ["us-central1-a", "us-central1-b", "us-central1-f"]
-  network                     = module.vpc_private_cluster[each.key].network_name
-  subnetwork                  = module.vpc_private_cluster[each.key].subnets_names[0]
-  ip_range_pods               = "us-central1-01-gke-01-pods"
-  ip_range_services           = "us-central1-01-gke-01-services"
-  horizontal_pod_autoscaling  = true
-  create_service_account      = true
-  enable_binary_authorization = true
-  skip_provisioners           = true
-
-  enable_private_endpoint = true
-  enable_private_nodes    = true
-  master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.key]}.0/28"
-
-  enable_vertical_pod_autoscaling = true
-
-  # Enabled read-access to images in GAR repo in CI/CD project
-  grant_registry_access = true
-  registry_project_ids  = [var.project_id]
-
-  master_authorized_networks = [
-    {
-      cidr_block   = module.vpc_private_cluster[each.key].subnets_ips[0]
-      display_name = "VPC"
-    },
-    {
-      cidr_block   = "10.39.0.0/16"
-      display_name = "CLOUDBUILD"
+  gke_networks = distinct([
+    for env in local.deploy_branch_clusters : {
+      network             = env.network
+      location            = env.location
+      project_id          = env.project_id
+      control_plane_cidrs = { for cluster in data.google_container_cluster.cluster : cluster.private_cluster_config[0].master_ipv4_cidr_block => "GKE control plane" if cluster.network == "projects/${env.project_id}/global/networks/${env.network}" }
     }
-  ]
+  ])
+}
 
-  depends_on = [
-    module.vpc_private_cluster
-  ]
+resource "google_project_iam_member" "cluster_service_account-gcr" {
+  for_each = var.gke_private_service_accounts
+  project  = var.project_id
+  role     = "roles/storage.objectViewer"
+  member   = "serviceAccount:${each.value}"
+}
+
+resource "google_project_iam_member" "cluster_service_account-artifact-registry" {
+  for_each = var.gke_private_service_accounts
+  project  = var.project_id
+  role     = "roles/artifactregistry.reader"
+  member   = "serviceAccount:${each.value}"
 }
