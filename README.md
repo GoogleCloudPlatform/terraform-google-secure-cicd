@@ -29,7 +29,7 @@ module "cd_pipeline" {
   project_id              = var.project_id
   primary_location        = "us-central1"
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
-  manifest_wet_repo       = "app-wet-manifests"
+  cloudbuild_cd_repo      = "cloudbuild-cd-config-pc"
   deploy_branch_clusters  = {
     dev = {
       cluster               = "dev-cluster",

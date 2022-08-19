@@ -140,8 +140,8 @@ done
 
 | Name | Description |
 |------|-------------|
-| bin\_auth\_attestor\_names | Names of Attestors |
-| bin\_auth\_attestor\_project\_id | Project ID where attestors get created |
+| binauth\_attestor\_names | Names of Attestors |
+| binauth\_attestor\_project\_id | Project ID where attestors get created |
 | boa\_artifact\_repo | GAR Repo created to store BoA images |
 | build\_trigger\_name | The name of the cloud build trigger for the bank of anthos repo. |
 | cache\_bucket\_name | The name of the storage bucket for cloud build. |
