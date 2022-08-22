@@ -119,7 +119,7 @@ service account with the necessary roles applied.
 
 ### APIs
 
-A project with the following APIs enabled must be used to host the
+Projects with the following APIs enabled must be used to host the
 resources of this module:
 
 CI/CD Project
