@@ -152,10 +152,6 @@ module "gke_cluster" {
   enable_binary_authorization = true
   skip_provisioners           = false
 
-  # Enabled read-access to images in GAR repo in CI/CD project
-  # grant_registry_access = true
-  # registry_project_ids  = [var.project_id]
-
   depends_on = [
     module.vpc
   ]
@@ -227,11 +223,6 @@ module "gke_private_cluster" {
   master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.value]}.0/28"
 
   enable_vertical_pod_autoscaling = true
-
-  ## Can't create these resources before main project is created (after-apply error)
-  # Enabled read-access to images in GAR repo in CI/CD project
-  # grant_registry_access = true
-  # registry_project_ids  = [module.project.project_id]
 
   master_authorized_networks = [
     {
