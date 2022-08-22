@@ -128,6 +128,8 @@ CI/CD Project
 - Storage API `storage-api.googleapis.com`
 - Service Usage API `serviceusage.googleapis.com`
 - Cloud Build API `cloudbuild.googleapis.com`
+- Cloud Deploy API `clouddeploy.googleapis.com`
+- Pub/Sub API `pubsub.googleapis.com`
 - Container Registry API `containerregistry.googleapis.com`
 - IAM Credentials API `iamcredentials.googleapis.com`
 - Cloud Source Repositories API `sourcerepo.googleapis.com`
