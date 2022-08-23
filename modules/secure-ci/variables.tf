@@ -50,22 +50,10 @@ variable "app_source_repo" {
   default     = "app-source"
 }
 
-variable "manifest_dry_repo" {
+variable "cloudbuild_cd_repo" {
   type        = string
-  description = "Name of repo that contains template K8s manifests files"
-  default     = "app-dry-manifests"
-}
-
-variable "manifest_wet_repo" {
-  type        = string
-  description = "Name of repo that will receive hydrated K8s manifests files"
-  default     = "app-wet-manifests"
-}
-
-variable "wet_branch_name" {
-  type        = string
-  description = "Name of branch in the wet manifest repo that CI pipeline will push to (usually, the name of the first deployed environment)"
-  default     = "dev"
+  description = "Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks"
+  default     = "cloudbuild-cd-config"
 }
 
 variable "cache_bucket_name" {
@@ -98,6 +86,8 @@ variable "cloudbuild_service_account_roles" {
     "roles/artifactregistry.admin",
     "roles/binaryauthorization.attestorsVerifier",
     "roles/cloudbuild.builds.builder",
+    "roles/clouddeploy.developer",
+    "roles/clouddeploy.releaser",
     "roles/cloudkms.cryptoOperator",
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",
@@ -118,4 +108,10 @@ variable "cloudbuild_private_pool" {
   description = "Cloud Build private pool self-link"
   type        = string
   default     = ""
+}
+
+variable "clouddeploy_pipeline_name" {
+  description = "Cloud Deploy pipeline name"
+  type        = string
+  default     = "deploy-pipeline"
 }

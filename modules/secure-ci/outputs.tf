@@ -24,12 +24,17 @@ output "build_trigger_name" {
   value       = google_cloudbuild_trigger.app_build_trigger.name
 }
 
-output "bin_auth_attestor_names" {
+output "binauth_attestor_names" {
   description = "Names of Attestors"
   value       = [for attestor_name in var.attestor_names_prefix : module.attestors[attestor_name].attestor]
 }
 
-output "bin_auth_attestor_project_id" {
+output "binauth_attestor_ids" {
+  description = "IDs of Attestors"
+  value       = [for attestor_name in var.attestor_names_prefix : "projects/${var.project_id}/attestors/${module.attestors[attestor_name].attestor}"]
+}
+
+output "binauth_attestor_project_id" {
   description = "Project ID where attestors get created"
   value       = var.project_id
 }

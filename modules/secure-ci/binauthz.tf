@@ -17,7 +17,7 @@
 resource "random_string" "keyring_name" {
   length  = 4
   special = false
-  number  = true
+  numeric = true
   upper   = false
   lower   = true
 }
@@ -32,9 +32,8 @@ resource "google_kms_key_ring" "keyring" {
 }
 
 module "attestors" {
-  # temporarily refer to PR for provider version compatibility
-  source = "github.com/terraform-google-modules/terraform-google-kubernetes-engine//modules/binary-authorization?ref=binauthz-services"
-  #version  = "~> 17.3"
+  source   = "terraform-google-modules/kubernetes-engine/google//modules/binary-authorization"
+  version  = "~> 22.1.0"
   for_each = toset(var.attestor_names_prefix)
 
   project_id    = var.project_id

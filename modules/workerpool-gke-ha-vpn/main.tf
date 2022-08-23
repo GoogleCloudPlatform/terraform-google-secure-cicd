@@ -17,7 +17,7 @@
 # HA VPN
 module "vpn_ha_1" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
-  version    = "~> 2.1.0"
+  version    = "~> 2.3.0"
   project_id = var.project_id
   region     = var.location
   network    = var.workerpool_network
@@ -61,7 +61,7 @@ module "vpn_ha_1" {
 
 module "vpn_ha_2" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
-  version    = "~> 1.3.0"
+  version    = "~> 2.3.0"
   project_id = var.gke_project
   region     = var.gke_location
   network    = var.gke_network

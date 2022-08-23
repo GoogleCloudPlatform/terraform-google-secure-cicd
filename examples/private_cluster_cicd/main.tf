@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
+locals {
+  clouddeploy_pipeline_name = "pipeline-private"
+}
+
 # Secure-CI
 module "ci_pipeline" {
-  source                  = "../../modules/secure-ci"
-  project_id              = var.project_id
-  app_source_repo         = "app-source-pc"
-  manifest_dry_repo       = "app-dry-manifests-pc"
-  manifest_wet_repo       = "app-wet-manifests-pc"
-  gar_repo_name_suffix    = "app-image-repo-pc"
-  cache_bucket_name       = "private_cluster_cloudbuild"
-  primary_location        = "us-central1"
-  attestor_names_prefix   = ["build-pc", "security-pc", "quality-pc"]
-  app_build_trigger_yaml  = "cloudbuild-ci.yaml"
-  runner_build_folder     = "${path.module}/cloud-build-builder"
-  build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
-  trigger_branch_name     = ".*"
-  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
+  source                    = "../../modules/secure-ci"
+  project_id                = var.project_id
+  app_source_repo           = "app-source-pc"
+  cloudbuild_cd_repo        = "cloudbuild-cd-config-pc"
+  gar_repo_name_suffix      = "app-image-repo-pc"
+  cache_bucket_name         = "private-cluster-cloudbuild"
+  primary_location          = "us-central1"
+  attestor_names_prefix     = ["build-pc", "security-pc", "quality-pc"]
+  app_build_trigger_yaml    = "cloudbuild-ci.yaml"
+  runner_build_folder       = "${path.module}/cloud-build-builder"
+  build_image_config_yaml   = "cloudbuild-skaffold-build-image.yaml"
+  trigger_branch_name       = ".*"
+  cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
+  clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
 }
 
 # Secure-CD
@@ -38,12 +42,13 @@ module "cd_pipeline" {
   project_id       = var.project_id
   primary_location = "us-central1"
 
-  gar_repo_name           = module.ci_pipeline.app_artifact_repo
-  manifest_wet_repo       = "app-wet-manifests-pc"
-  deploy_branch_clusters  = var.deploy_branch_clusters
-  app_deploy_trigger_yaml = "cloudbuild-cd.yaml"
-  cache_bucket_name       = module.ci_pipeline.cache_bucket_name
-  cloudbuild_private_pool = module.cloudbuild_private_pool.workerpool_id
+  gar_repo_name             = module.ci_pipeline.app_artifact_repo
+  cloudbuild_cd_repo        = "cloudbuild-cd-config-pc"
+  deploy_branch_clusters    = var.deploy_branch_clusters
+  app_deploy_trigger_yaml   = "cloudbuild-cd.yaml"
+  cache_bucket_name         = module.ci_pipeline.cache_bucket_name
+  cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
+  clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
   depends_on = [
     module.ci_pipeline
   ]

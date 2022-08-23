@@ -29,7 +29,7 @@ module "cd_pipeline" {
   project_id              = var.project_id
   primary_location        = "us-central1"
   gar_repo_name           = module.ci_pipeline.app_artifact_repo
-  manifest_wet_repo       = "app-wet-manifests"
+  cloudbuild_cd_repo      = "cloudbuild-cd-config-pc"
   deploy_branch_clusters  = {
     dev = {
       cluster               = "dev-cluster",
@@ -119,7 +119,7 @@ service account with the necessary roles applied.
 
 ### APIs
 
-A project with the following APIs enabled must be used to host the
+Projects with the following APIs enabled must be used to host the
 resources of this module:
 
 CI/CD Project
@@ -128,6 +128,8 @@ CI/CD Project
 - Storage API `storage-api.googleapis.com`
 - Service Usage API `serviceusage.googleapis.com`
 - Cloud Build API `cloudbuild.googleapis.com`
+- Cloud Deploy API `clouddeploy.googleapis.com`
+- Pub/Sub API `pubsub.googleapis.com`
 - Container Registry API `containerregistry.googleapis.com`
 - IAM Credentials API `iamcredentials.googleapis.com`
 - Cloud Source Repositories API `sourcerepo.googleapis.com`

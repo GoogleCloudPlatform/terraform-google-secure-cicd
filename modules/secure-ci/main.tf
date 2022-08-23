@@ -16,11 +16,11 @@
 
 locals {
   gar_name          = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
-  cache_bucket_name = var.cache_bucket_name == "" ? "${var.project_id}_cloudbuild" : "${var.project_id}_${var.cache_bucket_name}"
+  cache_bucket_name = var.cache_bucket_name == "" ? "${var.project_id}-cloudbuild" : "${var.project_id}-${var.cache_bucket_name}"
 }
 
 resource "google_sourcerepo_repository" "repos" {
-  for_each = toset([var.manifest_wet_repo, var.manifest_dry_repo, var.app_source_repo])
+  for_each = toset([var.cloudbuild_cd_repo, var.app_source_repo])
   name     = each.key
   project  = var.project_id
 }
@@ -52,14 +52,12 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
   }
   substitutions = merge(
     {
-      _GAR_REPOSITORY          = local.gar_name
-      _DEFAULT_REGION          = var.primary_location
-      _CACHE_BUCKET_NAME       = google_storage_bucket.cache_bucket.name
-      _MANIFEST_DRY_REPO       = var.manifest_dry_repo
-      _MANIFEST_WET_REPO       = var.manifest_wet_repo
-      _WET_BRANCH_NAME         = var.wet_branch_name
-      _ATTESTOR_NAME           = module.attestors[var.attestor_names_prefix[0]].attestor
-      _CLOUDBUILD_PRIVATE_POOL = var.cloudbuild_private_pool
+      _GAR_REPOSITORY            = local.gar_name
+      _DEFAULT_REGION            = var.primary_location
+      _CACHE_BUCKET_NAME         = google_storage_bucket.cache_bucket.name
+      _ATTESTOR_NAME             = module.attestors[var.attestor_names_prefix[0]].attestor
+      _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
+      _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name
     },
     var.additional_substitutions
   )

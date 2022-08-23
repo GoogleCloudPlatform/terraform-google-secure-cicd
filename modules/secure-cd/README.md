@@ -4,7 +4,9 @@ This module creates a number of Google Cloud Build triggers to facilitate deploy
 To securely deploy container images, this pipeline focuses on implementing the "Securing deployed artifacts" and "Securing artifact promotions" sections of the [Shifting left on security report](https://cloud.google.com/solutions/shifting-left-on-security). This module implements security best practices by automating the deployment and promotion of updated container images across multiple GKE clusters, and "failing fast" upon security violation. Users configure a GKE cluster's required attesttions and at which stages a container will receive that attestation based on succesful deployment. The [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd.yaml) contains user-customizable post-deployment security checks to prevent promotion upon discovery of a vulnerability.
 
 This module creates:
-* [Cloud Build Triggers](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers), one for each specified deployment environment (usually one per cluster)
+* A Cloud Deploy [Pipeline and Targets](https://cloud.google.com/deploy/docs/create-pipeline-targets) for each deployment environment.
+* A `clouddeploy-operations` [Pub/Sub topic](https://cloud.google.com/deploy/docs/integrating) to integrate with post-deployment processes.
+* [Cloud Build Triggers](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers), to execute post-deployment checks, triggered by messages to the `clouddeploy-operations` topic.
 * A [Binary Authorization Policy](https://cloud.google.com/binary-authorization/docs) in each project with a GKE cluster, specifying which attestations are required to run containers in each cluster
 
 ## Usage
@@ -16,7 +18,7 @@ module "cd_pipeline" {
   project_id              = var.project_id
   primary_location        = "us-central1"
   gar_repo_name           = <NAME_OF_ARTIFACT_REGISTRY_REPO>
-  manifest_wet_repo       = "app-wet-manifests"
+  cloudbuild_cd_repo      = "cloudbuild-cd-config-pc"
   deploy_branch_clusters  = {
     dev = {
       cluster               = "dev-cluster",
@@ -48,7 +50,7 @@ module "cd_pipeline" {
 }
 ```
 ### Build Configuration
-The template [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd.yaml) build configuration deploys updated containers to specified GKE clusters upon updates to hydrated manifests in the `manifest_wet_repo`. Add the configuration file to the root of the `master` branch of the `manifest_wet_repo` to properly trigger the CD phase.
+The template [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd.yaml) build configuration specifies the post-deployment checks to run on a Cloud Deploy target upon successful deployment, triggered by Pub/Sub messages from Cloud Deploy. By default, this runs an OWASP ZAProxy scan of any exposed services. Then, the process will automatically promote the given Release to the next environment in Cloud Deploy. Push the configuration file to the root of the `main` branch of the `cloudbuild_cd_repo` to properly configure the automation.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
@@ -58,10 +60,11 @@ The template [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd.yaml) build config
 | additional\_substitutions | Parameters to be substituted in the build specification. All keys should begin with an underscore. | `map(string)` | `{}` | no |
 | app\_deploy\_trigger\_yaml | Name of application cloudbuild yaml file for deployment | `string` | n/a | yes |
 | cache\_bucket\_name | cloud build artifact bucket name | `string` | n/a | yes |
+| cloudbuild\_cd\_repo | Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks | `string` | n/a | yes |
 | cloudbuild\_private\_pool | Cloud Build private pool self-link | `string` | `""` | no |
+| clouddeploy\_pipeline\_name | Cloud Deploy pipeline name | `string` | n/a | yes |
 | deploy\_branch\_clusters | mapping of branch names to cluster deployments | <pre>map(object({<br>    cluster               = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>  }))</pre> | `{}` | no |
 | gar\_repo\_name | Docker artifact registry repo to store app build images | `string` | n/a | yes |
-| manifest\_wet\_repo | Name of repo that contains hydrated K8s manifests files | `string` | n/a | yes |
 | primary\_location | Region used for key-ring | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 
@@ -70,6 +73,8 @@ The template [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd.yaml) build config
 | Name | Description |
 |------|-------------|
 | binauthz\_policy\_required\_attestations | Binary Authorization policy required attestation in GKE projects |
+| clouddeploy\_delivery\_pipeline\_id | ID of the Cloud Deploy delivery pipeline |
+| clouddeploy\_target\_id | ID(s) of Cloud Deploy targets |
 | deploy\_trigger\_names | Names of CD Cloud Build triggers |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

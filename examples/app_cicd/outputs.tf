@@ -19,14 +19,14 @@ output "project_id" {
   description = "The project to run tests against"
 }
 
-output "bin_auth_attestor_names" {
+output "binauth_attestor_names" {
   description = "Names of Attestors"
-  value       = module.ci_pipeline.bin_auth_attestor_names
+  value       = module.ci_pipeline.binauth_attestor_names
 }
 
-output "bin_auth_attestor_project_id" {
+output "binauth_attestor_project_id" {
   description = "Project ID where attestors get created"
-  value       = module.ci_pipeline.bin_auth_attestor_project_id
+  value       = module.ci_pipeline.binauth_attestor_project_id
 }
 
 output "boa_artifact_repo" {

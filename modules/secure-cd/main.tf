@@ -15,56 +15,57 @@
  */
 
 locals {
-  attestor_iam_config = flatten([
-    for env_key, env in var.deploy_branch_clusters : [
-      for attestor in env.required_attestations : {
-        env      = env_key
-        attestor = split("/", attestor)[3]
-      }
-    ]
-  ])
-
   deploy_projects = distinct([
     for env in var.deploy_branch_clusters : env.project_id
   ])
+
   binary_authorization_map = zipmap(
     local.deploy_projects,
     [for project_id in local.deploy_projects : [
       for env in var.deploy_branch_clusters : env if env.project_id == project_id
     ]]
   )
+
+  clouddeploy_pubsub_topic_name = "clouddeploy-operations"
 }
 
-data "google_project" "app_cicd_project" {
-  project_id = var.project_id
-}
-
-resource "google_cloudbuild_trigger" "deploy_trigger" {
+resource "google_clouddeploy_target" "deploy_target" {
   for_each = var.deploy_branch_clusters
-  project  = var.project_id
-  name     = "deploy-trigger-${each.key}-${each.value.cluster}"
 
-  trigger_template {
-    branch_name = each.key
-    repo_name   = var.manifest_wet_repo
+  name        = "${each.value.cluster}-target"
+  description = "Target for ${each.key} environment"
+  location    = each.value.location
+  project     = var.project_id
+
+  gke {
+    cluster = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
   }
-  substitutions = merge(
-    {
-      _GAR_REPOSITORY          = var.gar_repo_name
-      _DEFAULT_REGION          = each.value.location
-      _MANIFEST_WET_REPO       = var.manifest_wet_repo
-      _CLUSTER_NAME            = each.value.cluster
-      _CLUSTER_PROJECT         = each.value.project_id
-      _CLOUDBUILD_FILENAME     = var.app_deploy_trigger_yaml
-      _CACHE_BUCKET_NAME       = var.cache_bucket_name
-      _NEXT_ENV                = each.value.next_env
-      _ATTESTOR_NAME           = each.value.env_attestation
-      _CLOUDBUILD_PRIVATE_POOL = var.cloudbuild_private_pool
-    },
-    var.additional_substitutions
-  )
-  filename = var.app_deploy_trigger_yaml
 
+  execution_configs {
+    usages          = ["RENDER", "DEPLOY"]
+    worker_pool     = var.cloudbuild_private_pool
+    service_account = google_service_account.clouddeploy_execution_sa.email
+  }
+
+  depends_on = [
+    google_project_iam_member.clouddeploy_service_agent_role
+  ]
+}
+
+resource "google_clouddeploy_delivery_pipeline" "pipeline" {
+  name        = var.clouddeploy_pipeline_name
+  description = "Pipeline for application" #TODO parameterize
+  project     = var.project_id
+  location    = var.primary_location
+
+  serial_pipeline {
+    dynamic "stages" {
+      for_each = var.deploy_branch_clusters
+      content {
+        target_id = google_clouddeploy_target.deploy_target[stages.key].name
+      }
+    }
+  }
 }
 
 # Binary Authorization Policy
@@ -90,23 +91,4 @@ resource "google_binary_authorization_policy" "deployment_policy" {
   }
 }
 
-# IAM membership for Cloud Build SA to allow deployment to GKE
-resource "google_project_iam_member" "gke_dev" {
-  for_each = var.deploy_branch_clusters
-  project  = each.value.project_id
-  role     = "roles/container.developer"
-  member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
-}
 
-# IAM membership for Binary Authorization service agents in GKE projects on attestors
-data "google_project" "gke_projects" {
-  for_each   = var.deploy_branch_clusters
-  project_id = each.value.project_id
-}
-resource "google_binary_authorization_attestor_iam_member" "binauthz_verifier" {
-  for_each = { for entry in local.attestor_iam_config : "${entry.env}.${entry.attestor}" => entry } # turn into a map
-  project  = var.project_id
-  attestor = each.value.attestor
-  role     = "roles/binaryauthorization.attestorsVerifier"
-  member   = "serviceAccount:service-${data.google_project.gke_projects[each.value.env].number}@gcp-sa-binaryauthorization.iam.gserviceaccount.com"
-}
