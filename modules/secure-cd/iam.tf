@@ -91,7 +91,6 @@ resource "google_project_service_identity" "binauth_service_agent" {
   provider = google-beta
   for_each = var.deploy_branch_clusters
 
-
   project = each.value.project_id
   service = "binaryauthorization.googleapis.com"
 }
