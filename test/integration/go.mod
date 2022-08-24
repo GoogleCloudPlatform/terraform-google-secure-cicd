@@ -3,8 +3,8 @@ module github.com/terraform-google-modules/terraform-google-secure-cicd/test/int
 go 1.17
 
 require (
-	github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.0.0-20220315183512-768ecce22bc3
-	github.com/gruntwork-io/terratest v0.38.5
+	github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.2.0
+	github.com/gruntwork-io/terratest v0.40.7
 	github.com/stretchr/testify v1.7.1
 )
 
