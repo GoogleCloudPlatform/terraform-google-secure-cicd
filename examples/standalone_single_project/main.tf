@@ -1,5 +1,21 @@
+/**
+ * Copyright 2022 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 locals {
-  envs             = ["${var.env1_name}", "${var.env2_name}", "${var.env3_name}"]
+  envs = ["${var.env1_name}", "${var.env2_name}", "${var.env3_name}"]
   ip_increment = {
     "${var.env1_name}" = 1,
     "${var.env2_name}" = 2,
@@ -106,7 +122,7 @@ module "ci_pipeline" {
 module "cd_pipeline" {
   source           = "../../modules/secure-cd"
   project_id       = var.project_id
-  primary_location = "${var.region}"
+  primary_location = var.region
 
   gar_repo_name             = module.ci_pipeline.app_artifact_repo
   cloudbuild_cd_repo        = "${var.app_name}-cloudbuild-cd-config"
@@ -126,7 +142,7 @@ module "cloudbuild_private_pool" {
 
   project_id                = var.project_id
   network_project_id        = var.project_id
-  location                  = "${var.region}"
+  location                  = var.region
   create_cloudbuild_network = true
   private_pool_vpc_name     = "cloudbuild-worker-vpc"
   worker_pool_name          = "cloudbuild-workerpool"
@@ -144,7 +160,7 @@ module "gke_cloudbuild_vpn" {
   source = "../../modules/workerpool-gke-ha-vpn"
 
   project_id = var.project_id
-  location   = "${var.region}"
+  location   = var.region
 
   gke_project             = each.value.project_id
   gke_network             = each.value.network

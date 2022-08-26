@@ -49,6 +49,7 @@ The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci.yaml) build config
 | primary\_location | Region used for key-ring | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 | runner\_build\_folder | Path to the source folder for the cloud builds submit command | `string` | n/a | yes |
+| skip\_provisioners | Skip modules that use provisioners/local-exec | `bool` | `false` | no |
 | trigger\_branch\_name | A regular expression to match one or more branches for the build trigger. | `string` | n/a | yes |
 | use\_tf\_google\_credentials\_env\_var | Optional GOOGLE\_CREDENTIALS environment variable to be activated. | `bool` | `false` | no |
 
