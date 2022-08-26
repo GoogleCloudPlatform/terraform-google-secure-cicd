@@ -42,7 +42,7 @@ locals {
       project_id = var.project_id
       location   = var.region
       control_plane_cidrs = {
-        module.gke_cluster["${var.env1_name}"].master_ipv4_cidr_block => "GKE ${var.env1_name} control plane"
+        "${module.gke_cluster["${var.env1_name}"].master_ipv4_cidr_block}" = "GKE ${var.env1_name} control plane"
       }
 
       gateway_1_asn = 65007,
@@ -55,7 +55,7 @@ locals {
       project_id = var.project_id
       location   = var.region
       control_plane_cidrs = {
-        module.gke_cluster["${var.env2_name}"].master_ipv4_cidr_block => "GKE ${var.env2_name} control plane"
+        "${module.gke_cluster["${var.env2_name}"].master_ipv4_cidr_block}" = "GKE ${var.env2_name} control plane"
       }
 
       gateway_1_asn = 65009,
@@ -68,7 +68,7 @@ locals {
       project_id = var.project_id
       location   = var.region
       control_plane_cidrs = {
-        module.gke_cluster["${var.env3_name}"].master_ipv4_cidr_block => "GKE ${var.env3_name} control plane"
+        "${module.gke_cluster["${var.env3_name}"].master_ipv4_cidr_block}" = "GKE ${var.env3_name} control plane"
       }
 
       gateway_1_asn = 65011,
@@ -76,21 +76,21 @@ locals {
       bgp_range_1   = "169.254.11.0/30",
       bgp_range_2   = "169.254.12.0/30"
     }
+
   }
 
-  # gke_net_vpn = {
-  #   for net in local.gke_networks : net.network => merge(net, local.vpn_config[net.network])
-  # }
+  clouddeploy_pipeline_name = "${var.app_name}-pipeline"
+
 }
 
 # Secure-CI
 module "ci_pipeline" {
   source                    = "../../modules/secure-ci"
   project_id                = var.project_id
-  app_source_repo           = "${app_name}-source"
-  cloudbuild_cd_repo        = "${app_name}-cloudbuild-cd-config"
-  gar_repo_name_suffix      = "${app_name}-image-repo"
-  cache_bucket_name         = "${app_name}-cloudbuild"
+  app_source_repo           = "${var.app_name}-source"
+  cloudbuild_cd_repo        = "${var.app_name}-cloudbuild-cd-config"
+  gar_repo_name_suffix      = "${var.app_name}-image-repo"
+  cache_bucket_name         = "${var.app_name}-cloudbuild"
   primary_location          = var.region
   attestor_names_prefix     = ["build", "security", "quality"]
   app_build_trigger_yaml    = "cloudbuild-ci.yaml"
@@ -99,6 +99,7 @@ module "ci_pipeline" {
   trigger_branch_name       = ".*"
   cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
   clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
+  skip_provisioners         = true
 }
 
 # Secure-CD
@@ -108,7 +109,7 @@ module "cd_pipeline" {
   primary_location = "${var.region}"
 
   gar_repo_name             = module.ci_pipeline.app_artifact_repo
-  cloudbuild_cd_repo        = "${app_name}-cloudbuild-cd-config"
+  cloudbuild_cd_repo        = "${var.app_name}-cloudbuild-cd-config"
   deploy_branch_clusters    = local.deploy_branch_clusters
   app_deploy_trigger_yaml   = "cloudbuild-cd.yaml"
   cache_bucket_name         = module.ci_pipeline.cache_bucket_name
@@ -171,13 +172,13 @@ module "vpc" {
 
   subnets = [
     {
-      subnet_name   = "gke-subnet-private"
-      subnet_ip     = "10.0.0.0/17"
+      subnet_name   = "${var.app_name}-subnet-${each.value}"
+      subnet_ip     = "10.${local.ip_increment[each.value]}.0.0/17"
       subnet_region = var.region
     },
   ]
   secondary_ranges = {
-    gke-subnet-private = [
+    "${var.app_name}-subnet-${each.value}" = [
       {
         range_name    = "${var.region}-01-gke-01-pods"
         ip_cidr_range = "192.168.0.0/18"

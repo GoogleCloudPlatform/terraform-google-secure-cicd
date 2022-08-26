@@ -115,3 +115,9 @@ variable "clouddeploy_pipeline_name" {
   type        = string
   default     = "deploy-pipeline"
 }
+
+variable "skip_provisioners" {
+  description = "Skip modules that use provisioners/local-exec"
+  type        = bool
+  default     = false
+}

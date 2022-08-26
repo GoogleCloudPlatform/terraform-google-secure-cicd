@@ -6,11 +6,13 @@ variable "project_id" {
 variable "region" {
     type        = string
     description = "Location in which all regional resources will be deployed"
+    default     = "us-central1"
 }
 
 variable "app_name" {
     type        = string
     description = "Name of intended deployed application; to be used as a prefix for certain resources"
+    default     = "my-app"
 }
 
 variable "env1_name" {

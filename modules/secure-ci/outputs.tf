@@ -31,7 +31,7 @@ output "binauth_attestor_names" {
 
 output "binauth_attestor_ids" {
   description = "IDs of Attestors"
-  value       = [for attestor_name in var.attestor_names_prefix : "projects/${var.project_id}/attestors/${module.attestors[attestor_name].attestor}"]
+  value       = {for attestor_name in var.attestor_names_prefix : attestor_name => "projects/${var.project_id}/attestors/${module.attestors[attestor_name].attestor}"}
 }
 
 output "binauth_attestor_project_id" {
