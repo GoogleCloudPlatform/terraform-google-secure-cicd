@@ -112,8 +112,6 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestAll/examples/standalone_single_project --stage destroy --verbose']
 
-
-
 tags:
 - 'ci'
 - 'integration'
