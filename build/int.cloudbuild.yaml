@@ -94,7 +94,6 @@ steps:
 - id: go-init-standalone-single-proj-example
   waitFor:
     - prepare
-    - go-destroy-private-cluster-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestAll/examples/standalone_single_project --stage init --verbose']
 - id: go-apply-standalone-single-proj-example

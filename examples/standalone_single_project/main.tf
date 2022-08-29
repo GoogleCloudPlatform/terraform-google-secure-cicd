@@ -22,11 +22,13 @@ locals {
     "${var.env3_name}" = 3
   }
 
+  project_id = var.project_id_standalone
+
   deploy_branch_clusters = {
     "01-${var.env1_name}" = {
       cluster               = module.gke_cluster["${var.env1_name}"].name,
       network               = module.vpc["${var.env1_name}"].network_name
-      project_id            = var.project_id,
+      project_id            = local.project_id,
       location              = var.region,
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = module.ci_pipeline.binauth_attestor_ids["security"]
@@ -35,7 +37,7 @@ locals {
     "02-${var.env2_name}" = {
       cluster               = module.gke_cluster["${var.env2_name}"].name,
       network               = module.vpc["${var.env2_name}"].network_name
-      project_id            = var.project_id,
+      project_id            = local.project_id,
       location              = var.region,
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = module.ci_pipeline.binauth_attestor_ids["quality"]
@@ -44,7 +46,7 @@ locals {
     "03-${var.env3_name}" = {
       cluster               = module.gke_cluster["${var.env3_name}"].name,
       network               = module.vpc["${var.env3_name}"].network_name
-      project_id            = var.project_id,
+      project_id            = local.project_id,
       location              = var.region,
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["quality"], module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = ""
@@ -55,7 +57,7 @@ locals {
   gke_net_vpn = {
     "${module.vpc["${var.env1_name}"].network_name}" = {
       network    = module.vpc["${var.env1_name}"].network_name
-      project_id = var.project_id
+      project_id = local.project_id
       location   = var.region
       control_plane_cidrs = {
         "${module.gke_cluster["${var.env1_name}"].master_ipv4_cidr_block}" = "GKE ${var.env1_name} control plane"
@@ -68,7 +70,7 @@ locals {
     },
     "${module.vpc["${var.env2_name}"].network_name}" = {
       network    = module.vpc["${var.env2_name}"].network_name
-      project_id = var.project_id
+      project_id = local.project_id
       location   = var.region
       control_plane_cidrs = {
         "${module.gke_cluster["${var.env2_name}"].master_ipv4_cidr_block}" = "GKE ${var.env2_name} control plane"
@@ -81,7 +83,7 @@ locals {
     },
     "${module.vpc["${var.env3_name}"].network_name}" = {
       network    = module.vpc["${var.env3_name}"].network_name
-      project_id = var.project_id
+      project_id = local.project_id
       location   = var.region
       control_plane_cidrs = {
         "${module.gke_cluster["${var.env3_name}"].master_ipv4_cidr_block}" = "GKE ${var.env3_name} control plane"
@@ -102,7 +104,7 @@ locals {
 # Secure-CI
 module "ci_pipeline" {
   source                    = "../../modules/secure-ci"
-  project_id                = var.project_id
+  project_id                = local.project_id
   app_source_repo           = "${var.app_name}-source"
   cloudbuild_cd_repo        = "${var.app_name}-cloudbuild-cd-config"
   gar_repo_name_suffix      = "${var.app_name}-image-repo"
@@ -121,7 +123,7 @@ module "ci_pipeline" {
 # Secure-CD
 module "cd_pipeline" {
   source           = "../../modules/secure-cd"
-  project_id       = var.project_id
+  project_id       = local.project_id
   primary_location = var.region
 
   gar_repo_name             = module.ci_pipeline.app_artifact_repo
@@ -140,8 +142,8 @@ module "cd_pipeline" {
 module "cloudbuild_private_pool" {
   source = "../../modules/cloudbuild-private-pool"
 
-  project_id                = var.project_id
-  network_project_id        = var.project_id
+  project_id                = local.project_id
+  network_project_id        = local.project_id
   location                  = var.region
   create_cloudbuild_network = true
   private_pool_vpc_name     = "cloudbuild-worker-vpc"
@@ -159,7 +161,7 @@ module "gke_cloudbuild_vpn" {
 
   source = "../../modules/workerpool-gke-ha-vpn"
 
-  project_id = var.project_id
+  project_id = local.project_id
   location   = var.region
 
   gke_project             = each.value.project_id
@@ -182,7 +184,7 @@ module "vpc" {
   source   = "terraform-google-modules/network/google"
   version  = "~> 4.0"
 
-  project_id   = var.project_id
+  project_id   = local.project_id
   network_name = "${var.app_name}-vpc-${each.value}"
   routing_mode = "REGIONAL"
 
@@ -210,7 +212,7 @@ module "vpc" {
 resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
   for_each = toset(local.envs)
 
-  project = var.project_id
+  project = local.project_id
   peering = module.gke_cluster[each.value].peering_name
   network = module.vpc[each.value].network_name
 
@@ -223,7 +225,7 @@ module "gke_cluster" {
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
   version  = "~> 23.0.0"
 
-  project_id                  = var.project_id
+  project_id                  = local.project_id
   name                        = "${var.app_name}-cluster-${each.value}"
   regional                    = true
   region                      = var.region
