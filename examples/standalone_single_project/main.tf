@@ -155,7 +155,6 @@ module "cloudbuild_private_pool" {
 }
 
 # Cloud Build Workerpool <-> GKE HA VPNs
-
 module "gke_cloudbuild_vpn" {
   for_each = local.gke_net_vpn
 
@@ -190,9 +189,10 @@ module "vpc" {
 
   subnets = [
     {
-      subnet_name   = "${var.app_name}-subnet-${each.value}"
-      subnet_ip     = "10.${local.ip_increment[each.value]}.0.0/17"
-      subnet_region = var.region
+      subnet_name           = "${var.app_name}-subnet-${each.value}"
+      subnet_ip             = "10.${local.ip_increment[each.value]}.0.0/17"
+      subnet_region         = var.region
+      subnet_private_access = "true"
     },
   ]
   secondary_ranges = {
@@ -240,6 +240,9 @@ module "gke_cluster" {
   enable_private_endpoint = true
   enable_private_nodes    = true
   master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.value]}.0/28"
+
+  release_channel    = "REGULAR"
+  kubernetes_version = "latest"
 
   enable_vertical_pod_autoscaling = true
 
