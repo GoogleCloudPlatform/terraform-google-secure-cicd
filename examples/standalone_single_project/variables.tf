@@ -48,3 +48,9 @@ variable "env3_name" {
   description = "Name of environment 3"
   default     = "prod"
 }
+
+variable "labels" {
+  description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
+  type        = map(string)
+  default     = {}
+}

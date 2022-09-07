@@ -34,6 +34,7 @@ resource "google_storage_bucket" "cache_bucket" {
   versioning {
     enabled = true
   }
+  labels = var.labels
 }
 
 resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
@@ -91,6 +92,7 @@ resource "google_artifact_registry_repository" "image_repo" {
   repository_id = format("%s-%s", var.project_id, var.gar_repo_name_suffix)
   description   = "Docker repository for application images"
   format        = "DOCKER"
+  labels        = var.labels
 }
 
 data "google_project" "app_cicd_project" {

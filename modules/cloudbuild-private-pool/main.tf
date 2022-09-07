@@ -39,6 +39,7 @@ data "google_compute_network" "workerpool_vpc" {
 resource "google_compute_global_address" "worker_range" {
   name          = var.worker_range_name
   project       = var.network_project_id
+  labels        = var.labels
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   address       = var.worker_address
