@@ -184,6 +184,7 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
 | gke\_location | Region of GKE subnet & cluster | `string` | n/a | yes |
 | gke\_network | Name of GKE VPC | `string` | n/a | yes |
 | gke\_project | Project ID of GKE VPC and cluster | `string` | n/a | yes |
+| labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
 | location | Region for Cloud Build worker pool | `string` | `"us-central1"` | no |
 | project\_id | Project ID for Cloud Build | `string` | n/a | yes |
 | vpn\_router\_name\_prefix | Prefix for HA VPN router names | `string` | `""` | no |

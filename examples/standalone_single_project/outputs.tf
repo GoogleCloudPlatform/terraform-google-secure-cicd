@@ -16,5 +16,5 @@
 
 output "app_source_repo" {
   description = "URL of the created CSR app soure repo"
-  value = module.ci_pipeline.source_repo_urls["${var.app_name}-source"]
+  value       = module.ci_pipeline.source_repo_urls["${var.app_name}-source"]
 }
