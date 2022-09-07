@@ -71,3 +71,8 @@ variable "machine_type" {
   default     = "e2-standard-4"
 }
 
+variable "labels" {
+  description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
+  type        = map(string)
+  default     = {}
+}

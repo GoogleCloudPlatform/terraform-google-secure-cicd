@@ -121,3 +121,9 @@ variable "skip_provisioners" {
   type        = bool
   default     = false
 }
+
+variable "labels" {
+  description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
+  type        = map(string)
+  default     = {}
+}

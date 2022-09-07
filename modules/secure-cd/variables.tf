@@ -73,3 +73,9 @@ variable "clouddeploy_pipeline_name" {
   description = "Cloud Deploy pipeline name"
   type        = string
 }
+
+variable "labels" {
+  description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
+  type        = map(string)
+  default     = {}
+}
