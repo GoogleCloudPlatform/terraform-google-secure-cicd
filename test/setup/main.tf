@@ -261,9 +261,7 @@ module "project_standalone" {
     "storage-api.googleapis.com",
     "serviceusage.googleapis.com",
     "cloudbuild.googleapis.com",
-    "containerregistry.googleapis.com",
     "iamcredentials.googleapis.com",
-    "secretmanager.googleapis.com",
     "sourcerepo.googleapis.com",
     "artifactregistry.googleapis.com",
     "containeranalysis.googleapis.com",
@@ -275,7 +273,8 @@ module "project_standalone" {
     "container.googleapis.com",
     "cloudtrace.googleapis.com",
     "monitoring.googleapis.com",
-    "logging.googleapis.com"
+    "logging.googleapis.com",
+    "compute.googleapis.com"
   ]
   activate_api_identities = [
     {
