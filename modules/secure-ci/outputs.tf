@@ -51,5 +51,5 @@ output "source_repo_names" {
 
 output "source_repo_urls" {
   description = "URLS of the created CSR repos"
-  value       = {for repo in google_sourcerepo_repository.repos : repo.name => repo.url}
+  value       = { for repo in google_sourcerepo_repository.repos : repo.name => repo.url }
 }
