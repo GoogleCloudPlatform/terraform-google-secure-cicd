@@ -248,11 +248,11 @@ module "project_standalone" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 11.0"
 
-  name              = "secure-cicd-singleproj"
-  random_project_id = "true"
-  org_id            = var.org_id
-  folder_id         = var.folder_id
-  billing_account   = var.billing_account
+  name                    = "secure-cicd-singleproj"
+  random_project_id       = "true"
+  org_id                  = var.org_id
+  folder_id               = var.folder_id
+  billing_account         = var.billing_account
   default_service_account = "keep"
 
   activate_apis = [
