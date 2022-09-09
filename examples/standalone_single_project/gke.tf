@@ -23,7 +23,7 @@ locals {
   }
 }
 
-###### Private Clusters ######
+# Private GKE Clusters
 module "gke_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
@@ -33,10 +33,10 @@ module "gke_cluster" {
   name                        = "${var.app_name}-cluster-${each.value}"
   regional                    = true
   region                      = var.region
-  network                     = module.vpc[each.value].network_name
-  subnetwork                  = module.vpc[each.value].subnets_names[0]
-  ip_range_pods               = "${var.region}-01-gke-01-pods"
-  ip_range_services           = "${var.region}-01-gke-01-services"
+  network                     = module.vpc.network_name
+  subnetwork                  = local.subnets[each.value].subnet_name
+  ip_range_pods               = "${local.subnets[each.value].subnet_name}-gke-pods"
+  ip_range_services           = "${local.subnets[each.value].subnet_name}-gke-services"
   horizontal_pod_autoscaling  = true
   create_service_account      = true
   enable_binary_authorization = true
@@ -52,7 +52,7 @@ module "gke_cluster" {
 
   master_authorized_networks = [
     {
-      cidr_block   = module.vpc[each.value].subnets_ips[0]
+      cidr_block   = local.subnets[each.value].subnet_ip
       display_name = "VPC"
     },
     {
