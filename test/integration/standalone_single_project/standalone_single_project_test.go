@@ -35,7 +35,7 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 
 	// wire setup output project_id_standalone to example var.project_id
 	standaloneSingleProjT := tft.NewTFBlueprintTest(t, tft.WithVars(map[string]interface{}{"project_id":projectID}))
-	
+
 	// define and write a custom verifier for this test case call the default verify for confirming no additional changes
 	standaloneSingleProjT.DefineVerify(func(assert *assert.Assertions) {
 		// perform default verification ensuring Terraform reports no additional changes on an applied blueprint
