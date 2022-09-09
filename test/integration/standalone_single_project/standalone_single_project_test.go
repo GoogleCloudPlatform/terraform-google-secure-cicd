@@ -22,6 +22,7 @@ import (
 
 	// import the blueprints test framework modules for testing and assertions
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
+	"github.com/stretchr/testify/assert"
 )
 
 // name the function as Test*
