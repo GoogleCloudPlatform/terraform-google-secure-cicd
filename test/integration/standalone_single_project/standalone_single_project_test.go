@@ -18,7 +18,6 @@
 package standalone_single_project
 
 import (
-	"fmt"
 	"testing"
 
 	// import the blueprints test framework modules for testing and assertions
