@@ -17,8 +17,8 @@
 locals {
   subnets = {
     for env in local.envs : env => {
-      subnet_name           = "${var.app_name}-subnet-${env.value}"
-      subnet_ip             = "10.${local.ip_increment[env.value]}.0.0/17"
+      subnet_name           = "${var.app_name}-subnet-${env}"
+      subnet_ip             = "10.${local.ip_increment[env]}.0.0/17"
       subnet_region         = var.region
       subnet_private_access = "true"
     }
