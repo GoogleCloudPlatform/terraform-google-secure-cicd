@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-variable "project_id_standalone" {
+variable "project_id" {
   type        = string
   description = "Project ID in which all resources will be deployed"
 }
