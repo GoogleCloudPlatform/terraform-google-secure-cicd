@@ -103,7 +103,7 @@ module "gke_project" {
   ]
 }
 
-###### Public Clusters ######
+###### Public Clusters #####
 # VPCs
 module "vpc" {
   for_each = toset(local.envs)
