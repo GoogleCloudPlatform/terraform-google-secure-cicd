@@ -15,7 +15,7 @@
  */
 
 locals {
-  envs = ["${var.env1_name}", "${var.env2_name}", "${var.env3_name}"]
+  envs = [var.env1_name, var.env2_name, var.env3_name]
   ip_increment = {
     "${var.env1_name}" = 1,
     "${var.env2_name}" = 2,
@@ -55,12 +55,12 @@ locals {
   }
 
   gke_net_vpn = {
-    "${module.vpc["${var.env1_name}"].network_name}" = {
-      network    = module.vpc["${var.env1_name}"].network_name
+    "${module.vpc[var.env1_name].network_name}" = {
+      network    = module.vpc[var.env1_name].network_name
       project_id = local.project_id
       location   = var.region
       control_plane_cidrs = {
-        "${module.gke_cluster["${var.env1_name}"].master_ipv4_cidr_block}" = "GKE ${var.env1_name} control plane"
+        "${module.gke_cluster[var.env1_name].master_ipv4_cidr_block}" = "GKE ${var.env1_name} control plane"
       }
 
       gateway_1_asn = 65007,
@@ -68,12 +68,12 @@ locals {
       bgp_range_1   = "169.254.7.0/30",
       bgp_range_2   = "169.254.8.0/30"
     },
-    "${module.vpc["${var.env2_name}"].network_name}" = {
-      network    = module.vpc["${var.env2_name}"].network_name
+    "${module.vpc[var.env2_name].network_name}" = {
+      network    = module.vpc[var.env2_name].network_name
       project_id = local.project_id
       location   = var.region
       control_plane_cidrs = {
-        "${module.gke_cluster["${var.env2_name}"].master_ipv4_cidr_block}" = "GKE ${var.env2_name} control plane"
+        "${module.gke_cluster[var.env2_name].master_ipv4_cidr_block}" = "GKE ${var.env2_name} control plane"
       }
 
       gateway_1_asn = 65009,
@@ -81,12 +81,12 @@ locals {
       bgp_range_1   = "169.254.9.0/30",
       bgp_range_2   = "169.254.10.0/30"
     },
-    "${module.vpc["${var.env3_name}"].network_name}" = {
-      network    = module.vpc["${var.env3_name}"].network_name
+    "${module.vpc[var.env3_name].network_name}" = {
+      network    = module.vpc[var.env3_name].network_name
       project_id = local.project_id
       location   = var.region
       control_plane_cidrs = {
-        "${module.gke_cluster["${var.env3_name}"].master_ipv4_cidr_block}" = "GKE ${var.env3_name} control plane"
+        "${module.gke_cluster[var.env3_name].master_ipv4_cidr_block}" = "GKE ${var.env3_name} control plane"
       }
 
       gateway_1_asn = 65011,
