@@ -46,7 +46,7 @@ module "vpc" {
   network_name = "${var.app_name}-vpc"
   routing_mode = "REGIONAL"
 
-  subnets          = [for subnet in local.subnets : subnet.value]
+  subnets          = values(local.subnets)
   secondary_ranges = local.secondary_ranges
 }
 
