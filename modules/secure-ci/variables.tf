@@ -36,7 +36,8 @@ variable "app_build_trigger_yaml" {
 
 variable "runner_build_folder" {
   type        = string
-  description = "Path to the source folder for the cloud builds submit command"
+  description = "Path to the source folder for the cloud builds submit command. Leave blank if `skip_provisioners = true`"
+  default     = ""
 }
 
 variable "build_image_config_yaml" {
