@@ -154,6 +154,9 @@ module "gke_cluster" {
   enable_binary_authorization = true
   skip_provisioners           = false
 
+  release_channel    = "REGULAR"
+  kubernetes_version = "latest"
+
   depends_on = [
     module.vpc
   ]
@@ -220,6 +223,9 @@ module "gke_private_cluster" {
   horizontal_pod_autoscaling  = true
   create_service_account      = true
   enable_binary_authorization = true
+
+  release_channel    = "REGULAR"
+  kubernetes_version = "latest"
 
   enable_private_endpoint = true
   enable_private_nodes    = true
