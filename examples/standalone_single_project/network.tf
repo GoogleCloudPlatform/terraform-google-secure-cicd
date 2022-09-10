@@ -24,14 +24,14 @@ locals {
     }
   }
   secondary_ranges = {
-    for subnet in local.subnets : subnet.subnet_name => [
+    for env in local.envs : local.subnets[env].subnet_name => [
       {
-        range_name    = "${subnet.subnet_name}-gke-pods"
-        ip_cidr_range = "192.168.0.0/18"
+        range_name    = "${local.subnets[env].subnet_name}-gke-pods"
+        ip_cidr_range = "10.1${local.ip_increment[env]}.0.0/16"
       },
       {
-        range_name    = "${subnet.subnet_name}-gke-services"
-        ip_cidr_range = "192.168.64.0/18"
+        range_name    = "${local.subnets[env].subnet_name}-gke-services"
+        ip_cidr_range = "10.10${local.ip_increment[env]}.0.0/20"
       },
     ]
   }
