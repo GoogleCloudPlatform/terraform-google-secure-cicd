@@ -31,7 +31,7 @@ output "binauth_attestor_names" {
 
 output "binauth_attestor_ids" {
   description = "IDs of Attestors"
-  value       = [for attestor_name in var.attestor_names_prefix : "projects/${var.project_id}/attestors/${module.attestors[attestor_name].attestor}"]
+  value       = { for attestor_name in var.attestor_names_prefix : attestor_name => "projects/${var.project_id}/attestors/${module.attestors[attestor_name].attestor}" }
 }
 
 output "binauth_attestor_project_id" {
@@ -47,4 +47,9 @@ output "app_artifact_repo" {
 output "source_repo_names" {
   description = "Name of the created CSR repos"
   value       = [for repo in google_sourcerepo_repository.repos : repo.name]
+}
+
+output "source_repo_urls" {
+  description = "URLS of the created CSR repos"
+  value       = { for repo in google_sourcerepo_repository.repos : repo.name => repo.url }
 }

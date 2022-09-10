@@ -61,10 +61,10 @@ resource "google_service_account" "int_test" {
 
 # SA permissions on CI/CD (main) project
 resource "google_project_iam_member" "int_test" {
-  count = length(local.int_required_roles)
+  for_each = toset(local.int_required_roles)
 
   project = module.project.project_id
-  role    = local.int_required_roles[count.index]
+  role    = each.value
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }
 
@@ -81,4 +81,21 @@ resource "google_project_iam_member" "gke_int_test" {
 
 resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
+}
+
+# SA permissions on standalone single project example
+resource "google_project_iam_member" "int_test_singleproj" {
+  for_each = toset(local.int_required_roles)
+
+  project = module.project_standalone.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.int_test.email}"
+}
+
+resource "google_project_iam_member" "gke_int_test_singleproj" {
+  for_each = toset(local.gke_int_required_roles)
+
+  project = module.project_standalone.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.int_test.email}"
 }

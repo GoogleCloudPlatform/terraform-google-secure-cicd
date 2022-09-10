@@ -34,6 +34,7 @@ resource "google_storage_bucket" "cache_bucket" {
   versioning {
     enabled = true
   }
+  labels = var.labels
 }
 
 resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
@@ -68,6 +69,7 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
 # Build the Cloud Build builder image
 module "gcloud" {
   source                            = "terraform-google-modules/gcloud/google"
+  count                             = var.skip_provisioners ? 0 : 1
   version                           = "~> 3.1.0"
   platform                          = "linux"
   create_cmd_entrypoint             = "${path.module}/scripts/cloud-build-submit.sh"
@@ -90,6 +92,7 @@ resource "google_artifact_registry_repository" "image_repo" {
   repository_id = format("%s-%s", var.project_id, var.gar_repo_name_suffix)
   description   = "Docker repository for application images"
   format        = "DOCKER"
+  labels        = var.labels
 }
 
 data "google_project" "app_cicd_project" {

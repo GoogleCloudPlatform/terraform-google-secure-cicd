@@ -84,3 +84,9 @@ variable "bgp_range_2" {
   description = "BGP range for HA VPN tunnel 1"
   default     = "169.254.2.0/30"
 }
+
+variable "labels" {
+  description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
+  type        = map(string)
+  default     = {}
+}

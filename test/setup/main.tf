@@ -103,7 +103,7 @@ module "gke_project" {
   ]
 }
 
-###### Public Clusters ######
+###### Public Clusters #####
 # VPCs
 module "vpc" {
   for_each = toset(local.envs)
@@ -153,6 +153,9 @@ module "gke_cluster" {
   create_service_account      = true
   enable_binary_authorization = true
   skip_provisioners           = false
+
+  release_channel    = "REGULAR"
+  kubernetes_version = "latest"
 
   depends_on = [
     module.vpc
@@ -221,6 +224,9 @@ module "gke_private_cluster" {
   create_service_account      = true
   enable_binary_authorization = true
 
+  release_channel    = "REGULAR"
+  kubernetes_version = "latest"
+
   enable_private_endpoint = true
   enable_private_nodes    = true
   master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.value]}.0/28"
@@ -240,5 +246,56 @@ module "gke_private_cluster" {
 
   depends_on = [
     module.vpc_private_cluster
+  ]
+}
+
+# Single Project example
+module "project_standalone" {
+  source  = "terraform-google-modules/project-factory/google"
+  version = "~> 11.0"
+
+  name                    = "secure-cicd-singleproj"
+  random_project_id       = "true"
+  org_id                  = var.org_id
+  folder_id               = var.folder_id
+  billing_account         = var.billing_account
+  default_service_account = "keep"
+
+  activate_apis = [
+    "cloudresourcemanager.googleapis.com",
+    "cloudbilling.googleapis.com",
+    "clouddeploy.googleapis.com",
+    "storage-api.googleapis.com",
+    "serviceusage.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "containeranalysis.googleapis.com",
+    "cloudkms.googleapis.com",
+    "binaryauthorization.googleapis.com",
+    "containerscanning.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "pubsub.googleapis.com",
+    "container.googleapis.com",
+    "cloudtrace.googleapis.com",
+    "monitoring.googleapis.com",
+    "logging.googleapis.com",
+    "compute.googleapis.com"
+  ]
+  activate_api_identities = [
+    {
+      api = "cloudbuild.googleapis.com"
+      roles = [
+        "roles/storage.admin",
+        "roles/artifactregistry.admin",
+        "roles/cloudbuild.builds.builder",
+        "roles/binaryauthorization.attestorsVerifier",
+        "roles/cloudkms.cryptoOperator",
+        "roles/containeranalysis.notes.attacher",
+        "roles/containeranalysis.notes.occurrences.viewer",
+        "roles/source.writer",
+      ]
+    },
   ]
 }

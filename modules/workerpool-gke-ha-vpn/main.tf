@@ -19,6 +19,7 @@ module "vpn_ha_1" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
   version    = "~> 2.3.0"
   project_id = var.project_id
+  labels     = var.labels
   region     = var.location
   network    = var.workerpool_network
   name       = "${var.vpn_router_name_prefix}cloudbuild-to-${var.gke_network}"
@@ -63,6 +64,7 @@ module "vpn_ha_2" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
   version    = "~> 2.3.0"
   project_id = var.gke_project
+  labels     = var.labels
   region     = var.gke_location
   network    = var.gke_network
   name       = "${var.vpn_router_name_prefix}${var.gke_network}-to-cloudbuild"

@@ -19,6 +19,7 @@
 resource "google_pubsub_topic" "clouddeploy_topic" {
   name    = local.clouddeploy_pubsub_topic_name
   project = var.project_id
+  labels  = var.labels
 }
 
 # Trigger post-deploy checks on successful Cloud Deploy rollout

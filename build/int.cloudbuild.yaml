@@ -90,6 +90,27 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage destroy --verbose']
 
+# standalone_single_project
+- id: go-init-standalone-single-proj-example
+  waitFor:
+    - prepare
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage init --verbose']
+- id: go-apply-standalone-single-proj-example
+  waitFor:
+    - go-init-standalone-single-proj-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage apply --verbose']
+- id: go-verify-standalone-single-proj-example
+  waitFor:
+    - go-apply-standalone-single-proj-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage verify --verbose']
+- id: go-destroy-standalone-single-proj-example
+  waitFor:
+    - go-verify-standalone-single-proj-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage destroy --verbose']
 
 tags:
 - 'ci'

@@ -46,9 +46,11 @@ The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci.yaml) build config
 | cloudbuild\_service\_account\_roles | IAM roles given to the Cloud Build service account to enable security scanning operations | `list(string)` | <pre>[<br>  "roles/artifactregistry.admin",<br>  "roles/binaryauthorization.attestorsVerifier",<br>  "roles/cloudbuild.builds.builder",<br>  "roles/clouddeploy.developer",<br>  "roles/clouddeploy.releaser",<br>  "roles/cloudkms.cryptoOperator",<br>  "roles/containeranalysis.notes.attacher",<br>  "roles/containeranalysis.notes.occurrences.viewer",<br>  "roles/source.writer",<br>  "roles/storage.admin",<br>  "roles/cloudbuild.workerPoolUser",<br>  "roles/ondemandscanning.admin"<br>]</pre> | no |
 | clouddeploy\_pipeline\_name | Cloud Deploy pipeline name | `string` | `"deploy-pipeline"` | no |
 | gar\_repo\_name\_suffix | Docker artifact regitery repo to store app build images | `string` | `"app-image-repo"` | no |
+| labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
 | primary\_location | Region used for key-ring | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
-| runner\_build\_folder | Path to the source folder for the cloud builds submit command | `string` | n/a | yes |
+| runner\_build\_folder | Path to the source folder for the cloud builds submit command. Leave blank if `skip_provisioners = true` | `string` | `""` | no |
+| skip\_provisioners | Skip modules that use provisioners/local-exec | `bool` | `false` | no |
 | trigger\_branch\_name | A regular expression to match one or more branches for the build trigger. | `string` | n/a | yes |
 | use\_tf\_google\_credentials\_env\_var | Optional GOOGLE\_CREDENTIALS environment variable to be activated. | `bool` | `false` | no |
 
@@ -63,5 +65,6 @@ The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci.yaml) build config
 | build\_trigger\_name | The name of the cloud build trigger for the app source repo. |
 | cache\_bucket\_name | The name of the storage bucket for cloud build. |
 | source\_repo\_names | Name of the created CSR repos |
+| source\_repo\_urls | URLS of the created CSR repos |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -36,7 +36,8 @@ variable "app_build_trigger_yaml" {
 
 variable "runner_build_folder" {
   type        = string
-  description = "Path to the source folder for the cloud builds submit command"
+  description = "Path to the source folder for the cloud builds submit command. Leave blank if `skip_provisioners = true`"
+  default     = ""
 }
 
 variable "build_image_config_yaml" {
@@ -114,4 +115,16 @@ variable "clouddeploy_pipeline_name" {
   description = "Cloud Deploy pipeline name"
   type        = string
   default     = "deploy-pipeline"
+}
+
+variable "skip_provisioners" {
+  description = "Skip modules that use provisioners/local-exec"
+  type        = bool
+  default     = false
+}
+
+variable "labels" {
+  description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
+  type        = map(string)
+  default     = {}
 }
