@@ -17,8 +17,8 @@
 locals {
   deploy_branch_clusters = {
     "01-${var.env1_name}" = {
-      cluster               = module.gke_cluster["${var.env1_name}"].name,
-      network               = module.vpc["${var.env1_name}"].network_name
+      cluster               = module.gke_cluster[var.env1_name].name,
+      network               = module.vpc.network_name
       project_id            = var.project_id,
       location              = var.region,
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["build"]]
@@ -26,8 +26,8 @@ locals {
       next_env              = "02-qa"
     },
     "02-${var.env2_name}" = {
-      cluster               = module.gke_cluster["${var.env2_name}"].name,
-      network               = module.vpc["${var.env2_name}"].network_name
+      cluster               = module.gke_cluster[var.env2_name].name,
+      network               = module.vpc.network_name
       project_id            = var.project_id,
       location              = var.region,
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
@@ -35,8 +35,8 @@ locals {
       next_env              = "03-prod"
     },
     "03-${var.env3_name}" = {
-      cluster               = module.gke_cluster["${var.env3_name}"].name,
-      network               = module.vpc["${var.env3_name}"].network_name
+      cluster               = module.gke_cluster[var.env3_name].name,
+      network               = module.vpc.network_name
       project_id            = var.project_id,
       location              = var.region,
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["quality"], module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
