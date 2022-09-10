@@ -16,5 +16,6 @@
 | Name | Description |
 |------|-------------|
 | app\_source\_repo | URL of the created CSR app soure repo |
+| console\_walkthrough\_link | URL to open the in-console walkthrough. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

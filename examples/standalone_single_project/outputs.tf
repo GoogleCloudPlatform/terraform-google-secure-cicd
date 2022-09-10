@@ -18,3 +18,8 @@ output "app_source_repo" {
   description = "URL of the created CSR app soure repo"
   value       = module.ci_pipeline.source_repo_urls["${var.app_name}-source"]
 }
+
+output "console_walkthrough_link" {
+  description = "URL to open the in-console walkthrough."
+  value       = "https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fterraform-google-secure-cicd&cloudshell_git_branch=main&cloudshell_tutorial=examples%2Fstandalone_single_project%2Fwalkthrough.md"
+}
