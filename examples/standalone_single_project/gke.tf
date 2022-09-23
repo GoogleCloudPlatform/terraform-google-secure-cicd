@@ -42,7 +42,7 @@ module "gke_cluster" {
   enable_binary_authorization = true
 
   grant_registry_access = true
-  registry_project_ids  = [var.project_id] 
+  registry_project_ids  = [var.project_id]
 
   enable_private_endpoint = true
   enable_private_nodes    = true
