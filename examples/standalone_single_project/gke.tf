@@ -41,6 +41,9 @@ module "gke_cluster" {
   create_service_account      = true
   enable_binary_authorization = true
 
+  grant_registry_access = true
+  registry_project_ids  = [var.project_id] 
+
   enable_private_endpoint = true
   enable_private_nodes    = true
   master_ipv4_cidr_block  = "172.16.${local.ip_increment[each.value]}.0/28"
