@@ -49,8 +49,6 @@ steps:
       ENDPOINTS=( $$(jq -r '.[].endpoint' /workspace/svcs-endpoints-filtered.json))
       echo $$SVC_NAMES > /workspace/svc_names_env.txt
       echo $$ENDPOINTS > /workspace/endpoints_env.txt
-  waitFor:
-    - 'deploy-to-cluster'
 
 # ZAProxy Scan
 - name: 'gcr.io/cloud-builders/docker'
