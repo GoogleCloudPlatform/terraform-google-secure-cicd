@@ -41,7 +41,6 @@ artifacts:
     paths:
       - 'build-artifacts.json'
       - 'build-artifacts-notag.json'
-      - 'skaffold-render.yaml'
 steps:
 
 ############################### Securing Source Code ###########################
