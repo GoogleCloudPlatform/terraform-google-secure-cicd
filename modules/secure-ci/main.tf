@@ -38,8 +38,8 @@ resource "google_storage_bucket" "cache_bucket" {
 }
 
 resource "google_service_account" "build_sa" {
-  account_id = "build-sa"
-  display    = "Service Account for ${var.app_source_repo} Cloud Build triggers"
+  account_id   = "build-sa"
+  display_name = "Service Account for ${var.app_source_repo} Cloud Build triggers"
 }
 
 resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
