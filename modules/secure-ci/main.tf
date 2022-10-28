@@ -37,10 +37,16 @@ resource "google_storage_bucket" "cache_bucket" {
   labels = var.labels
 }
 
+resource "google_service_account" "build_sa" {
+  account_id   = "build-sa"
+  display_name = "Service Account for ${var.app_source_repo} Cloud Build triggers"
+  project      = var.project_id
+}
+
 resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
   bucket     = google_storage_bucket.cache_bucket.name
   role       = "roles/storage.admin"
-  member     = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
+  member     = "serviceAccount:${google_service_account.build_sa.email}"
   depends_on = [google_storage_bucket.cache_bucket]
 }
 
@@ -62,8 +68,9 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
     },
     var.additional_substitutions
   )
-  filename   = var.app_build_trigger_yaml
-  depends_on = [google_sourcerepo_repository.repos]
+  service_account = google_service_account.build_sa.id
+  filename        = var.app_build_trigger_yaml
+  depends_on      = [google_sourcerepo_repository.repos]
 }
 
 # Build the Cloud Build builder image
@@ -78,11 +85,11 @@ module "gcloud" {
 }
 
 # Cloud Build Service Account permissions
-resource "google_project_iam_member" "project" {
+resource "google_project_iam_member" "build_sa_project_iam" {
   for_each = toset(var.cloudbuild_service_account_roles)
   project  = var.project_id
   role     = each.value
-  member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
+  member   = "serviceAccount:${google_service_account.build_sa.email}"
 }
 
 resource "google_artifact_registry_repository" "image_repo" {
@@ -105,5 +112,5 @@ resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" 
   location   = google_artifact_registry_repository.image_repo.location
   repository = google_artifact_registry_repository.image_repo.name
   role       = "roles/artifactregistry.admin"
-  member     = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
+  member     = "serviceAccount:${google_service_account.build_sa.email}"
 }

@@ -96,6 +96,7 @@ variable "cloudbuild_service_account_roles" {
     "roles/storage.admin",
     "roles/cloudbuild.workerPoolUser",
     "roles/ondemandscanning.admin",
+    "roles/logging.logWriter"
   ]
 }
 
