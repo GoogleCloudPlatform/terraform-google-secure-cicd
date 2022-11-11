@@ -51,19 +51,19 @@ Then, run the following command to change to the proper directory:
 cd ~/cloudshell_open/terraform-google-secure-cicd
 ```
 
-To build your application using Cloud Build, we will create a custom builder image that installs the necessary pacakges to build container images using **Skaffold**. 
+To build your application using Cloud Build, we will create a custom builder image that installs the necessary pacakges to build container images using **Skaffold**.
 
 For convenience, we've pre-configured a Dockerfile to build this image. You can find it in Cloud Shell: `~/cloudshell_open/terraform-google-secure-cicd/examples/private_cluster_cicd/cloud-build-builder/Dockerfile`
 
 1. Run the following command in Cloud Shell to build the container and store it in Artifact Registry.
     ```bash
-    gcloud builds submit ./examples/private_cluster_cicd/cloud-build-builder --project $PROJECT_ID --config=./examples/private_cluster_cicd/cloud-build-builder/cloudbuild-skaffold-build-image.yaml --substitutions=_DEFAULT_REGION=$REGION,_GAR_REPOSITORY=$GAR_REPOSITORY 
+    gcloud builds submit ./examples/private_cluster_cicd/cloud-build-builder --project $PROJECT_ID --config=./examples/private_cluster_cicd/cloud-build-builder/cloudbuild-skaffold-build-image.yaml --substitutions=_DEFAULT_REGION=$REGION,_GAR_REPOSITORY=$GAR_REPOSITORY
     ```
 
 You will see the logs for the build process in the Cloud Shell Terminal. Once the build completes,  click **Next** to continue.
 
 ## Configure Cloud Deploy post-deployment scans
-1. Change to your home directory 
+1. Change to your home directory
     ```bash
     cd ~
     ```
