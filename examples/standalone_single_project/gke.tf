@@ -64,6 +64,11 @@ module "gke_cluster" {
     }
   ]
 
+  node_pools_labels = {
+    all = var.labels
+  }
+  cluster_resource_labels = var.labels
+
   depends_on = [
     module.vpc
   ]

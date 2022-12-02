@@ -64,7 +64,7 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
 # Cloud Build Workerpool <-> GKE HA VPNs
 module "gke_cloudbuild_vpn" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/workerpool-gke-ha-vpn"
-  version = "0.2.0"
+  version = "~> 0.2"
 
   project_id = var.project_id
   location   = var.region
@@ -84,4 +84,6 @@ module "gke_cloudbuild_vpn" {
   gateway_2_asn      = 65002
   bgp_range_1        = "169.254.1.0/30"
   bgp_range_2        = "169.254.2.0/30"
+
+  labels = var.labels
 }

@@ -51,7 +51,7 @@ locals {
 # Secure-CI
 module "ci_pipeline" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-ci"
-  version = "0.2.0"
+  version = "~> 0.2"
 
   project_id                = var.project_id
   app_source_repo           = "${var.app_name}-source"
@@ -66,12 +66,13 @@ module "ci_pipeline" {
   cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
   clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
   skip_provisioners         = true
+  labels                    = var.labels
 }
 
 # Secure-CD
 module "cd_pipeline" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
-  version = "0.2.0"
+  version = "~> 0.2"
 
   project_id       = var.project_id
   primary_location = var.region
@@ -83,6 +84,7 @@ module "cd_pipeline" {
   cache_bucket_name         = module.ci_pipeline.cache_bucket_name
   cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
   clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
+  labels                    = var.labels
   depends_on = [
     module.ci_pipeline
   ]
@@ -91,7 +93,7 @@ module "cd_pipeline" {
 # Cloud Build Private Pool
 module "cloudbuild_private_pool" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/cloudbuild-private-pool"
-  version = "0.2.0"
+  version = "~> 0.2"
 
   project_id                = var.project_id
   network_project_id        = var.project_id
@@ -103,4 +105,6 @@ module "cloudbuild_private_pool" {
 
   worker_address    = "10.39.0.0"
   worker_range_name = "cloudbuild-worker-range"
+
+  labels = var.labels
 }
