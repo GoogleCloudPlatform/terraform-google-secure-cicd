@@ -15,25 +15,31 @@
  */
 
 output "vpn_gateway_cloudbuild" {
-  value = module.vpn_ha_1.name
+  value       = module.vpn_ha_1.name
+  description = "Name of HA VPN gateway on Cloud Build VPC"
 }
 
 output "vpn_gateway_gke" {
-  value = module.vpn_ha_2.name
+  value       = module.vpn_ha_2.name
+  description = "Name of HA VPN gateway on GKE VPC"
 }
 
 output "vpn_tunnel_cloudbuild_names" {
-  value = module.vpn_ha_1.tunnel_names
+  value       = module.vpn_ha_1.tunnel_names
+  description = "Names of HA VPN tunnels on Cloud Build VPC"
 }
 
 output "vpn_tunnel_gke_names" {
-  value = module.vpn_ha_2.tunnel_names
+  value       = module.vpn_ha_2.tunnel_names
+  description = "Names of HA VPN tunnels on GKE VPC"
 }
 
 output "vpn_router_cloudbuild_names" {
-  value = module.vpn_ha_1.router_name
+  value       = module.vpn_ha_1.router_name
+  description = "Names of HA VPN router on Cloud Build VPC"
 }
 
 output "vpn_router_gke_names" {
-  value = module.vpn_ha_2.router_name
+  value       = module.vpn_ha_2.router_name
+  description = "Names of HA VPN router on GKE VPC"
 }

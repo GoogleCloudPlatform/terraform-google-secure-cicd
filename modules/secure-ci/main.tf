@@ -102,10 +102,6 @@ resource "google_artifact_registry_repository" "image_repo" {
   labels        = var.labels
 }
 
-data "google_project" "app_cicd_project" {
-  project_id = var.project_id
-}
-
 resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" {
   provider   = google-beta
   project    = var.project_id

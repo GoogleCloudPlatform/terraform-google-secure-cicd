@@ -73,9 +73,9 @@ module "gke_cloudbuild_vpn" {
   gke_network  = module.vpc.network_name
   gke_location = var.region
   gke_control_plane_cidrs = {
-    "${module.gke_cluster[var.env1_name].master_ipv4_cidr_block}" = "GKE ${var.env1_name} control plane"
-    "${module.gke_cluster[var.env2_name].master_ipv4_cidr_block}" = "GKE ${var.env2_name} control plane",
-    "${module.gke_cluster[var.env3_name].master_ipv4_cidr_block}" = "GKE ${var.env3_name} control plane",
+    (module.gke_cluster[var.env1_name].master_ipv4_cidr_block) = "GKE ${var.env1_name} control plane"
+    (module.gke_cluster[var.env2_name].master_ipv4_cidr_block) = "GKE ${var.env2_name} control plane",
+    (module.gke_cluster[var.env3_name].master_ipv4_cidr_block) = "GKE ${var.env3_name} control plane",
   }
 
   workerpool_network = module.cloudbuild_private_pool.workerpool_network

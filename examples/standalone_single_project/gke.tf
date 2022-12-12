@@ -17,9 +17,9 @@
 locals {
   envs = [var.env1_name, var.env2_name, var.env3_name]
   ip_increment = {
-    "${var.env1_name}" = 1,
-    "${var.env2_name}" = 2,
-    "${var.env3_name}" = 3
+    (var.env1_name) = 1,
+    (var.env2_name) = 2,
+    (var.env3_name) = 3
   }
 }
 
