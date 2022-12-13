@@ -24,7 +24,7 @@ module "ci_pipeline" {
   app_source_repo           = "app-source"
   cloudbuild_cd_repo        = "cloudbuild-cd-config"
   gar_repo_name_suffix      = "app-image-repo"
-  primary_location          = "us-central1"
+  primary_location          = var.primary_location
   attestor_names_prefix     = ["build", "security", "quality"]
   cache_bucket_name         = "app-cloudbuild"
   app_build_trigger_yaml    = "cloudbuild-ci.yaml"
@@ -37,7 +37,7 @@ module "ci_pipeline" {
 module "cd_pipeline" {
   source           = "../../modules/secure-cd"
   project_id       = var.project_id
-  primary_location = "us-central1"
+  primary_location = var.primary_location
 
   gar_repo_name             = module.ci_pipeline.app_artifact_repo
   cloudbuild_cd_repo        = "cloudbuild-cd-config"
