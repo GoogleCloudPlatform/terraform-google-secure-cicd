@@ -133,6 +133,7 @@ done
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | deploy\_branch\_clusters | mapping of branch names to cluster deployments | <pre>map(object({<br>    cluster               = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>  }))</pre> | `{}` | no |
+| primary\_location | Region used for key-ring | `string` | `"us-central1"` | no |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 
 ## Outputs
