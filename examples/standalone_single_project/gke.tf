@@ -27,7 +27,7 @@ locals {
 module "gke_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version  = "~> 23.0.0"
+  version  = "~> 24.1.0"
 
   project_id                  = var.project_id
   name                        = "${var.app_name}-cluster-${each.value}"
