@@ -59,8 +59,8 @@ module "cloudbuild_private_pool" {
 
 | Name | Description |
 |------|-------------|
-| workerpool\_id | n/a |
-| workerpool\_network | n/a |
-| workerpool\_range | n/a |
+| workerpool\_id | Cloud Build worker pool ID |
+| workerpool\_network | Self Link for Cloud Build workerpool VPC network |
+| workerpool\_range | IP Address range for Cloud Build worker pool |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

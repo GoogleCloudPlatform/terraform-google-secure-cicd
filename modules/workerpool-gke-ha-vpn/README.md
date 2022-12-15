@@ -195,11 +195,11 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
 
 | Name | Description |
 |------|-------------|
-| vpn\_gateway\_cloudbuild | n/a |
-| vpn\_gateway\_gke | n/a |
-| vpn\_router\_cloudbuild\_names | n/a |
-| vpn\_router\_gke\_names | n/a |
-| vpn\_tunnel\_cloudbuild\_names | n/a |
-| vpn\_tunnel\_gke\_names | n/a |
+| vpn\_gateway\_cloudbuild | Name of HA VPN gateway on Cloud Build VPC |
+| vpn\_gateway\_gke | Name of HA VPN gateway on GKE VPC |
+| vpn\_router\_cloudbuild\_names | Names of HA VPN router on Cloud Build VPC |
+| vpn\_router\_gke\_names | Names of HA VPN router on GKE VPC |
+| vpn\_tunnel\_cloudbuild\_names | Names of HA VPN tunnels on Cloud Build VPC |
+| vpn\_tunnel\_gke\_names | Names of HA VPN tunnels on GKE VPC |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

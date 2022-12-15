@@ -15,13 +15,16 @@
  */
 
 output "workerpool_id" {
-  value = google_cloudbuild_worker_pool.pool.id
+  value       = google_cloudbuild_worker_pool.pool.id
+  description = "Cloud Build worker pool ID"
 }
 
 output "workerpool_range" {
-  value = "${google_compute_global_address.worker_range.address}/${google_compute_global_address.worker_range.prefix_length}"
+  value       = "${google_compute_global_address.worker_range.address}/${google_compute_global_address.worker_range.prefix_length}"
+  description = "IP Address range for Cloud Build worker pool"
 }
 
 output "workerpool_network" {
-  value = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].self_link : data.google_compute_network.workerpool_vpc[0].self_link
+  value       = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].self_link : data.google_compute_network.workerpool_vpc[0].self_link
+  description = "Self Link for Cloud Build workerpool VPC network"
 }

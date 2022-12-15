@@ -17,9 +17,9 @@
 locals {
   envs = [var.env1_name, var.env2_name, var.env3_name]
   ip_increment = {
-    "${var.env1_name}" = 1,
-    "${var.env2_name}" = 2,
-    "${var.env3_name}" = 3
+    (var.env1_name) = 1,
+    (var.env2_name) = 2,
+    (var.env3_name) = 3
   }
 }
 
@@ -27,7 +27,7 @@ locals {
 module "gke_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version  = "~> 23.0.0"
+  version  = "~> 24.1.0"
 
   project_id                  = var.project_id
   name                        = "${var.app_name}-cluster-${each.value}"
@@ -63,6 +63,18 @@ module "gke_cluster" {
       display_name = "CLOUDBUILD"
     }
   ]
+
+  node_pools = [
+    {
+      name            = "default-node-pool"
+      location_policy = "BALANCED"
+    }
+  ]
+
+  node_pools_labels = {
+    all = var.labels
+  }
+  cluster_resource_labels = var.labels
 
   depends_on = [
     module.vpc

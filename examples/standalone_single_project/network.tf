@@ -64,7 +64,7 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
 # Cloud Build Workerpool <-> GKE HA VPNs
 module "gke_cloudbuild_vpn" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/workerpool-gke-ha-vpn"
-  version = "0.2.0"
+  version = "~> 0.2"
 
   project_id = var.project_id
   location   = var.region
@@ -73,9 +73,9 @@ module "gke_cloudbuild_vpn" {
   gke_network  = module.vpc.network_name
   gke_location = var.region
   gke_control_plane_cidrs = {
-    "${module.gke_cluster[var.env1_name].master_ipv4_cidr_block}" = "GKE ${var.env1_name} control plane"
-    "${module.gke_cluster[var.env2_name].master_ipv4_cidr_block}" = "GKE ${var.env2_name} control plane",
-    "${module.gke_cluster[var.env3_name].master_ipv4_cidr_block}" = "GKE ${var.env3_name} control plane",
+    (module.gke_cluster[var.env1_name].master_ipv4_cidr_block) = "GKE ${var.env1_name} control plane"
+    (module.gke_cluster[var.env2_name].master_ipv4_cidr_block) = "GKE ${var.env2_name} control plane",
+    (module.gke_cluster[var.env3_name].master_ipv4_cidr_block) = "GKE ${var.env3_name} control plane",
   }
 
   workerpool_network = module.cloudbuild_private_pool.workerpool_network
@@ -84,4 +84,6 @@ module "gke_cloudbuild_vpn" {
   gateway_2_asn      = 65002
   bgp_range_1        = "169.254.1.0/30"
   bgp_range_2        = "169.254.2.0/30"
+
+  labels = var.labels
 }

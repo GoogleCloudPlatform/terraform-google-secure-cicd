@@ -22,7 +22,9 @@ variable "project_id" {
 variable "primary_location" {
   type        = string
   description = "Region used for key-ring"
+  default     = "us-central1"
 }
+
 
 variable "deploy_branch_clusters" {
   type = map(object({
