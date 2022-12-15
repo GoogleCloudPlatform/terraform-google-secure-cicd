@@ -64,7 +64,12 @@ module "gke_cluster" {
     }
   ]
 
-  node_pools = []
+  node_pools = [
+    {
+      name = "default_node_pool"
+      location_policy = "BALANCED"
+    }
+  ]
 
   node_pools_labels = {
     all = var.labels
