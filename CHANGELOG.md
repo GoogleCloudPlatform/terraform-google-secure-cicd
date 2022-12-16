@@ -8,6 +8,20 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.3.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v0.2.0...v0.3.0) (2022-12-15)
+
+
+### Features
+
+* replace default Cloud Build SA with custom SA in build phase ([#35](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/35)) ([b5ab9e0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/b5ab9e024b901726df06a3539fa29e49e023f4e5))
+
+
+### Bug Fixes
+
+* pass through labels ([#38](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/38)) ([b615569](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/b615569d4334f80b7836bf8b5aabae7be2d9a76d))
+* update standalone single project documentation and walkthrough ([#36](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/36)) ([06cb65a](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/06cb65aa994656b5decbb88671bc5cbbade51ab4))
+* use registry modules in standalone_single_project example ([#33](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/33)) ([1c032cc](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/1c032ccd6954e4d8e8c584efd296f95b5a06e799))
+
 ## [0.2.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v0.1.0...v0.2.0) (2022-09-28)
 
 
