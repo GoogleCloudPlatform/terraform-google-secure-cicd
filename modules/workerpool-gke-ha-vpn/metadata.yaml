@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ spec:
   source:
     repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
     sourceType: git
-  version: 0.2.0
+  version: 0.3.0
   actuationTool:
     type: Terraform
     version: '>= 0.13.0'
+  description: {}
   examples:
   - name: app_cicd
     location: examples/app_cicd
@@ -102,11 +103,17 @@ spec:
     required: true
   outputs:
   - name: vpn_gateway_cloudbuild
+    description: Name of HA VPN gateway on Cloud Build VPC
   - name: vpn_gateway_gke
+    description: Name of HA VPN gateway on GKE VPC
   - name: vpn_router_cloudbuild_names
+    description: Names of HA VPN router on Cloud Build VPC
   - name: vpn_router_gke_names
+    description: Names of HA VPN router on GKE VPC
   - name: vpn_tunnel_cloudbuild_names
+    description: Names of HA VPN tunnels on Cloud Build VPC
   - name: vpn_tunnel_gke_names
+    description: Names of HA VPN tunnels on GKE VPC
   roles:
   - level: Project
     roles:
