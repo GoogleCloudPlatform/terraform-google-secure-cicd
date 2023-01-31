@@ -5,11 +5,11 @@ This repository contains Terraform modules and example configurations to enable 
 The Terraform modules in this repository provide an opinionated architecture that incorporates and documents best practices for secure application delivery architecture.
 
 ### Tagline
-Create up a secure CI/CD pipeline that follows best practices.
+Create a CI/CD pipeline that follows security best practices.
 
 ### Detailed
 Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE.
-You can choose whether to deploy your solution through the console directly or download as Terraform on GitHub to deploy later.
+You can choose whether to deploy your solution through the console directly or download as Terraform from GitHub to deploy later.
 
 ### Architecture
 1. A developer pushes code for a container-based application to the App Source Code repository in Cloud Source Repositories. This repository must include a skaffold.yaml configuration file, a cloudbuild-ci.yaml configuration file, and templated Kubernetes manifests for the respective Kubernetes deployments, services and other objects.
@@ -35,7 +35,7 @@ Basic usage of this module is as follows:
 ```hcl
 # Secure-CI
 module "ci_pipeline" {
-  source                  = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-ci"
+  source                  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-ci"
 
   project_id              = var.project_id
   primary_location        = "us-central1"
@@ -48,7 +48,7 @@ module "ci_pipeline" {
 
 # Secure-CD
 module "cd_pipeline" {
-  source           = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-cd"
+  source           = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
 
   project_id              = var.project_id
   primary_location        = "us-central1"
