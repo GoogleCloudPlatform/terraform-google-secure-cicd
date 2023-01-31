@@ -117,6 +117,15 @@ spec:
   roles:
   - level: Project
     roles:
+    - roles/compute.networkAdmin
+    - roles/container.admin
+    - roles/binaryauthorization.policyEditor
+    - roles/resourcemanager.projectIamAdmin
+    - roles/iam.serviceAccountAdmin
+    - roles/serviceusage.serviceUsageViewer
+    - roles/iam.serviceAccountUser
+  - level: Project
+    roles:
     - roles/artifactregistry.admin
     - roles/binaryauthorization.attestorsAdmin
     - roles/cloudbuild.builds.builder
@@ -134,15 +143,6 @@ spec:
     - roles/storage.admin
     - roles/resourcemanager.projectIamAdmin
     - roles/viewer
-  - level: Project
-    roles:
-    - roles/compute.networkAdmin
-    - roles/container.admin
-    - roles/binaryauthorization.policyEditor
-    - roles/resourcemanager.projectIamAdmin
-    - roles/iam.serviceAccountAdmin
-    - roles/serviceusage.serviceUsageViewer
-    - roles/iam.serviceAccountUser
   services:
   - cloudresourcemanager.googleapis.com
   - cloudbilling.googleapis.com
