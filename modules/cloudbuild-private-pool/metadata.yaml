@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ spec:
   source:
     repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
     sourceType: git
-  version: 0.2.0
+  version: 0.3.0
   actuationTool:
     type: Terraform
+    version: '>= 0.13.0'
+  description: {}
   examples:
   - name: app_cicd
     location: examples/app_cicd
@@ -90,8 +92,11 @@ spec:
     required: false
   outputs:
   - name: workerpool_id
+    description: Cloud Build worker pool ID
   - name: workerpool_network
+    description: Self Link for Cloud Build workerpool VPC network
   - name: workerpool_range
+    description: IP Address range for Cloud Build worker pool
   roles:
   - level: Project
     roles:

@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,31 @@ metadata:
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
-  title: Secure CI/CD Blueprint
+  title: Secure CI/CD pipeline
   source:
     repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
     sourceType: git
+  description:
+    tagline: Create up a secure CI/CD pipeline that follows best practices.
+    detailed: |-
+      Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE.
+      You can choose whether to deploy your solution through the console directly or download as Terraform on GitHub to deploy later.
+    architecture:
+    - A developer pushes code for a container-based application to the App Source Code repository in Cloud Source Repositories. This repository must include a skaffold.yaml configuration file, a cloudbuild-ci.yaml configuration file, and templated Kubernetes manifests for the respective Kubernetes deployments, services and other objects.
+    - Changes to the App Source Code repo will trigger a build of the containers as defined in the skaffold.yaml configuration.
+    - Metadata about the built containers is stored in the build artifacts Cloud Storage bucket.
+    - The resulting built containers will be scanned for container structure and CVE’s based on a customer-configurable security policy and stored in an Artifact Registry repository.
+    - Upon passing all scans, the containers are signed by the Binary Authorization build attestor.
+    - At the end of the build process, the pipeline creates a new Cloud Deploy release to rollout the newly built container images to the Dev environment.
+    - After successful deployment, the Cloud Deploy operations Pub/Sub topic receives a confirmation message that triggers the post-deployment checks on the live application via Cloud Build.
+    - Upon passing the post-deployment application security tests, the containers are signed by the security attestor.
+    - The Cloud Deploy release is promoted, triggering a rollout to the QA environment. Steps 7-8 repeat, but the containers receive the quality attestor after passing through the QA environment.
+    - The release is promoted for the final time, creating a rollout to the Prod environment.
+    - The GKE clusters validate deployed containers based on the respective Binary Authorization policy, requiring additional attestors from the pipeline at each higher environment.
+    - All Cloud Build and Cloud Deploy processes will run in a private Cloud Build worker pool hosted in a customer-managed VPC.
+  documentation:
+  - title: Architecture Diagram
+    url: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/assets/secure_cicd_pipeline_v2.svg
   subBlueprints:
   - name: cloudbuild-private-pool
     location: modules/cloudbuild-private-pool
