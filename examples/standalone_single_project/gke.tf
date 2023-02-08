@@ -66,8 +66,9 @@ module "gke_cluster" {
 
   node_pools = [
     {
-      name            = "default-node-pool"
-      location_policy = "BALANCED"
+      name               = "default-node-pool"
+      location_policy    = "BALANCED"
+      initial_node_count = 2
     }
   ]
 
