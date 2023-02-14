@@ -23,6 +23,18 @@ locals {
   }
 }
 
+data "google_compute_zones" "available" {
+  provider = google
+
+  project = var.project_id
+  region  = var.region
+}
+
+resource "random_shuffle" "available_zones" {
+  input        = data.google_compute_zones.available.names
+  result_count = 2
+}
+
 # Private GKE Clusters
 module "gke_cluster" {
   for_each = toset(local.envs)
@@ -33,6 +45,7 @@ module "gke_cluster" {
   name                        = "${var.app_name}-cluster-${each.value}"
   regional                    = true
   region                      = var.region
+  zones                       = sort(random_shuffle.available_zones.result)
   network                     = module.vpc.network_name
   subnetwork                  = local.subnets[each.value].subnet_name
   ip_range_pods               = "${local.subnets[each.value].subnet_name}-gke-pods"
@@ -40,6 +53,7 @@ module "gke_cluster" {
   horizontal_pod_autoscaling  = true
   create_service_account      = true
   enable_binary_authorization = true
+  remove_default_node_pool    = true
 
   grant_registry_access = true
   registry_project_ids  = [var.project_id]
@@ -66,9 +80,9 @@ module "gke_cluster" {
 
   node_pools = [
     {
-      name               = "default-node-pool"
-      location_policy    = "BALANCED"
-      initial_node_count = 2
+      name                 = "default-node-pool"
+      location_policy      = "BALANCED"
+      total_max_node_count = 2
     }
   ]
 
