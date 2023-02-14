@@ -8,6 +8,14 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.3.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v0.3.0...v0.3.1) (2023-02-14)
+
+
+### Bug Fixes
+
+* reduce zones used in standalone example clusters ([#45](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/45)) ([1fa43a4](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/1fa43a46d2a3ed4fd86c30b65f75df7ddeb4cbab))
+* set initial_node_count to 2 ([#43](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/43)) ([34f3ead](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/34f3ead0b533e9a8c340f51b1dd7e2ad92808cbd))
+
 ## [0.3.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v0.2.0...v0.3.0) (2022-12-15)
 
 
