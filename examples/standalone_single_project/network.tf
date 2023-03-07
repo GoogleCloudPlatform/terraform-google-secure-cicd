@@ -40,7 +40,7 @@ locals {
 # Private Cluster VPCs
 module "vpc" {
   source  = "terraform-google-modules/network/google"
-  version = "~> 4.0"
+  version = "~> 6.0"
 
   project_id   = var.project_id
   network_name = "${var.app_name}-vpc"
@@ -64,7 +64,7 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
 # Cloud Build Workerpool <-> GKE HA VPNs
 module "gke_cloudbuild_vpn" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/workerpool-gke-ha-vpn"
-  version = "~> 0.2"
+  version = "~> 0.3"
 
   project_id = var.project_id
   location   = var.region

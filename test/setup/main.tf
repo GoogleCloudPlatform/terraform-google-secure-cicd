@@ -16,7 +16,7 @@
 
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
-  version = "~> 11.0"
+  version = "~> 14.0"
 
   name              = "ci-secure-cicd"
   random_project_id = "true"
@@ -74,7 +74,7 @@ locals {
 module "gke_project" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/project-factory/google"
-  version  = "~> 11.0"
+  version  = "~> 14.0"
 
   name                    = "secure-cicd-gke-${each.value}"
   random_project_id       = "true"
@@ -108,7 +108,7 @@ module "gke_project" {
 module "vpc" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/network/google"
-  version  = "~> 4.0"
+  version  = "~> 6.0"
 
   project_id   = module.gke_project[each.value].project_id
   network_name = "gke-vpc-${each.key}"
@@ -138,7 +138,7 @@ module "vpc" {
 module "gke_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google"
-  version  = "~> 23.0.0"
+  version  = "~> 25.0"
 
 
   project_id                  = module.gke_project[each.value].project_id
@@ -168,7 +168,7 @@ module "gke_cluster" {
 module "vpc_private_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/network/google"
-  version  = "~> 4.0"
+  version  = "~> 6.0"
 
   project_id   = module.gke_project[each.value].project_id
   network_name = "gke-private-vpc-${each.value}"
@@ -209,7 +209,7 @@ resource "google_compute_network_peering_routes_config" "gke_peering_routes_conf
 module "gke_private_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version  = "~> 23.0.0"
+  version  = "~> 25.0"
 
   project_id                  = module.gke_project[each.value].project_id
   name                        = "${each.value}-private-cluster"
@@ -252,7 +252,7 @@ module "gke_private_cluster" {
 # Single Project example
 module "project_standalone" {
   source  = "terraform-google-modules/project-factory/google"
-  version = "~> 11.0"
+  version = "~> 14.0"
 
   name                    = "secure-cicd-singleproj"
   random_project_id       = "true"
