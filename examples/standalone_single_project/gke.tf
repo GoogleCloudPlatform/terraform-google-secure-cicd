@@ -95,3 +95,12 @@ module "gke_cluster" {
     module.vpc
   ]
 }
+
+module "fleet_membership" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/kubernetes-engine/google//modules/fleet-membership"
+
+  project_id       = var.project_id
+  location         = var.region
+  cluster_name     = module.gke_cluster[each.value].name
+}

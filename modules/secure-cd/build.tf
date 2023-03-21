@@ -30,7 +30,7 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
   }
 
   project = var.project_id
-  name    = "deploy-trigger-${each.value.cluster}"
+  name    = each.value.target_type == "gke" ? "deploy-trigger-${each.value.cluster}" : each.value.target_type == "anthos_cluster" ? "deploy-trigger-${each.value.anthos_membership}" : "deploy-trigger-${each.key}"
 
   pubsub_config {
     topic = google_pubsub_topic.clouddeploy_topic.id
@@ -49,6 +49,8 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
       _GAR_REPOSITORY            = var.gar_repo_name
       _DEFAULT_REGION            = each.value.location
       _CLUSTER_NAME              = each.value.cluster
+      _ANTHOS_MEMBERSHIP         = each.value.anthos_membership
+      _TARGET_TYPE               = each.value.target_type
       _CLUSTER_PROJECT           = each.value.project_id
       _CLOUDBUILD_FILENAME       = var.app_deploy_trigger_yaml
       _CACHE_BUCKET_NAME         = var.cache_bucket_name

@@ -17,7 +17,9 @@
 locals {
   deploy_branch_clusters = {
     "01-${var.env1_name}" = {
-      cluster               = module.gke_cluster[var.env1_name].name,
+      # cluster               = module.gke_cluster[var.env1_name].name,
+      anthos_membership     = module.fleet_membership[var.env1_name].cluster_membership_id
+      target_type           = "anthos_cluster"
       network               = module.vpc.network_name
       project_id            = var.project_id,
       location              = var.region,
@@ -26,7 +28,9 @@ locals {
       next_env              = "02-qa"
     },
     "02-${var.env2_name}" = {
-      cluster               = module.gke_cluster[var.env2_name].name,
+      # cluster               = module.gke_cluster[var.env2_name].name,
+      anthos_membership     = module.fleet_membership[var.env2_name].cluster_membership_id
+      target_type           = "anthos_cluster"
       network               = module.vpc.network_name
       project_id            = var.project_id,
       location              = var.region,
@@ -35,7 +39,9 @@ locals {
       next_env              = "03-prod"
     },
     "03-${var.env3_name}" = {
-      cluster               = module.gke_cluster[var.env3_name].name,
+      # cluster               = module.gke_cluster[var.env3_name].name,
+      anthos_membership     = module.fleet_membership[var.env3_name].cluster_membership_id
+      target_type           = "anthos_cluster"
       network               = module.vpc.network_name
       project_id            = var.project_id,
       location              = var.region,

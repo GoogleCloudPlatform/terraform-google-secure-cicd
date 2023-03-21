@@ -37,8 +37,19 @@ resource "google_clouddeploy_target" "deploy_target" {
   location    = each.value.location
   project     = var.project_id
 
-  gke {
-    cluster = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
+  dynamic gke {
+    for_each = lower(each.value.target_type) == "gke" ? [1] : []
+    cluster  = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
+  }
+
+  dynamic anthos_cluster {
+    for_each   = lower(each.value.target_type) == "anthos_cluster" ? [1] : []
+    membership = "projects/${each.value.project_id}/locations/${each.value.location}/memberships/${each.value.anthos_membership}"
+  }
+
+  dynamic run {
+    for_each = lower(each.value.target_type) == "run" ? [1] : []
+    location = "projects/${each.value.project_id}/locations/${each.value.location}"
   }
 
   execution_configs {

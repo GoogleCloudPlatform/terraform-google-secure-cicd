@@ -15,15 +15,15 @@
  */
 
 terraform {
-  required_version = ">= 0.13.0"
+  required_version = ">= 1.3"
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = ">= 4.22, < 5.0"
+      version = ">= 4.44, < 5.0"
     }
     google-beta = {
       source  = "hashicorp/google-beta"
-      version = ">= 4.22, < 5.0"
+      version = ">= 4.44, < 5.0"
     }
   }
 
