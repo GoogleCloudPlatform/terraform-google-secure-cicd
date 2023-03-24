@@ -25,6 +25,7 @@ locals {
     "roles/cloudkms.publicKeyViewer",
     "roles/containeranalysis.notes.editor",
     "roles/compute.networkAdmin",
+    "roles/gkehub.editor",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",
     "roles/pubsub.editor",
