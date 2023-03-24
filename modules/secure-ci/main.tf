@@ -51,8 +51,9 @@ resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
 }
 
 resource "google_cloudbuild_trigger" "app_build_trigger" {
-  project = var.project_id
-  name    = "${var.app_source_repo}-trigger"
+  project  = var.project_id
+  name     = "${var.app_source_repo}-trigger"
+  location = var.primary_location
   trigger_template {
     branch_name = var.trigger_branch_name
     repo_name   = var.app_source_repo
