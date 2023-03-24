@@ -25,7 +25,7 @@ RUN make out/signer
 RUN cp out/signer /signer
 
 
-FROM alpine:3.13
+FROM alpine:3.17
 
 ### 1. Get Java via the package manager
 RUN apk update \
