@@ -53,3 +53,8 @@ output "source_repo_urls" {
   description = "URLS of the created CSR repos"
   value       = { for repo in google_sourcerepo_repository.repos : repo.name => repo.url }
 }
+
+output "build_sa_email" {
+  description = "Cloud Build Service Account email address"
+  value       = google_service_account.build_sa.email
+}

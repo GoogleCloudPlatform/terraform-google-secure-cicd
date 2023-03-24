@@ -29,8 +29,12 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
     if config.next_env != ""
   }
 
-  project = var.project_id
-  name    = each.value.target_type == "gke" ? "deploy-trigger-${each.value.cluster}" : each.value.target_type == "anthos_cluster" ? "deploy-trigger-${each.value.anthos_membership}" : "deploy-trigger-${each.key}"
+  project  = var.project_id
+  location = var.primary_location
+  name     = each.value.target_type == "gke" ? "deploy-trigger-${each.value.cluster}" : each.value.target_type == "anthos_cluster" ? "deploy-trigger-${each.value.anthos_membership}" : "deploy-trigger-${each.key}"
+  filename = "cloudbuild-cd.yaml"
+
+  service_account = "projects/${var.project_id}/serviceAccounts/${var.cloudbuild_service_account}"
 
   pubsub_config {
     topic = google_pubsub_topic.clouddeploy_topic.id
@@ -41,8 +45,6 @@ resource "google_cloudbuild_trigger" "deploy_trigger" {
     ref       = "main"
     repo_type = "CLOUD_SOURCE_REPOSITORIES"
   }
-
-  filename = "cloudbuild-cd.yaml"
 
   substitutions = merge(
     {

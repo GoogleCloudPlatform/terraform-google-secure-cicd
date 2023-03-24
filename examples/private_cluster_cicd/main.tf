@@ -49,6 +49,7 @@ module "cd_pipeline" {
   cache_bucket_name         = module.ci_pipeline.cache_bucket_name
   cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
   clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
+  cloudbuild_service_account = module.ci_pipeline.build_sa_email
   depends_on = [
     module.ci_pipeline
   ]

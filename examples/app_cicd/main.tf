@@ -45,6 +45,7 @@ module "cd_pipeline" {
   app_deploy_trigger_yaml   = "cloudbuild-cd.yaml"
   cache_bucket_name         = module.ci_pipeline.cache_bucket_name
   clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
+  cloudbuild_service_account = module.ci_pipeline.build_sa_email
   depends_on = [
     module.ci_pipeline
   ]

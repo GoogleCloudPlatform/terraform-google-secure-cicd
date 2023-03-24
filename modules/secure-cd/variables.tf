@@ -81,3 +81,8 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "cloudbuild_service_account" {
+  description = "Cloud Build SA email address"
+  type        = string
+}
