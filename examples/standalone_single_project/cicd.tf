@@ -17,34 +17,34 @@
 locals {
   deploy_branch_clusters = {
     "01-${var.env1_name}" = {
-      # cluster               = module.gke_cluster[var.env1_name].name,
+      cluster               = module.gke_cluster[var.env1_name].name,
       anthos_membership     = module.fleet_membership[var.env1_name].cluster_membership_id
       target_type           = "anthos_cluster"
       network               = module.vpc.network_name
-      project_id            = var.project_id,
-      location              = var.region,
+      project_id            = var.project_id
+      location              = var.region
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = module.ci_pipeline.binauth_attestor_ids["security"]
       next_env              = "02-qa"
     },
     "02-${var.env2_name}" = {
-      # cluster               = module.gke_cluster[var.env2_name].name,
+      cluster               = module.gke_cluster[var.env2_name].name,
       anthos_membership     = module.fleet_membership[var.env2_name].cluster_membership_id
       target_type           = "anthos_cluster"
       network               = module.vpc.network_name
-      project_id            = var.project_id,
-      location              = var.region,
+      project_id            = var.project_id
+      location              = var.region
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = module.ci_pipeline.binauth_attestor_ids["quality"]
       next_env              = "03-prod"
     },
     "03-${var.env3_name}" = {
-      # cluster               = module.gke_cluster[var.env3_name].name,
+      cluster               = module.gke_cluster[var.env3_name].name,
       anthos_membership     = module.fleet_membership[var.env3_name].cluster_membership_id
       target_type           = "anthos_cluster"
       network               = module.vpc.network_name
-      project_id            = var.project_id,
-      location              = var.region,
+      project_id            = var.project_id
+      location              = var.region
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["quality"], module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = ""
       next_env              = ""
@@ -56,8 +56,8 @@ locals {
 
 # Secure-CI
 module "ci_pipeline" {
-  source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-ci"
-  version = "~> 0.3"
+  source = "../../modules/secure-ci" # [restore-marker]   source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-ci"
+  # [restore-marker]   version = "~> 0.3"
 
   project_id                = var.project_id
   app_source_repo           = "${var.app_name}-source"
@@ -77,8 +77,8 @@ module "ci_pipeline" {
 
 # Secure-CD
 module "cd_pipeline" {
-  source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
-  version = "~> 0.3"
+  source = "../../modules/secure-cd" # [restore-marker]   source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
+  # [restore-marker]   version = "~> 0.3"
 
   project_id       = var.project_id
   primary_location = var.region
@@ -90,6 +90,7 @@ module "cd_pipeline" {
   cache_bucket_name         = module.ci_pipeline.cache_bucket_name
   cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
   clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
+  cloudbuild_service_account = module.ci_pipeline.build_sa_email
   labels                    = var.labels
   depends_on = [
     module.ci_pipeline
@@ -98,8 +99,8 @@ module "cd_pipeline" {
 
 # Cloud Build Private Pool
 module "cloudbuild_private_pool" {
-  source  = "GoogleCloudPlatform/secure-cicd/google//modules/cloudbuild-private-pool"
-  version = "~> 0.3"
+  source = "../../modules/cloudbuild-private-pool" # [restore-marker]   source  = "GoogleCloudPlatform/secure-cicd/google//modules/cloudbuild-private-pool"
+  # [restore-marker]   version = "~> 0.3"
 
   project_id                = var.project_id
   network_project_id        = var.project_id
