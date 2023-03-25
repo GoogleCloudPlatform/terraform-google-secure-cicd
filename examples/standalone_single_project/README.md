@@ -22,6 +22,8 @@ This example also creates GKE clusters and accompanying VPC networks for multipl
 | Name | Description |
 |------|-------------|
 | app\_source\_repo | URL of the created CSR app soure repo |
+| cloudbuild\_cd\_repo\_name | URL of the created CSR app soure repo |
 | console\_walkthrough\_link | URL to open the in-console walkthrough. |
+| gar\_repo | Artifact Registry repo |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

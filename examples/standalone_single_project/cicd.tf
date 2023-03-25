@@ -83,15 +83,15 @@ module "cd_pipeline" {
   project_id       = var.project_id
   primary_location = var.region
 
-  gar_repo_name             = module.ci_pipeline.app_artifact_repo
-  cloudbuild_cd_repo        = "${var.app_name}-cloudbuild-cd-config"
-  deploy_branch_clusters    = local.deploy_branch_clusters
-  app_deploy_trigger_yaml   = "cloudbuild-cd.yaml"
-  cache_bucket_name         = module.ci_pipeline.cache_bucket_name
-  cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
-  clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
+  gar_repo_name              = module.ci_pipeline.app_artifact_repo
+  cloudbuild_cd_repo         = "${var.app_name}-cloudbuild-cd-config"
+  deploy_branch_clusters     = local.deploy_branch_clusters
+  app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
+  cache_bucket_name          = module.ci_pipeline.cache_bucket_name
+  cloudbuild_private_pool    = module.cloudbuild_private_pool.workerpool_id
+  clouddeploy_pipeline_name  = local.clouddeploy_pipeline_name
   cloudbuild_service_account = module.ci_pipeline.build_sa_email
-  labels                    = var.labels
+  labels                     = var.labels
   depends_on = [
     module.ci_pipeline
   ]

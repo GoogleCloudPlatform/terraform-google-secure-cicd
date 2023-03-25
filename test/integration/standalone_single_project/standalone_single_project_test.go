@@ -106,7 +106,7 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 
 		lastCommit := gitApp.GetLatestCommit()
 		// filter builds triggered based on pushed commit sha
-		buildListCmd := fmt.Sprintf("builds list --region=%s --filter substitutions.COMMIT_SHA='%s' --project %s --limit 1", region, lastCommit, projectID)
+		buildListCmd := fmt.Sprintf("builds list --region=%s --filter substitutions.COMMIT_SHA='%s' --project %s", region, lastCommit, projectID)
 		// poll build until complete
 		pollCloudBuild := func(cmd string) func() (bool, error) {
 			return func() (bool, error) {

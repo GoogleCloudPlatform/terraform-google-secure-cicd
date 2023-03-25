@@ -62,6 +62,7 @@ The template [`cloudbuild-ci.yaml`](../../build/cloudbuild-ci.yaml) build config
 | binauth\_attestor\_ids | IDs of Attestors |
 | binauth\_attestor\_names | Names of Attestors |
 | binauth\_attestor\_project\_id | Project ID where attestors get created |
+| build\_sa\_email | Cloud Build Service Account email address |
 | build\_trigger\_name | The name of the cloud build trigger for the app source repo. |
 | cache\_bucket\_name | The name of the storage bucket for cloud build. |
 | source\_repo\_names | Name of the created CSR repos |

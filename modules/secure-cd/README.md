@@ -62,8 +62,9 @@ The template [`cloudbuild-cd.yaml`](../../build/cloudbuild-cd.yaml) build config
 | cache\_bucket\_name | cloud build artifact bucket name | `string` | n/a | yes |
 | cloudbuild\_cd\_repo | Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks | `string` | n/a | yes |
 | cloudbuild\_private\_pool | Cloud Build private pool self-link | `string` | `""` | no |
+| cloudbuild\_service\_account | Cloud Build SA email address | `string` | n/a | yes |
 | clouddeploy\_pipeline\_name | Cloud Deploy pipeline name | `string` | n/a | yes |
-| deploy\_branch\_clusters | mapping of branch names to cluster deployments | <pre>map(object({<br>    cluster               = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>  }))</pre> | `{}` | no |
+| deploy\_branch\_clusters | mapping of branch names to cluster deployments. target\_type can be one of `gke`, `anthos_cluster`, or `run`. See [clouddeploy\_target Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) for more details | <pre>map(object({<br>    cluster               = optional(string)<br>    anthos_membership     = optional(string)<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>    target_type           = optional(string, "gke")<br>  }))</pre> | `{}` | no |
 | gar\_repo\_name | Docker artifact registry repo to store app build images | `string` | n/a | yes |
 | labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
 | primary\_location | Region used for key-ring | `string` | n/a | yes |

@@ -41,12 +41,12 @@ resource "google_clouddeploy_target" "deploy_target" {
   dynamic "gke" {
     for_each = lower(each.value.target_type) == "gke" ? [1] : []
     content {
-      cluster  = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
+      cluster = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
     }
   }
 
   dynamic "anthos_cluster" {
-    for_each   = lower(each.value.target_type) == "anthos_cluster" ? [1] : []
+    for_each = lower(each.value.target_type) == "anthos_cluster" ? [1] : []
     content {
       membership = "projects/${each.value.project_id}/locations/global/memberships/${each.value.anthos_membership}"
     }

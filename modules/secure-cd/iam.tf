@@ -29,10 +29,6 @@ locals {
   ]
 }
 
-data "google_project" "app_cicd_project" {
-  project_id = var.project_id
-}
-
 # Cloud Deploy Execution Service Account
 # https://cloud.google.com/deploy/docs/cloud-deploy-service-account#execution_service_account
 resource "google_service_account" "clouddeploy_execution_sa" {

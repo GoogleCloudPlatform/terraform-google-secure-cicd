@@ -22,7 +22,6 @@ options:
   substitution_option: 'ALLOW_LOOSE'
   pool:
     name: $_CLOUDBUILD_PRIVATE_POOL
-  logging: 
 artifacts:
   objects:
     location: gs://$_CACHE_BUCKET_NAME/artifacts
