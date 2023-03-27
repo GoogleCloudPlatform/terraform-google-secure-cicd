@@ -122,7 +122,7 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 		}
 		utils.Poll(t, pollCloudBuild(buildListCmd), 25, 30*time.Second)
 
-		releaseName := fmt.Sprintf("release-%s", lastCommit[0:6])
+		releaseName := fmt.Sprintf("release-%s", lastCommit[0:7])
 		fmt.Println(releaseName)
 		rolloutListCmd := fmt.Sprintf("deploy rollouts list --project=%s --delivery-pipeline=%s --region=%s --release=%s --filter targetId=%s", projectID, pipelineName, region, releaseName, prodTarget)
 		// Poll CD rollouts until prod rollout is successful
