@@ -14,7 +14,7 @@
 
 options:
   # Use higher CPU machines so the caching and build steps are faster.
-  machineType: 'N1_HIGHCPU_32'
+  machineType: 'E2_HIGHCPU_32'
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', '-t', '$_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder', '.' ]
