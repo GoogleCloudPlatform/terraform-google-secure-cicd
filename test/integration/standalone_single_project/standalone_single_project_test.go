@@ -48,7 +48,6 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 		standaloneSingleProjT.DefaultVerify(assert)
 
 		garRepo := standaloneSingleProjT.GetStringOutput("gar_repo")
-		// appRepo := standaloneSingleProjT.GetStringOutput("app_source_repo")
 		appRepo := fmt.Sprintf("https://source.developers.google.com/p/%s/r/my-app-source", projectID)
 		cdRepo := standaloneSingleProjT.GetStringOutput("cloudbuild_cd_repo_name")
 		region := "us-central1"
@@ -134,7 +133,7 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 					return true, nil
 				}
 				latestRolloutState := rollouts[0].Get("state").String()
-				if latestRolloutState == "SUCCESS" {
+				if latestRolloutState == "SUCCEEDED" {
 					return false, nil
 				}
 				return true, nil
