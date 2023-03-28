@@ -25,10 +25,15 @@ Estimated time to complete:
 To get started, click **Start**.
 
 ## Verify environment variables
+Set your current project. If you launched via Solutions deployment, you can set your project automatically using your current active project. Otherwise, replace the value with the project ID where you deployed the Secure CI/CD solution.
+
+```bash
+export PROJECT_ID=$(gcloud config get project)
+```
+
 Set the following environment variables based on your existing resources. Replace the `< >` placeholder with the values you entered when deploying the solution.
 
 ```
-export PROJECT_ID=<YOUR PROJECT ID>
 export REGION=<CLOUD REGION>
 export APP_NAME=<APP NAME>
 ```
