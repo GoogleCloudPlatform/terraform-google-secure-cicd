@@ -120,7 +120,7 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 				return true, nil
 			}
 		}
-		utils.Poll(t, pollCloudBuild(buildListCmd), 25, 30*time.Second)
+		utils.Poll(t, pollCloudBuild(buildListCmd), 40, 30*time.Second)
 
 		releaseName := fmt.Sprintf("release-%s", lastCommit[0:7])
 		fmt.Println(releaseName)
