@@ -42,13 +42,14 @@ module "cd_pipeline" {
   project_id       = var.project_id
   primary_location = "us-central1"
 
-  gar_repo_name             = module.ci_pipeline.app_artifact_repo
-  cloudbuild_cd_repo        = "cloudbuild-cd-config-pc"
-  deploy_branch_clusters    = var.deploy_branch_clusters
-  app_deploy_trigger_yaml   = "cloudbuild-cd.yaml"
-  cache_bucket_name         = module.ci_pipeline.cache_bucket_name
-  cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
-  clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
+  gar_repo_name              = module.ci_pipeline.app_artifact_repo
+  cloudbuild_cd_repo         = "cloudbuild-cd-config-pc"
+  deploy_branch_clusters     = var.deploy_branch_clusters
+  app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
+  cache_bucket_name          = module.ci_pipeline.cache_bucket_name
+  cloudbuild_private_pool    = module.cloudbuild_private_pool.workerpool_id
+  clouddeploy_pipeline_name  = local.clouddeploy_pipeline_name
+  cloudbuild_service_account = module.ci_pipeline.build_sa_email
   depends_on = [
     module.ci_pipeline
   ]

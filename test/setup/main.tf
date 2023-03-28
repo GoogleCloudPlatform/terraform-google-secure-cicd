@@ -281,7 +281,9 @@ module "project_standalone" {
     "cloudtrace.googleapis.com",
     "monitoring.googleapis.com",
     "logging.googleapis.com",
-    "compute.googleapis.com"
+    "compute.googleapis.com",
+    "gkehub.googleapis.com",
+    "connectgateway.googleapis.com",
   ]
   activate_api_identities = [
     {

@@ -30,15 +30,33 @@ locals {
 }
 
 resource "google_clouddeploy_target" "deploy_target" {
+  provider = google-beta
   for_each = var.deploy_branch_clusters
 
-  name        = "${each.value.cluster}-target"
+  name        = each.value.target_type == "anthos_cluster" ? "${each.value.anthos_membership}-target" : each.value.target_type == "gke" ? "${each.value.cluster}-target" : "${each.key}-target"
   description = "Target for ${each.key} environment"
   location    = each.value.location
   project     = var.project_id
 
-  gke {
-    cluster = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
+  dynamic "gke" {
+    for_each = lower(each.value.target_type) == "gke" ? [1] : []
+    content {
+      cluster = "projects/${each.value.project_id}/locations/${each.value.location}/clusters/${each.value.cluster}"
+    }
+  }
+
+  dynamic "anthos_cluster" {
+    for_each = lower(each.value.target_type) == "anthos_cluster" ? [1] : []
+    content {
+      membership = "projects/${each.value.project_id}/locations/global/memberships/${each.value.anthos_membership}"
+    }
+  }
+
+  dynamic "run" {
+    for_each = lower(each.value.target_type) == "run" ? [1] : []
+    content {
+      location = "projects/${each.value.project_id}/locations/${each.value.location}"
+    }
   }
 
   execution_configs {

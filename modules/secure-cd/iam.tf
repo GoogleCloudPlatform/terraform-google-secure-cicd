@@ -29,10 +29,6 @@ locals {
   ]
 }
 
-data "google_project" "app_cicd_project" {
-  project_id = var.project_id
-}
-
 # Cloud Deploy Execution Service Account
 # https://cloud.google.com/deploy/docs/cloud-deploy-service-account#execution_service_account
 resource "google_service_account" "clouddeploy_execution_sa" {
@@ -67,7 +63,7 @@ resource "google_project_iam_member" "clouddeploy_service_agent_role" {
 resource "google_service_account_iam_member" "cloudbuild_clouddeploy_impersonation" {
   service_account_id = google_service_account.clouddeploy_execution_sa.name
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
+  member             = "serviceAccount:${var.cloudbuild_service_account}"
 }
 
 # IAM membership for Cloud Deploy Execution SA deploy to GKE
@@ -79,11 +75,41 @@ resource "google_project_iam_member" "clouddeploy_gke_dev" {
 }
 
 # IAM membership for Cloud Build SA to deploy to GKE
-resource "google_project_iam_member" "gke_dev" {
+resource "google_project_iam_member" "cloudbuild_gke_dev" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
   role     = "roles/container.developer"
-  member   = "serviceAccount:${data.google_project.app_cicd_project.number}@cloudbuild.gserviceaccount.com"
+  member   = "serviceAccount:${var.cloudbuild_service_account}"
+}
+
+# IAM grants for deploying to GKE via Connect Gateway
+# https://cloud.google.com/anthos/multicluster-management/gateway/setup#grant_roles_for_access_through_kubectl
+# Cloud Deploy Execution SA deploy to cluster
+resource "google_project_iam_member" "clouddeploy_gkehub_viewer" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  role     = "roles/gkehub.viewer"
+  member   = "serviceAccount:${google_service_account.clouddeploy_execution_sa.email}"
+}
+resource "google_project_iam_member" "clouddeploy_gkehub_gatewayadmin" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  role     = "roles/gkehub.gatewayAdmin"
+  member   = "serviceAccount:${google_service_account.clouddeploy_execution_sa.email}"
+}
+
+# Cloud Build SA to deploy to cluster
+resource "google_project_iam_member" "cloudbuild_gkehub_viewer" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  role     = "roles/gkehub.viewer"
+  member   = "serviceAccount:${var.cloudbuild_service_account}"
+}
+resource "google_project_iam_member" "cloudbuild_gkehub_gatewayadmin" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  role     = "roles/gkehub.gatewayAdmin"
+  member   = "serviceAccount:${var.cloudbuild_service_account}"
 }
 
 # IAM membership for Binary Authorization service agents in GKE projects on attestors

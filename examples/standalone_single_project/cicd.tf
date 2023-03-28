@@ -18,27 +18,33 @@ locals {
   deploy_branch_clusters = {
     "01-${var.env1_name}" = {
       cluster               = module.gke_cluster[var.env1_name].name,
+      anthos_membership     = module.fleet_membership[var.env1_name].cluster_membership_id
+      target_type           = "anthos_cluster"
       network               = module.vpc.network_name
-      project_id            = var.project_id,
-      location              = var.region,
+      project_id            = var.project_id
+      location              = var.region
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = module.ci_pipeline.binauth_attestor_ids["security"]
       next_env              = "02-qa"
     },
     "02-${var.env2_name}" = {
       cluster               = module.gke_cluster[var.env2_name].name,
+      anthos_membership     = module.fleet_membership[var.env2_name].cluster_membership_id
+      target_type           = "anthos_cluster"
       network               = module.vpc.network_name
-      project_id            = var.project_id,
-      location              = var.region,
+      project_id            = var.project_id
+      location              = var.region
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = module.ci_pipeline.binauth_attestor_ids["quality"]
       next_env              = "03-prod"
     },
     "03-${var.env3_name}" = {
       cluster               = module.gke_cluster[var.env3_name].name,
+      anthos_membership     = module.fleet_membership[var.env3_name].cluster_membership_id
+      target_type           = "anthos_cluster"
       network               = module.vpc.network_name
-      project_id            = var.project_id,
-      location              = var.region,
+      project_id            = var.project_id
+      location              = var.region
       required_attestations = [module.ci_pipeline.binauth_attestor_ids["quality"], module.ci_pipeline.binauth_attestor_ids["security"], module.ci_pipeline.binauth_attestor_ids["build"]]
       env_attestation       = ""
       next_env              = ""
@@ -77,14 +83,15 @@ module "cd_pipeline" {
   project_id       = var.project_id
   primary_location = var.region
 
-  gar_repo_name             = module.ci_pipeline.app_artifact_repo
-  cloudbuild_cd_repo        = "${var.app_name}-cloudbuild-cd-config"
-  deploy_branch_clusters    = local.deploy_branch_clusters
-  app_deploy_trigger_yaml   = "cloudbuild-cd.yaml"
-  cache_bucket_name         = module.ci_pipeline.cache_bucket_name
-  cloudbuild_private_pool   = module.cloudbuild_private_pool.workerpool_id
-  clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
-  labels                    = var.labels
+  gar_repo_name              = module.ci_pipeline.app_artifact_repo
+  cloudbuild_cd_repo         = "${var.app_name}-cloudbuild-cd-config"
+  deploy_branch_clusters     = local.deploy_branch_clusters
+  app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
+  cache_bucket_name          = module.ci_pipeline.cache_bucket_name
+  cloudbuild_private_pool    = module.cloudbuild_private_pool.workerpool_id
+  clouddeploy_pipeline_name  = local.clouddeploy_pipeline_name
+  cloudbuild_service_account = module.ci_pipeline.build_sa_email
+  labels                     = var.labels
   depends_on = [
     module.ci_pipeline
   ]

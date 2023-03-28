@@ -26,6 +26,8 @@ artifacts:
     location: gs://$_CACHE_BUCKET_NAME/artifacts/$BRANCH_NAME
     paths:
       - '/workspace/svcs-endpoints-filtered.json'
+      - '/workspace/zap_report_${_TARGET_ID}_${_RELEASE_ID}.html'
+logsBucket: gs://$_CACHE_BUCKET_NAME/build_logs
 steps:
 
 ############################### Post-Deploy Checks ###########################
@@ -39,7 +41,16 @@ steps:
     - -c
     - |
       gcloud config set project $_CLUSTER_PROJECT
-      gcloud container clusters get-credentials $_CLUSTER_NAME --region=$_DEFAULT_REGION
+      echo "Target Type ${_TARGET_TYPE}"
+      case ${_TARGET_TYPE} in
+        "anthos_cluster")
+          gcloud container fleet memberships get-credentials $_ANTHOS_MEMBERSHIP
+          ;;
+        *)
+          gcloud container clusters get-credentials $_CLUSTER_NAME --region=$_DEFAULT_REGION
+          ;;
+      esac
+
       kubectl get svc -ojson > /workspace/svcs.json
 
       ### Below only grabs external IP'd svcs
@@ -49,6 +60,9 @@ steps:
       ENDPOINTS=( $$(jq -r '.[].endpoint' /workspace/svcs-endpoints-filtered.json))
       echo $$SVC_NAMES > /workspace/svc_names_env.txt
       echo $$ENDPOINTS > /workspace/endpoints_env.txt
+  volumes:
+    - name: 'zapvolume'
+      path: '/zap/wrk'
 
 # ZAProxy Scan
 - name: 'gcr.io/cloud-builders/docker'
@@ -61,15 +75,14 @@ steps:
       ENDPOINTS=( $$(cat /workspace/endpoints_env.txt))
 
       INDEX=0
-      for SVC in "$${SVC_NAMES[@]}"; do
-          echo "$$SVC"
-          ENDPOINT="$${ENDPOINTS[$$INDEX]}"
-          echo "Checking $$ENDPOINT"
+      ENDPOINT="$${ENDPOINTS[$$INDEX]}"
+      echo "Checking $$ENDPOINT"
 
-          docker run owasp/zap2docker-stable zap-cli quick-scan --self-contained --start-options '-config api.disablekey=true' http://$$ENDPOINT
-
-          INDEX=$${INDEX}+1
-      done
+      docker container run --user root -v zapvolume:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t http://$$ENDPOINT -r zap_report_${_TARGET_ID}_${_RELEASE_ID}.html -z '-config api.disablekey=true' -I
+      cp /zap/wrk/zap_report_${_TARGET_ID}_${_RELEASE_ID}.html /workspace/zap_report_${_TARGET_ID}_${_RELEASE_ID}.html
+  volumes:
+    - name: 'zapvolume'
+      path: '/zap/wrk'
   waitFor:
     - 'get-svc-endpoints'
 

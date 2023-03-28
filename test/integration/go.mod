@@ -48,6 +48,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.2-0.20210217184823-a52172cd2f64 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	github.com/otiai10/copy v1.9.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect

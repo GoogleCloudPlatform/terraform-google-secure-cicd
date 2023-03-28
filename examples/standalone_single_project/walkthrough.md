@@ -25,7 +25,7 @@ Estimated time to complete:
 To get started, click **Start**.
 
 ## Verify environment variables
-Set the following environment variables based on your existing resources.
+Set the following environment variables based on your existing resources. Replace the `< >` placeholder with the values you entered when deploying the solution.
 
 ```
 export PROJECT_ID=<YOUR PROJECT ID>
@@ -33,7 +33,7 @@ export REGION=<CLOUD REGION>
 export APP_NAME=<APP NAME>
 ```
 
-Run the following commands to set additional variables for the tutorial.
+Run the following commands to set additional variables for the tutorial. If you set the above values correctly, you can run this entire block without modifying it.
 ```bash
 export GAR_REPOSITORY=$PROJECT_ID-$APP_NAME-image-repo
 export CLOUDBUILD_CD_REPO=$APP_NAME-cloudbuild-cd-config
@@ -84,6 +84,7 @@ You will see the logs for the build process in the Cloud Shell Terminal. Once th
     ```
 1. Commit changes:
     ```bash
+    git add .
     git commit -m "initial commit"
     git push -u origin main
     ```
@@ -102,11 +103,11 @@ Click **Next**.
     cd bank-of-anthos
     git checkout -b main
     ```
-1. Copy the Cloud Build configuration to the app-source repo
+1. Copy the Cloud Build configuration to the Bank of Anthos demo application folder
     ```bash
     cp ~/cloudshell_open/terraform-google-secure-cicd/build/cloudbuild-ci.yaml ~/bank-of-anthos/
     ```
-1. Copy `policies` folder to app-source repo
+1. Copy `policies` folder to the Bank of Anthos folder
     ```bash
     cp -R ~/cloudshell_open/terraform-google-secure-cicd/examples/app_cicd/policies ~/bank-of-anthos/policies
     ```

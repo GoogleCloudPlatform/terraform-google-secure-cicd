@@ -55,7 +55,7 @@ func TestAppCICDExample(t *testing.T) {
 
 		/////// SECURE-CI ///////
 		// Cloud Build Trigger - App Source
-		gcbCI := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", sourceTriggerName, projectID))
+		gcbCI := gcloud.Run(t, fmt.Sprintf("builds triggers describe %s --project %s --region %s", sourceTriggerName, projectID, primaryLocation))
 
 		assert.Equal(sourceTriggerName, gcbCI.Get("name").String(), "Cloud Build Trigger name is valid")
 		assert.Contains(gcbCI.Get("substitutions._DEFAULT_REGION").String(), primaryLocation, "Default Region trigger substitution is valid")
@@ -91,7 +91,7 @@ func TestAppCICDExample(t *testing.T) {
 		cdTriggers := [2]string{"deploy-trigger-dev-cluster", "deploy-trigger-qa-cluster"}
 
 		for _, cdTrigger := range cdTriggers {
-			gcbCD := gcloud.Run(t, fmt.Sprintf("beta builds triggers describe %s --project %s", cdTrigger, projectID))
+			gcbCD := gcloud.Run(t, fmt.Sprintf("builds triggers describe %s --project %s --region %s", cdTrigger, projectID, primaryLocation))
 			assert.Contains(gcbCD.Get("name").String(), cdTrigger, "Trigger name is valid")
 			assert.Contains(gcbCD.Get("pubsubConfig.topic").String(), "clouddeploy-operations", "pubsub topic is valid")
 			assert.Contains(gcbCD.Get("substitutions._CLUSTER_PROJECT").String(), "secure-cicd-gke-", "_CLUSTER_PROJECT trigger substitution is valid")

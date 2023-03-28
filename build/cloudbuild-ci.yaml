@@ -12,19 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Pipeline Setup
-#   Maven cache to reduce calls to Maven Central
-# test (in parallel)
-#   Secrets Scanner: secrets scanner
-#   License checking: ???
-# Build
-#   Docker build
-# After Build
-#   Artifact Structure Test: Container structure test
-#   Image Vulnerabilities: CVE scanner
-# Security Testing Gate
-#   Attestation
-
 timeout: "3600s" # 1 hour
 tags:
   - "secure-cicd-ci"
@@ -41,11 +28,8 @@ artifacts:
     paths:
       - 'build-artifacts.json'
       - 'build-artifacts-notag.json'
+logsBucket: gs://$_CACHE_BUCKET_NAME/build_logs
 steps:
-
-############################### Securing Source Code ###########################
-
-# Secrets Scanner (TODO: Switch to Talisman)
 
 ############################### Build Containers ###########################
 
@@ -57,7 +41,7 @@ steps:
     - '-xe'
     - -c
     - |
-      ./mvnw validate
+      ./mvnw clean install
 
       skaffold config set --global local-cluster false
       skaffold build --default-repo=${_GAR_REPO_URI} --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json
