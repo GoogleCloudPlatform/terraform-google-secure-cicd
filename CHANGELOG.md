@@ -8,6 +8,29 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.0.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v0.3.1...v1.0.0) (2023-03-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* Use Connect Gateway as alternative to VPN for deploying to private GKE clusters from Cloud Build (addressing https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/20)
+* Require Cloud Build BYOSA in secure-cd submodule instead of default CB SA
+* Use Connect Gateway for standalone example ([#59](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/59))
+
+### Features
+
+* automatic app deployment testing in standalone example verification test ([771f462](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/771f462ca788d02a284fbaf58dc2cd4072b355a2))
+* Require Cloud Build BYOSA in secure-cd submodule instead of default CB SA ([771f462](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/771f462ca788d02a284fbaf58dc2cd4072b355a2))
+* Use Connect Gateway as alternative to VPN for deploying to private GKE clusters from Cloud Build (addressing https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/20) ([771f462](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/771f462ca788d02a284fbaf58dc2cd4072b355a2))
+* Use Connect Gateway for standalone example ([#59](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/59)) ([771f462](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/771f462ca788d02a284fbaf58dc2cd4072b355a2))
+
+
+### Bug Fixes
+
+* documentation and walkthrough cleanup and clarification ([771f462](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/771f462ca788d02a284fbaf58dc2cd4072b355a2))
+* increase app build test threshold to 20 mins ([#61](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/61)) ([ad57bd5](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/ad57bd5d87d588ab9341ddf7b8d7983dca4b70f0))
+* set project via walkthrough link ([#62](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/62)) ([0059004](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/0059004aa17a9badca13d33ec15be875eb010a39))
+
 ## [0.3.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v0.3.0...v0.3.1) (2023-02-14)
 
 
