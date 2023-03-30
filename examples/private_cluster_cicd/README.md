@@ -46,7 +46,7 @@ cp -R terraform-google-secure-cicd/examples/private_cluster_cicd/policies bank-o
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| deploy\_branch\_clusters | mapping of branch names to cluster deployments | <pre>map(object({<br>    cluster               = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>  }))</pre> | `{}` | no |
+| deploy\_branch\_clusters | mapping of branch names to cluster deployments. target\_type can be one of `gke`, `anthos_cluster`, or `run`. See [clouddeploy\_target Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) for more details | <pre>map(object({<br>    cluster               = string<br>    anthos_membership     = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    next_env              = string<br>    target_type           = string<br>  }))</pre> | `{}` | no |
 | gke\_networks | list of GKE cluster networks in which to create VPN connections | <pre>list(object({<br>    control_plane_cidrs = map(string)<br>    location            = string<br>    network             = string<br>    project_id          = string<br>  }))</pre> | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 

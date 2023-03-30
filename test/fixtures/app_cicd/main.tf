@@ -22,27 +22,33 @@ module "example" {
   deploy_branch_clusters = {
     "01-dev" = {
       cluster               = "dev-cluster",
+      anthos_membership     = ""
       project_id            = var.gke_project_ids["dev"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/build-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/security-attestor"
       next_env              = "qa"
+      target_type           = "gke"
     },
     "02-qa" = {
       cluster               = "qa-cluster",
+      anthos_membership     = ""
       project_id            = var.gke_project_ids["qa"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/quality-attestor"
       next_env              = "prod"
+      target_type           = "gke"
     },
     "03-prod" = {
       cluster               = "prod-cluster",
+      anthos_membership     = ""
       project_id            = var.gke_project_ids["prod"],
       location              = var.primary_location,
       required_attestations = ["projects/${var.project_id}/attestors/quality-attestor", "projects/${var.project_id}/attestors/security-attestor", "projects/${var.project_id}/attestors/build-attestor"]
       env_attestation       = ""
       next_env              = ""
+      target_type           = "gke"
     },
   }
 }
