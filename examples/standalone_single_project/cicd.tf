@@ -57,7 +57,7 @@ locals {
 # Secure-CI
 module "ci_pipeline" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-ci"
-  version = "~> 0.3"
+  version = "~> 1.0"
 
   project_id                = var.project_id
   app_source_repo           = "${var.app_name}-source"
@@ -78,7 +78,7 @@ module "ci_pipeline" {
 # Secure-CD
 module "cd_pipeline" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
-  version = "~> 0.3"
+  version = "~> 1.0"
 
   project_id       = var.project_id
   primary_location = var.region
@@ -100,7 +100,7 @@ module "cd_pipeline" {
 # Cloud Build Private Pool
 module "cloudbuild_private_pool" {
   source  = "GoogleCloudPlatform/secure-cicd/google//modules/cloudbuild-private-pool"
-  version = "~> 0.3"
+  version = "~> 1.0"
 
   project_id                = var.project_id
   network_project_id        = var.project_id
