@@ -8,6 +8,14 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.0.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.0.0...v1.0.1) (2023-03-30)
+
+
+### Bug Fixes
+
+* **deps:** update terraform terraform-google-modules/kubernetes-engine/google to v25 ([#56](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/56)) ([c929094](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/c92909422ac235363b7b6d4c49e28b9ce282211f))
+* walkthrough updates ([#64](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/64)) ([5148197](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/5148197fcd19b95690f93db76001a9215866ee72))
+
 ## [1.0.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v0.3.1...v1.0.0) (2023-03-29)
 
 
