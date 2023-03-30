@@ -24,6 +24,8 @@ locals {
       required_attestations = ["projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/security-pc-attestor"
       next_env              = "02-qa"
+      anthos_membership     = ""
+      target_type           = "gke"
     },
     "02-qa" = {
       cluster               = "qa-private-cluster",
@@ -33,6 +35,8 @@ locals {
       required_attestations = ["projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = "projects/${var.project_id}/attestors/quality-pc-attestor"
       next_env              = "03-prod"
+      anthos_membership     = ""
+      target_type           = "gke"
     },
     "03-prod" = {
       cluster               = "prod-private-cluster",
@@ -42,6 +46,8 @@ locals {
       required_attestations = ["projects/${var.project_id}/attestors/quality-pc-attestor", "projects/${var.project_id}/attestors/security-pc-attestor", "projects/${var.project_id}/attestors/build-pc-attestor"]
       env_attestation       = ""
       next_env              = ""
+      anthos_membership     = ""
+      target_type           = "gke"
     },
   }
 }
