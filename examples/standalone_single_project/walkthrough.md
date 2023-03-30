@@ -42,7 +42,7 @@ To get started, click **Start**.
     export APP_SOURCE_REPO=$APP_NAME-source
     export BLUEPRINT_FOLDER=$PWD
     export WORKSPACE_FOLDER=~/workspace-$(date +%s)
-    mkdir $WORKSPACE_FOLDER 
+    mkdir $WORKSPACE_FOLDER
     ```
 
 Click **Next**.
@@ -141,7 +141,7 @@ Once the application has gone through a successful rollout to all target environ
 1. Navigate to Kubernetes Engine, then Services & Ingress
 <walkthrough-menu-navigation sectionId="KUBERNETES_SECTION;discovery"></walkthrough-menu-navigation>
 1. Using the <walkthrough-spotlight-pointer locator="css([name='clusters'])">Clusters</walkthrough-spotlight-pointer> filter, select the checkbox for the cluster corresponding to your final environment, then press **OK**. By default, the final cluster is called "my-app-cluster-prod".
-1. In the <walkthrough-spotlight-pointer locator="css([tabindex='0']).css([role='tab'])">Services</walkthrough-spotlight-pointer> tab, click the hyperlinked IP address next to the service called **frontend**. A new tab will open to the frontend service endpoint, launching the Bank of Anthos demo application. 
+1. In the <walkthrough-spotlight-pointer locator="css([tabindex='0']).css([role='tab'])">Services</walkthrough-spotlight-pointer> tab, click the hyperlinked IP address next to the service called **frontend**. A new tab will open to the frontend service endpoint, launching the Bank of Anthos demo application.
 
 For more information on the Bank of Anthos demo application, go the [project page on GitHub](https://github.com/GoogleCloudPlatform/bank-of-anthos)
 
