@@ -33,7 +33,7 @@ resource "google_kms_key_ring" "keyring" {
 
 module "attestors" {
   source   = "terraform-google-modules/kubernetes-engine/google//modules/binary-authorization"
-  version  = "~> 22.1.0"
+  version  = "~> 25.0.0"
   for_each = toset(var.attestor_names_prefix)
 
   project_id    = var.project_id
