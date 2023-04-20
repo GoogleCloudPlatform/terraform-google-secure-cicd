@@ -10,6 +10,7 @@ This example also creates GKE clusters and accompanying VPC networks for multipl
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | app\_name | Name of intended deployed application; to be used as a prefix for certain resources | `string` | `"my-app"` | no |
+| cloudbuild\_private\_pool\_machine\_type | Machine type for Cloud Build private pool | `string` | `"e2-medium"` | no |
 | env1\_name | Name of environment 1 | `string` | `"dev"` | no |
 | env2\_name | Name of environment 2 | `string` | `"qa"` | no |
 | env3\_name | Name of environment 3 | `string` | `"prod"` | no |
