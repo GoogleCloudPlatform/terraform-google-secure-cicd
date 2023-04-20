@@ -151,7 +151,7 @@ For troubleshooting deployment issues, click **Next**.
 
 ## Troubleshooting
 ### Org policy `constraints/compute.restrictLoadBalancerCreationForTypes` blocks creation of `frontend` service
-The Bank of Anthos sample application that you'll deploy in this walkthrough requires an external load balancer for the frontend service. If you have the **Restrict load balancer types** organization policy enabled, this may block the creation of the load balancer needed. 
+The Bank of Anthos sample application that you'll deploy in this walkthrough requires an external load balancer for the frontend service. If you have the **Restrict load balancer types** organization policy enabled, this may block the creation of the load balancer needed.
 
 Make sure the organization policy `constraints/compute.restrictLoadBalancerCreationForTypes` list contstraint allows the value `EXTERNAL_NETWORK_TCP_UDP`. To modify organization policies, you must have the **Organization Policy Administrator** (`roles/orgpolicy.policyAdmin`) role at the organization level.
 
