@@ -97,6 +97,7 @@ steps:
 - id: go-init-standalone-single-proj-example
   waitFor:
     - prepare
+    - go-init-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage init --verbose']
 - id: go-apply-standalone-single-proj-example
