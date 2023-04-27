@@ -108,7 +108,7 @@ module "cloudbuild_private_pool" {
   create_cloudbuild_network = true
   private_pool_vpc_name     = "cloudbuild-worker-vpc"
   worker_pool_name          = "cloudbuild-workerpool"
-  machine_type              = "e2-highcpu-32"
+  machine_type              = var.cloudbuild_private_pool_machine_type
 
   worker_address    = "10.39.0.0"
   worker_range_name = "cloudbuild-worker-range"

@@ -24,11 +24,14 @@ steps:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+- id: init-all
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run all --stage init --verbose']
 
 # app_cicd
 - id: go-init-app-cicd-example
   waitFor:
-    - prepare
+    - init-all
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage init --verbose']
 - id: go-apply-app-cicd-example
@@ -50,7 +53,7 @@ steps:
 # cloudbuild_private_pool
 - id: go-init-cloudbuild_private_pool-example
   waitFor:
-    - prepare
+    - init-all
     - go-destroy-app-cicd-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage init --verbose']
@@ -73,7 +76,7 @@ steps:
 # private_cluster_cicd
 - id: go-init-private-cluster-cicd-example
   waitFor:
-    - prepare
+    - init-all
     - go-destroy-cloudbuild_private_pool-example
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage init --verbose']
@@ -96,8 +99,7 @@ steps:
 # standalone_single_project
 - id: go-init-standalone-single-proj-example
   waitFor:
-    - prepare
-    - go-init-app-cicd-example
+    - init-all
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage init --verbose']
 - id: go-apply-standalone-single-proj-example

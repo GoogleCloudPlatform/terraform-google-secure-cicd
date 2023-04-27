@@ -46,7 +46,7 @@ module "cloudbuild_private_pool" {
 | create\_cloudbuild\_network | Whether to create a VPC for the Cloud Build Worker Pool. Set to false if providing an existing VPC name in 'private\_pool\_vpc\_name' | `bool` | n/a | yes |
 | labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
 | location | Region for Cloud Build worker pool | `string` | `"us-central1"` | no |
-| machine\_type | Machine type for Cloud Build worker pool | `string` | `"e2-standard-4"` | no |
+| machine\_type | Machine type for Cloud Build worker pool | `string` | `"e2-medium"` | no |
 | network\_project\_id | Project ID for Cloud Build network. | `string` | n/a | yes |
 | private\_pool\_vpc\_name | Set the name of the private pool VPC | `string` | `"cloudbuild-vpc"` | no |
 | project\_id | Project ID for Cloud Build Private Worker Pool | `string` | n/a | yes |
