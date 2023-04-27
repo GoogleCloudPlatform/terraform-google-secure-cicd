@@ -49,6 +49,12 @@ variable "env3_name" {
   default     = "prod"
 }
 
+variable "cloudbuild_private_pool_machine_type" {
+  type        = string
+  description = "Machine type for Cloud Build private pool"
+  default     = "e2-medium"
+}
+
 variable "labels" {
   description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
   type        = map(string)

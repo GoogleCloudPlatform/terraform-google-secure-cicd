@@ -68,7 +68,12 @@ variable "location" {
 variable "machine_type" {
   type        = string
   description = "Machine type for Cloud Build worker pool"
-  default     = "e2-standard-4"
+  default     = "e2-medium"
+
+  validation {
+    condition     = contains(["e2-medium", "e2-standard-2", "e2-standard-4", "e2-standard-8", "e2-standard-16", "e2-standard-32", "e2-highmem-2", "e2-highmem-4", "e2-highmem-8", "e2-highmem-16", "e2-highcpu-2", "e2-highcpu-4", "e2-highcpu-8", "e2-highcpu-16", "e2-highcpu-32", ], var.machine_type)
+    error_message = "Valid machine typees for Cloud Build private pools are: e2-medium, e2-standard-2, e2-standard-4, e2-standard-8, e2-standard-16, e2-standard-32, e2-highmem-2, e2-highmem-4, e2-highmem-8, e2-highmem-16, e2-highcpu-2, e2-highcpu-4, e2-highcpu-8, e2-highcpu-16, e2-highcpu-32"
+  }
 }
 
 variable "labels" {
