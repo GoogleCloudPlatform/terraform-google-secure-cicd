@@ -20,6 +20,18 @@ resource "google_project_service" "servicenetworking" {
   service            = "servicenetworking.googleapis.com"
   disable_on_destroy = false
 }
+resource "google_project_service_identity" "servicenetworking_agent" {
+  provider = google-beta
+
+  project = var.network_project_id
+  service = "servicenetworking.googleapis.com"
+}
+
+resource "google_project_iam_member" "servicenetworking_agent" {
+  project = var.network_project_id
+  role    = "roles/servicenetworking.serviceAgent"
+  member  = "serviceAccount:${google_project_service_identity.servicenetworking_agent.email}"
+}
 
 resource "google_compute_network" "private_pool_vpc" {
   count = var.create_cloudbuild_network ? 1 : 0
@@ -53,7 +65,7 @@ resource "google_service_networking_connection" "worker_pool_connection" {
   network                 = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].id : data.google_compute_network.workerpool_vpc[0].id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.worker_range.name]
-  depends_on              = [google_project_service.servicenetworking]
+  depends_on              = [google_project_service.servicenetworking, google_project_iam_member.servicenetworking_agent]
 }
 
 resource "google_compute_network_peering_routes_config" "service_networking_peering_config" {
