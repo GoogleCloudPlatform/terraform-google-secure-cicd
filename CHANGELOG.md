@@ -8,6 +8,19 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.1.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.0.2...v1.1.0) (2023-04-28)
+
+
+### Features
+
+* var for private pool machine type ([#72](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/72)) ([b73d4b7](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/b73d4b783b68348c344c17569fb99b61d9422c55))
+
+
+### Bug Fixes
+
+* strict dependency on servicenetworking agent ([#75](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/75)) ([f3349c1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/f3349c1b9dd43c5658cd43c6afb88c7dfa578bad))
+* troubleshoot Load Balancer org policy in walkthrough ([#71](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/71)) ([a1a0ae6](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/a1a0ae66a84482ddc3322db2ba2f5b93b7b90f46))
+
 ## [1.0.2](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.0.1...v1.0.2) (2023-03-30)
 
 
