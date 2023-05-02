@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.1.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.1.0...v1.1.1) (2023-05-02)
+
+
+### Bug Fixes
+
+* rollback network version for compatibility ([#80](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/80)) ([fc052c5](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/fc052c578d43b9ac8d3163e6b5c8350712d45ec7))
+
 ## [1.1.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.0.2...v1.1.0) (2023-04-28)
 
 
