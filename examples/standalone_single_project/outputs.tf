@@ -29,6 +29,11 @@ output "gar_repo" {
   value       = module.ci_pipeline.app_artifact_repo
 }
 
+output "neos_tutorial_url" {
+  description = "The URL to launch the in-console tutorial for the Secure CI/CD pipeline solution"
+  value       = "https://console.cloud.google.com/products/solutions/catalog?walkthrough_id=solutions-in-console--secure-cicd-pipeline--tour&project=${var.project_id}"
+}
+  
 output "console_walkthrough_link" {
   description = "URL to open the in-console walkthrough."
   value       = "https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fterraform-google-secure-cicd.git&cloudshell_git_branch=main&cloudshell_tutorial=examples%2Fstandalone_single_project%2Fwalkthrough.md&project=${var.project_id}"
