@@ -24,9 +24,8 @@ This example also creates GKE clusters and accompanying VPC networks for multipl
 |------|-------------|
 | app\_source\_repo | URL of the created CSR app soure repo |
 | cloudbuild\_cd\_repo\_name | URL of the created CSR app soure repo |
+| console\_walkthrough\_link | URL to open the in-console walkthrough. |
 | gar\_repo | Artifact Registry repo |
-| neos\_tutorial\_url | URL to open in-console tour |
-| console\_walkthrough\_link | URL to open walkthrough to build a sample app |
-
+| neos\_tutorial\_url | The URL to launch the in-console tutorial for the Secure CI/CD pipeline solution |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
