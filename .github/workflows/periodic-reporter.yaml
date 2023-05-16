@@ -20,7 +20,7 @@ jobs:
                   console.log(context.repo.repo)
                   const date = new Date();
                   date.setDate(date.getDate() - 1);
-                  const commits = await github.paginate(github.repos.listCommits, {
+                  const commits = await github.paginate(github.rest.repos.listCommits, {
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     since:  date.toISOString(),
