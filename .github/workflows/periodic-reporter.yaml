@@ -16,5 +16,15 @@ jobs:
       - uses: 'actions/github-script@v6'
         with:
           script: |-
-              console.log(context.repo.owner)
-              console.log(context.repo.repo)
+                  console.log(context.repo.owner)
+                  console.log(context.repo.repo)
+                  const date = new Date();
+                  date.setDate(date.getDate() - 1);
+                  const commits = await github.paginate(github.repos.listCommits, {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    since:  date.toISOString(),
+                  });
+                  commits.forEach((commit) => {
+                  console.log(commit.commit.message);
+                  });
