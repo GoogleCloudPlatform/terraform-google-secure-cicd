@@ -25,6 +25,36 @@ jobs:
                     repo: context.repo.repo,
                     since:  date.toISOString(),
                   });
-                  commits.forEach((commit) => {
-                  console.log(commit.commit.message);
+                  type check = {
+                    name: string;
+                    url: string;
+                    sha: string;
+                    conclusion: string | null;
+                    status: string | null;
+                  };
+
+                  var foundCheck =false
+                  let periodicCheck: check = {} as check;
+                  for (const commit of commits) {
+                  const checks = await github.rest.checks.listForRef({
+                    ref: commit.sha,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
                   });
+                  for (const check of checks.data.check_runs) {
+                      if (check.name.includes('periodic-int-trigger')) {
+                          foundCheck = true
+                          periodicCheck.name = check.name;
+                          periodicCheck.sha = check.head_sha;
+                          periodicCheck.conclusion = check.conclusion;
+                          periodicCheck.status = check.status;
+                          break
+                        }
+                  } 
+                  if (foundCheck) {
+                      console.log("found check");
+                      console.log(periodicCheck.url)
+                  } else {
+                      console.log("didnt find check");
+                  }
+                  }
