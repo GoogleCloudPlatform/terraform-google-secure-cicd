@@ -1,0 +1,20 @@
+name: 'reporter'
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  troubleshooting:
+    permissions:
+      issues: 'write'
+
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: 'actions/github-script@v6'
+        with:
+          script: |-
+              console.log(context.repo.owner)
+              console.log(context.repo.repo)
