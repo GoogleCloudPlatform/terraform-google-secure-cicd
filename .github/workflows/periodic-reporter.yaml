@@ -23,6 +23,16 @@ jobs:
                     repo: context.repo.repo,
                     since:  date.toISOString(),
                   });
+                  const createIssue = async function(title,txt) {
+                    github.rest.issues.create({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      title: title,
+                      body: txt,
+                      labels: "test",
+                    })
+                  }
+
 
                   var foundCheck =false
                   let periodicCheck = {};
@@ -42,6 +52,7 @@ jobs:
                   if (foundCheck) {
                       console.log("found check");
                       console.log(periodicCheck.url)
+                      createIssue("passed", periodicCheck.url)
                   } else {
                       console.log("didnt find check");
                   }
