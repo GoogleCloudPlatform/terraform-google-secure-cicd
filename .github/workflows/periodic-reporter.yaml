@@ -82,7 +82,7 @@ jobs:
 
                   for (const commit of commits) {
                     console.log(
-                      `checking runs at ${commit.commit.html_url}: ${commit.commit.message}`
+                      `checking runs at ${commit.html_url}: ${commit.commit.message}`
                     );
                     const checks = await github.rest.checks.listForRef({
                       ...context.repo,
@@ -90,7 +90,7 @@ jobs:
                     });
                     // find runs for this commit
                     for (const check of checks.data.check_runs) {
-                      console.log(`found run ${check.name} for ${commit.commit.html_url}`);
+                      console.log(`found run ${check.name} for ${commit.html_url}`);
                       if (check.name.includes('periodic-int-trigger')) {
                         foundCheck = true;
                         periodicCheck = check;
