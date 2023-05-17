@@ -38,7 +38,7 @@ jobs:
                       });
                       return;
                     }
-                    console.log(`found previous issue ${prevIssues[0].url}, adding comment`);
+                    console.log(`found previous issue ${prevIssues[0].html_url}, adding comment`);
                     await github.rest.issues.createComment({
                       ...context.repo,
                       issue_number: prevIssues[0].number,
@@ -53,13 +53,13 @@ jobs:
                       return;
                     }
                     for (const prevIssue of prevIssues) {
-                      console.log(`found previous issue ${prevIssue.url}, adding comment`);
+                      console.log(`found previous issue ${prevIssue.html_url}, adding comment`);
                       await github.rest.issues.createComment({
                         ...context.repo,
                         issue_number: prevIssue.number,
                         body: txt
                       });
-                      console.log(`closing ${prevIssue.url}`);
+                      console.log(`closing ${prevIssue.html_url}`);
                       await github.rest.issues.update({
                         ...context.repo,
                         issue_number: prevIssue.number,
@@ -82,7 +82,7 @@ jobs:
 
                   for (const commit of commits) {
                     console.log(
-                      `checking runs at ${commit.commit.url}: ${commit.commit.message}`
+                      `checking runs at ${commit.commit.html_url}: ${commit.commit.message}`
                     );
                     const checks = await github.rest.checks.listForRef({
                       ...context.repo,
@@ -90,7 +90,7 @@ jobs:
                     });
                     // find runs for this commit
                     for (const check of checks.data.check_runs) {
-                      console.log(`found run ${check.name} for ${commit.commit.url}`);
+                      console.log(`found run ${check.name} for ${commit.commit.html_url}`);
                       if (check.name.includes('periodic-int-trigger')) {
                         foundCheck = true;
                         periodicCheck = check;
@@ -104,18 +104,18 @@ jobs:
                         periodicCheck.conclusion === 'success'
                       ) {
                         updateAndCloseIssue(
-                          `[Passing periodic](${periodicCheck.url}) at ${commit.url}. Closing this issue.`
+                          `[Passing periodic](${periodicCheck.html_url}) at ${commit.html_url}. Closing this issue.`
                         );
                       } else if (periodicCheck.status === 'in_progress') {
                         console.log(
-                          `Check is pending ${periodicCheck.url} for ${commit.url}. Retry again later.`
+                          `Check is pending ${periodicCheck.html_url} for ${commit.html_url}. Retry again later.`
                         );
                       }
                       // error case
                       else {
                         createOrCommentIssue(
                           'Failing periodic',
-                          `[Failing periodic](${periodicCheck.url}) at ${commit.url}.`
+                          `[Failing periodic](${periodicCheck.html_url}) at ${commit.html_url}.`
                         );
                       }
                       // exit early as check was found
@@ -127,6 +127,6 @@ jobs:
                   createOrCommentIssue(
                     'Missing periodic',
                     `Periodic test has not run in the past 24hrs. Last checked from ${
-                      commits[0].url
-                    } to ${commits[commits.length - 1].url}.`
+                      commits[0].html_url
+                    } to ${commits[commits.length - 1].html_url}.`
                   );
