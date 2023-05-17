@@ -83,7 +83,7 @@ jobs:
                     console.log(
                       `checking runs at ${commit.commit.sha}: ${commit.commit.message}`
                     );
-                    const checks = await github.checks.listForRef({
+                    const checks = await github.rest.checks.listForRef({
                       ...context.repo,
                       ref: commit.sha
                     });
