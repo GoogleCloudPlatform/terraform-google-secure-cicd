@@ -16,6 +16,7 @@ jobs:
       - uses: 'actions/github-script@v6'
         with:
           script: |-
+                  // label for all issues opened by reporter
                   const periodicLabel = 'periodic-failure';
 
                   // check if any reporter opened any issues previously
