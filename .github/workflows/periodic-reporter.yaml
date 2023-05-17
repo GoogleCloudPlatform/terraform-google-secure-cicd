@@ -72,7 +72,7 @@ jobs:
                   // We will find check runs for each commit and then filter for the periodic.
                   // Checks API only allows for ref and if we use main there could be edge cases where
                   // the check run happened on a SHA that is different from head.
-                  const commits = await github.paginate(github.repos.listCommits, {
+                  const commits = await github.paginate(github.rest.repos.listCommits, {
                     ...context.repo
                   });
 
