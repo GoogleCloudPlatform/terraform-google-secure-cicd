@@ -70,7 +70,7 @@ resource "google_service_networking_connection" "worker_pool_connection" {
 
 resource "google_compute_network_peering_routes_config" "service_networking_peering_config" {
   project = var.network_project_id
-  peering = "servicenetworking-googleapis-com"
+  peering = google_service_networking_connection.worker_pool_connection.peering
   network = var.private_pool_vpc_name
 
   export_custom_routes = true
