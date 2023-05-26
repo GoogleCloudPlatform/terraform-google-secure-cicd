@@ -110,8 +110,9 @@ module "cloudbuild_private_pool" {
   worker_pool_name          = "cloudbuild-workerpool"
   machine_type              = var.cloudbuild_private_pool_machine_type
 
-  worker_address    = "10.39.0.0"
-  worker_range_name = "cloudbuild-worker-range"
+  worker_address               = "10.39.0.0"
+  worker_address_prefix_length = "24"
+  worker_range_name            = "cloudbuild-worker-range"
 
   labels = var.labels
 }
