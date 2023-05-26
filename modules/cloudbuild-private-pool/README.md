@@ -50,7 +50,8 @@ module "cloudbuild_private_pool" {
 | network\_project\_id | Project ID for Cloud Build network. | `string` | n/a | yes |
 | private\_pool\_vpc\_name | Set the name of the private pool VPC | `string` | `"cloudbuild-vpc"` | no |
 | project\_id | Project ID for Cloud Build Private Worker Pool | `string` | n/a | yes |
-| worker\_address | Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix, as it must be /16 | `string` | `"10.37.0.0"` | no |
+| worker\_address | Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix length. | `string` | `"10.37.0.0"` | no |
+| worker\_address\_prefix\_length | Prefix length, such as 24 for /24 or 16 for /16. Must be 24 or lower. | `string` | `"16"` | no |
 | worker\_pool\_name | Name of Cloud Build Worker Pool | `string` | `"cloudbuild-private-worker-pool"` | no |
 | worker\_pool\_no\_external\_ip | Whether to disable external IP on the Cloud Build Worker Pool | `bool` | `false` | no |
 | worker\_range\_name | Name of Cloud Build Worker IP address range | `string` | `"worker-pool-range"` | no |

@@ -37,8 +37,14 @@ variable "private_pool_vpc_name" {
 
 variable "worker_address" {
   type        = string
-  description = "Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix, as it must be /16"
+  description = "Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix length."
   default     = "10.37.0.0"
+}
+
+variable "worker_address_prefix_length" {
+  type        = string
+  description = "Prefix length, such as 24 for /24 or 16 for /16. Must be 24 or lower."
+  default     = "16"
 }
 
 variable "worker_pool_name" {

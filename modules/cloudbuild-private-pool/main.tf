@@ -57,7 +57,7 @@ resource "google_compute_global_address" "worker_range" {
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   address       = var.worker_address
-  prefix_length = 16
+  prefix_length = var.worker_address_prefix_length
   network       = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].id : data.google_compute_network.workerpool_vpc[0].id
 }
 
@@ -70,7 +70,7 @@ resource "google_service_networking_connection" "worker_pool_connection" {
 
 resource "google_compute_network_peering_routes_config" "service_networking_peering_config" {
   project = var.network_project_id
-  peering = "servicenetworking-googleapis-com"
+  peering = google_service_networking_connection.worker_pool_connection.peering
   network = var.private_pool_vpc_name
 
   export_custom_routes = true
