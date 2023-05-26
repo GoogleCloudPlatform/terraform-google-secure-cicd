@@ -93,6 +93,7 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 		gitAppRun("config", "user.name", "Secure CICD Robot")
 		gitAppRun("config", "--global", "credential.https://source.developers.google.com.helper", "gcloud.sh")
 		gitAppRun("config", "--global", "init.defaultBranch", "main")
+		gitAppRun("config", "--global", "http.postBuffer", "157286400")
 		gitAppRun("checkout", "-b", "main")
 		err2 := cp.Copy("../../../build/cloudbuild-ci.yaml", fmt.Sprintf("%s/cloudbuild-ci.yaml", tmpDirApp))
 		fmt.Println(err2)
