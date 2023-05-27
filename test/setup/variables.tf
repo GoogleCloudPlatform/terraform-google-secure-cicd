@@ -24,3 +24,7 @@ variable "folder_id" {
 variable "billing_account" {
   description = "The billing account id associated with the project, e.g. XXXXXX-YYYYYY-ZZZZZZ"
 }
+
+variable "lr_billing_account" {
+  description = "The LR billing account id associated with the project, e.g. XXXXXX-YYYYYY-ZZZZZZ"
+}
