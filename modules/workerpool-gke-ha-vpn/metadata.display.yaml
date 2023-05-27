@@ -1,0 +1,70 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: blueprints.cloud.google.com/v1alpha1
+kind: BlueprintMetadata
+metadata:
+  name: terraform-google-secure-cicd-display
+spec:
+  info:
+    title: Workerpool HA VPN Module
+    source:
+      repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
+      sourceType: git
+      dir: workerpool-gke-ha-vpn
+  ui:
+    input:
+      variables:
+        bgp_range_1:
+          name: bgp_range_1
+          title: Bgp Range 1
+        bgp_range_2:
+          name: bgp_range_2
+          title: Bgp Range 2
+        gateway_1_asn:
+          name: gateway_1_asn
+          title: Gateway 1 Asn
+        gateway_2_asn:
+          name: gateway_2_asn
+          title: Gateway 2 Asn
+        gke_control_plane_cidrs:
+          name: gke_control_plane_cidrs
+          title: Gke Control Plane Cidrs
+        gke_location:
+          name: gke_location
+          title: Gke Location
+        gke_network:
+          name: gke_network
+          title: Gke Network
+        gke_project:
+          name: gke_project
+          title: Gke Project
+        labels:
+          name: labels
+          title: Labels
+        location:
+          name: location
+          title: Location
+        project_id:
+          name: project_id
+          title: Project Id
+        vpn_router_name_prefix:
+          name: vpn_router_name_prefix
+          title: Vpn Router Name Prefix
+        workerpool_network:
+          name: workerpool_network
+          title: Workerpool Network
+        workerpool_range:
+          name: workerpool_range
+          title: Workerpool Range

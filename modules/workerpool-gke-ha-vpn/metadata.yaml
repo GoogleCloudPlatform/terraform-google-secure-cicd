@@ -19,145 +19,144 @@ metadata:
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
-  title: Workerpool HA VPN Module
-  source:
-    repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
-    sourceType: git
-  version: 0.3.0
-  actuationTool:
-    type: Terraform
-    version: '>= 0.13.0'
-  description: {}
-  examples:
-  - name: app_cicd
-    location: examples/app_cicd
-  - name: cloudbuild_private_pool
-    location: examples/cloudbuild_private_pool
-  - name: private_cluster_cicd
-    location: examples/private_cluster_cicd
-  - name: standalone_single_project
-    location: examples/standalone_single_project
-  variables:
-  - name: bgp_range_1
-    description: BGP range for HA VPN tunnel 1
-    type: string
-    default: 169.254.1.0/30
-    required: false
-  - name: bgp_range_2
-    description: BGP range for HA VPN tunnel 1
-    type: string
-    default: 169.254.2.0/30
-    required: false
-  - name: gateway_1_asn
-    description: 'ASN for HA VPN gateway #1. You can use any private ASN (64512 through 65534, 4200000000 through 4294967294) that you are not using elsewhere in your network'
-    type: number
-    default: 65001
-    required: false
-  - name: gateway_2_asn
-    description: 'ASN for HA VPN gateway #2. You can use any private ASN (64512 through 65534, 4200000000 through 4294967294) that you are not using elsewhere in your network'
-    type: number
-    default: 65002
-    required: false
-  - name: gke_control_plane_cidrs
-    description: map of GKE control plane CIDRs to name
-    type: map(string)
-    required: true
-  - name: gke_location
-    description: Region of GKE subnet & cluster
-    type: string
-    required: true
-  - name: gke_network
-    description: Name of GKE VPC
-    type: string
-    required: true
-  - name: gke_project
-    description: Project ID of GKE VPC and cluster
-    type: string
-    required: true
-  - name: labels
-    description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
-    type: map(string)
-    default: {}
-    required: false
-  - name: location
-    description: Region for Cloud Build worker pool
-    type: string
-    default: us-central1
-    required: false
-  - name: project_id
-    description: Project ID for Cloud Build
-    type: string
-    required: true
-  - name: vpn_router_name_prefix
-    description: Prefix for HA VPN router names
-    type: string
-    default: ""
-    required: false
-  - name: workerpool_network
-    description: Self link for Cloud Build VPC
-    type: string
-    required: true
-  - name: workerpool_range
-    description: Address range of Cloud Build Workerpool
-    type: string
-    required: true
-  outputs:
-  - name: vpn_gateway_cloudbuild
-    description: Name of HA VPN gateway on Cloud Build VPC
-  - name: vpn_gateway_gke
-    description: Name of HA VPN gateway on GKE VPC
-  - name: vpn_router_cloudbuild_names
-    description: Names of HA VPN router on Cloud Build VPC
-  - name: vpn_router_gke_names
-    description: Names of HA VPN router on GKE VPC
-  - name: vpn_tunnel_cloudbuild_names
-    description: Names of HA VPN tunnels on Cloud Build VPC
-  - name: vpn_tunnel_gke_names
-    description: Names of HA VPN tunnels on GKE VPC
-  roles:
-  - level: Project
+  info:
+    title: Workerpool HA VPN Module
+    source:
+      repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
+      sourceType: git
+      dir: workerpool-gke-ha-vpn
+    version: 1.1.1
+    actuationTool:
+      flavor: Terraform
+      version: '>= 0.13.0'
+    description: {}
+  content:
+    examples:
+    - name: app_cicd
+      location: examples/app_cicd
+    - name: cloudbuild_private_pool
+      location: examples/cloudbuild_private_pool
+    - name: private_cluster_cicd
+      location: examples/private_cluster_cicd
+    - name: standalone_single_project
+      location: examples/standalone_single_project
+  interfaces:
+    variables:
+    - name: bgp_range_1
+      description: BGP range for HA VPN tunnel 1
+      varType: string
+      defaultValue: 169.254.1.0/30
+    - name: bgp_range_2
+      description: BGP range for HA VPN tunnel 1
+      varType: string
+      defaultValue: 169.254.2.0/30
+    - name: gateway_1_asn
+      description: 'ASN for HA VPN gateway #1. You can use any private ASN (64512 through 65534, 4200000000 through 4294967294) that you are not using elsewhere in your network'
+      varType: number
+      defaultValue: 65001
+    - name: gateway_2_asn
+      description: 'ASN for HA VPN gateway #2. You can use any private ASN (64512 through 65534, 4200000000 through 4294967294) that you are not using elsewhere in your network'
+      varType: number
+      defaultValue: 65002
+    - name: gke_control_plane_cidrs
+      description: map of GKE control plane CIDRs to name
+      varType: map(string)
+      required: true
+    - name: gke_location
+      description: Region of GKE subnet & cluster
+      varType: string
+      required: true
+    - name: gke_network
+      description: Name of GKE VPC
+      varType: string
+      required: true
+    - name: gke_project
+      description: Project ID of GKE VPC and cluster
+      varType: string
+      required: true
+    - name: labels
+      description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
+      varType: map(string)
+      defaultValue: {}
+    - name: location
+      description: Region for Cloud Build worker pool
+      varType: string
+      defaultValue: us-central1
+    - name: project_id
+      description: Project ID for Cloud Build
+      varType: string
+      required: true
+    - name: vpn_router_name_prefix
+      description: Prefix for HA VPN router names
+      varType: string
+      defaultValue: ""
+    - name: workerpool_network
+      description: Self link for Cloud Build VPC
+      varType: string
+      required: true
+    - name: workerpool_range
+      description: Address range of Cloud Build Workerpool
+      varType: string
+      required: true
+    outputs:
+    - name: vpn_gateway_cloudbuild
+      description: Name of HA VPN gateway on Cloud Build VPC
+    - name: vpn_gateway_gke
+      description: Name of HA VPN gateway on GKE VPC
+    - name: vpn_router_cloudbuild_names
+      description: Names of HA VPN router on Cloud Build VPC
+    - name: vpn_router_gke_names
+      description: Names of HA VPN router on GKE VPC
+    - name: vpn_tunnel_cloudbuild_names
+      description: Names of HA VPN tunnels on Cloud Build VPC
+    - name: vpn_tunnel_gke_names
+      description: Names of HA VPN tunnels on GKE VPC
+  requirements:
     roles:
-    - roles/compute.networkAdmin
-    - roles/container.admin
-    - roles/binaryauthorization.policyEditor
-    - roles/resourcemanager.projectIamAdmin
-    - roles/iam.serviceAccountAdmin
-    - roles/serviceusage.serviceUsageViewer
-    - roles/iam.serviceAccountUser
-  - level: Project
-    roles:
-    - roles/artifactregistry.admin
-    - roles/binaryauthorization.attestorsAdmin
-    - roles/cloudbuild.builds.builder
-    - roles/cloudbuild.workerPoolOwner
-    - roles/clouddeploy.admin
-    - roles/cloudkms.admin
-    - roles/cloudkms.publicKeyViewer
-    - roles/containeranalysis.notes.editor
-    - roles/compute.networkAdmin
-    - roles/iam.serviceAccountAdmin
-    - roles/iam.serviceAccountUser
-    - roles/pubsub.editor
-    - roles/serviceusage.serviceUsageAdmin
-    - roles/source.admin
-    - roles/storage.admin
-    - roles/resourcemanager.projectIamAdmin
-    - roles/viewer
-  services:
-  - cloudresourcemanager.googleapis.com
-  - cloudbilling.googleapis.com
-  - clouddeploy.googleapis.com
-  - storage-api.googleapis.com
-  - serviceusage.googleapis.com
-  - cloudbuild.googleapis.com
-  - containerregistry.googleapis.com
-  - iamcredentials.googleapis.com
-  - secretmanager.googleapis.com
-  - sourcerepo.googleapis.com
-  - artifactregistry.googleapis.com
-  - containeranalysis.googleapis.com
-  - cloudkms.googleapis.com
-  - binaryauthorization.googleapis.com
-  - containerscanning.googleapis.com
-  - servicenetworking.googleapis.com
-  - pubsub.googleapis.com
+    - level: Project
+      roles:
+      - roles/artifactregistry.admin
+      - roles/binaryauthorization.attestorsAdmin
+      - roles/cloudbuild.builds.builder
+      - roles/cloudbuild.workerPoolOwner
+      - roles/clouddeploy.admin
+      - roles/cloudkms.admin
+      - roles/cloudkms.publicKeyViewer
+      - roles/containeranalysis.notes.editor
+      - roles/compute.networkAdmin
+      - roles/gkehub.editor
+      - roles/iam.serviceAccountAdmin
+      - roles/iam.serviceAccountUser
+      - roles/pubsub.editor
+      - roles/serviceusage.serviceUsageAdmin
+      - roles/source.admin
+      - roles/storage.admin
+      - roles/resourcemanager.projectIamAdmin
+      - roles/viewer
+    - level: Project
+      roles:
+      - roles/compute.networkAdmin
+      - roles/container.admin
+      - roles/binaryauthorization.policyEditor
+      - roles/resourcemanager.projectIamAdmin
+      - roles/iam.serviceAccountAdmin
+      - roles/serviceusage.serviceUsageViewer
+      - roles/iam.serviceAccountUser
+    services:
+    - cloudresourcemanager.googleapis.com
+    - cloudbilling.googleapis.com
+    - clouddeploy.googleapis.com
+    - storage-api.googleapis.com
+    - serviceusage.googleapis.com
+    - cloudbuild.googleapis.com
+    - containerregistry.googleapis.com
+    - iamcredentials.googleapis.com
+    - secretmanager.googleapis.com
+    - sourcerepo.googleapis.com
+    - artifactregistry.googleapis.com
+    - containeranalysis.googleapis.com
+    - cloudkms.googleapis.com
+    - binaryauthorization.googleapis.com
+    - containerscanning.googleapis.com
+    - servicenetworking.googleapis.com
+    - pubsub.googleapis.com

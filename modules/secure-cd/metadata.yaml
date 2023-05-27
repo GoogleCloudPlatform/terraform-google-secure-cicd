@@ -19,134 +19,142 @@ metadata:
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
-  title: Secure CD Module
-  source:
-    repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
-    sourceType: git
-  version: 0.3.0
-  actuationTool:
-    type: Terraform
-    version: '>= 0.13.0'
-  description: {}
-  examples:
-  - name: app_cicd
-    location: examples/app_cicd
-  - name: cloudbuild_private_pool
-    location: examples/cloudbuild_private_pool
-  - name: private_cluster_cicd
-    location: examples/private_cluster_cicd
-  - name: standalone_single_project
-    location: examples/standalone_single_project
-  variables:
-  - name: additional_substitutions
-    description: Parameters to be substituted in the build specification. All keys should begin with an underscore.
-    type: map(string)
-    default: {}
-    required: false
-  - name: app_deploy_trigger_yaml
-    description: Name of application cloudbuild yaml file for deployment
-    type: string
-    required: true
-  - name: cache_bucket_name
-    description: cloud build artifact bucket name
-    type: string
-    required: true
-  - name: cloudbuild_cd_repo
-    description: Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks
-    type: string
-    required: true
-  - name: cloudbuild_private_pool
-    description: Cloud Build private pool self-link
-    type: string
-    default: ""
-    required: false
-  - name: clouddeploy_pipeline_name
-    description: Cloud Deploy pipeline name
-    type: string
-    required: true
-  - name: deploy_branch_clusters
-    description: mapping of branch names to cluster deployments
-    type: |-
-      map(object({
-          cluster               = string
-          project_id            = string
-          location              = string
-          required_attestations = list(string)
-          env_attestation       = string
-          next_env              = string
-        }))
-    default: {}
-    required: false
-  - name: gar_repo_name
-    description: Docker artifact registry repo to store app build images
-    type: string
-    required: true
-  - name: labels
-    description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
-    type: map(string)
-    default: {}
-    required: false
-  - name: primary_location
-    description: Region used for key-ring
-    type: string
-    required: true
-  - name: project_id
-    description: Project ID for CICD Pipeline Project
-    type: string
-    required: true
-  outputs:
-  - name: binauthz_policy_required_attestations
-    description: Binary Authorization policy required attestation in GKE projects
-  - name: clouddeploy_delivery_pipeline_id
-    description: ID of the Cloud Deploy delivery pipeline
-  - name: clouddeploy_target_id
-    description: ID(s) of Cloud Deploy targets
-  - name: deploy_trigger_names
-    description: Names of CD Cloud Build triggers
-  roles:
-  - level: Project
+  info:
+    title: Secure CD Module
+    source:
+      repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
+      sourceType: git
+      dir: secure-cd
+    version: 1.1.1
+    actuationTool:
+      flavor: Terraform
+      version: '>= 1.0'
+    description: {}
+  content:
+    examples:
+    - name: app_cicd
+      location: examples/app_cicd
+    - name: cloudbuild_private_pool
+      location: examples/cloudbuild_private_pool
+    - name: private_cluster_cicd
+      location: examples/private_cluster_cicd
+    - name: standalone_single_project
+      location: examples/standalone_single_project
+  interfaces:
+    variables:
+    - name: additional_substitutions
+      description: Parameters to be substituted in the build specification. All keys should begin with an underscore.
+      varType: map(string)
+      defaultValue: {}
+    - name: app_deploy_trigger_yaml
+      description: Name of application cloudbuild yaml file for deployment
+      varType: string
+      required: true
+    - name: cache_bucket_name
+      description: cloud build artifact bucket name
+      varType: string
+      required: true
+    - name: cloudbuild_cd_repo
+      description: Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks
+      varType: string
+      required: true
+    - name: cloudbuild_private_pool
+      description: Cloud Build private pool self-link
+      varType: string
+      defaultValue: ""
+    - name: cloudbuild_service_account
+      description: Cloud Build SA email address
+      varType: string
+      required: true
+    - name: clouddeploy_pipeline_name
+      description: Cloud Deploy pipeline name
+      varType: string
+      required: true
+    - name: deploy_branch_clusters
+      description: mapping of branch names to cluster deployments. target_type can be one of `gke`, `anthos_cluster`, or `run`. See [clouddeploy_target Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) for more details
+      varType: |-
+        map(object({
+            cluster               = string
+            anthos_membership     = string
+            project_id            = string
+            location              = string
+            required_attestations = list(string)
+            env_attestation       = string
+            next_env              = string
+            target_type           = string
+          }))
+      defaultValue: {}
+    - name: gar_repo_name
+      description: Docker artifact registry repo to store app build images
+      varType: string
+      required: true
+    - name: labels
+      description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
+      varType: map(string)
+      defaultValue: {}
+    - name: primary_location
+      description: Region used for key-ring
+      varType: string
+      required: true
+    - name: project_id
+      description: Project ID for CICD Pipeline Project
+      varType: string
+      required: true
+    outputs:
+    - name: binauthz_policy_required_attestations
+      description: Binary Authorization policy required attestation in GKE projects
+    - name: clouddeploy_delivery_pipeline_id
+      description: ID of the Cloud Deploy delivery pipeline
+    - name: clouddeploy_target_id
+      description: ID(s) of Cloud Deploy targets
+    - name: deploy_trigger_names
+      description: Names of CD Cloud Build triggers
+  requirements:
     roles:
-    - roles/artifactregistry.admin
-    - roles/binaryauthorization.attestorsAdmin
-    - roles/cloudbuild.builds.builder
-    - roles/cloudbuild.workerPoolOwner
-    - roles/clouddeploy.admin
-    - roles/cloudkms.admin
-    - roles/cloudkms.publicKeyViewer
-    - roles/containeranalysis.notes.editor
-    - roles/compute.networkAdmin
-    - roles/iam.serviceAccountAdmin
-    - roles/iam.serviceAccountUser
-    - roles/pubsub.editor
-    - roles/serviceusage.serviceUsageAdmin
-    - roles/source.admin
-    - roles/storage.admin
-    - roles/resourcemanager.projectIamAdmin
-    - roles/viewer
-  - level: Project
-    roles:
-    - roles/compute.networkAdmin
-    - roles/container.admin
-    - roles/binaryauthorization.policyEditor
-    - roles/resourcemanager.projectIamAdmin
-    - roles/iam.serviceAccountAdmin
-    - roles/serviceusage.serviceUsageViewer
-    - roles/iam.serviceAccountUser
-  services:
-  - cloudresourcemanager.googleapis.com
-  - cloudbilling.googleapis.com
-  - clouddeploy.googleapis.com
-  - storage-api.googleapis.com
-  - serviceusage.googleapis.com
-  - cloudbuild.googleapis.com
-  - containerregistry.googleapis.com
-  - iamcredentials.googleapis.com
-  - secretmanager.googleapis.com
-  - sourcerepo.googleapis.com
-  - artifactregistry.googleapis.com
-  - containeranalysis.googleapis.com
-  - cloudkms.googleapis.com
-  - binaryauthorization.googleapis.com
-  - containerscanning.googleapis.com
-  - servicenetworking.googleapis.com
-  - pubsub.googleapis.com
+    - level: Project
+      roles:
+      - roles/compute.networkAdmin
+      - roles/container.admin
+      - roles/binaryauthorization.policyEditor
+      - roles/resourcemanager.projectIamAdmin
+      - roles/iam.serviceAccountAdmin
+      - roles/serviceusage.serviceUsageViewer
+      - roles/iam.serviceAccountUser
+    - level: Project
+      roles:
+      - roles/artifactregistry.admin
+      - roles/binaryauthorization.attestorsAdmin
+      - roles/cloudbuild.builds.builder
+      - roles/cloudbuild.workerPoolOwner
+      - roles/clouddeploy.admin
+      - roles/cloudkms.admin
+      - roles/cloudkms.publicKeyViewer
+      - roles/containeranalysis.notes.editor
+      - roles/compute.networkAdmin
+      - roles/gkehub.editor
+      - roles/iam.serviceAccountAdmin
+      - roles/iam.serviceAccountUser
+      - roles/pubsub.editor
+      - roles/serviceusage.serviceUsageAdmin
+      - roles/source.admin
+      - roles/storage.admin
+      - roles/resourcemanager.projectIamAdmin
+      - roles/viewer
+    services:
+    - cloudresourcemanager.googleapis.com
+    - cloudbilling.googleapis.com
+    - clouddeploy.googleapis.com
+    - storage-api.googleapis.com
+    - serviceusage.googleapis.com
+    - cloudbuild.googleapis.com
+    - containerregistry.googleapis.com
+    - iamcredentials.googleapis.com
+    - secretmanager.googleapis.com
+    - sourcerepo.googleapis.com
+    - artifactregistry.googleapis.com
+    - containeranalysis.googleapis.com
+    - cloudkms.googleapis.com
+    - binaryauthorization.googleapis.com
+    - containerscanning.googleapis.com
+    - servicenetworking.googleapis.com
+    - pubsub.googleapis.com

@@ -1,0 +1,61 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: blueprints.cloud.google.com/v1alpha1
+kind: BlueprintMetadata
+metadata:
+  name: terraform-google-secure-cicd-display
+spec:
+  info:
+    title: Cloud Build Private Pool Module
+    source:
+      repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
+      sourceType: git
+      dir: cloudbuild-private-pool
+  ui:
+    input:
+      variables:
+        create_cloudbuild_network:
+          name: create_cloudbuild_network
+          title: Create Cloudbuild Network
+        labels:
+          name: labels
+          title: Labels
+        location:
+          name: location
+          title: Location
+        machine_type:
+          name: machine_type
+          title: Machine Type
+        network_project_id:
+          name: network_project_id
+          title: Network Project Id
+        private_pool_vpc_name:
+          name: private_pool_vpc_name
+          title: Private Pool Vpc Name
+        project_id:
+          name: project_id
+          title: Project Id
+        worker_address:
+          name: worker_address
+          title: Worker Address
+        worker_pool_name:
+          name: worker_pool_name
+          title: Worker Pool Name
+        worker_pool_no_external_ip:
+          name: worker_pool_no_external_ip
+          title: Worker Pool No External Ip
+        worker_range_name:
+          name: worker_range_name
+          title: Worker Range Name

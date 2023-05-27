@@ -19,128 +19,126 @@ metadata:
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
-  title: Cloud Build Private Pool Module
-  source:
-    repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
-    sourceType: git
-  version: 0.3.0
-  actuationTool:
-    type: Terraform
-    version: '>= 0.13.0'
-  description: {}
-  examples:
-  - name: app_cicd
-    location: examples/app_cicd
-  - name: cloudbuild_private_pool
-    location: examples/cloudbuild_private_pool
-  - name: private_cluster_cicd
-    location: examples/private_cluster_cicd
-  - name: standalone_single_project
-    location: examples/standalone_single_project
-  variables:
-  - name: create_cloudbuild_network
-    description: 'Whether to create a VPC for the Cloud Build Worker Pool. Set to false if providing an existing VPC name in ''private_pool_vpc_name'' '
-    type: bool
-    required: true
-  - name: labels
-    description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
-    type: map(string)
-    default: {}
-    required: false
-  - name: location
-    description: Region for Cloud Build worker pool
-    type: string
-    default: us-central1
-    required: false
-  - name: machine_type
-    description: Machine type for Cloud Build worker pool
-    type: string
-    default: e2-standard-4
-    required: false
-  - name: network_project_id
-    description: Project ID for Cloud Build network.
-    type: string
-    required: true
-  - name: private_pool_vpc_name
-    description: Set the name of the private pool VPC
-    type: string
-    default: cloudbuild-vpc
-    required: false
-  - name: project_id
-    description: Project ID for Cloud Build Private Worker Pool
-    type: string
-    required: true
-  - name: worker_address
-    description: 'Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix, as it must be /16'
-    type: string
-    default: 10.37.0.0
-    required: false
-  - name: worker_pool_name
-    description: Name of Cloud Build Worker Pool
-    type: string
-    default: cloudbuild-private-worker-pool
-    required: false
-  - name: worker_pool_no_external_ip
-    description: Whether to disable external IP on the Cloud Build Worker Pool
-    type: bool
-    default: false
-    required: false
-  - name: worker_range_name
-    description: Name of Cloud Build Worker IP address range
-    type: string
-    default: worker-pool-range
-    required: false
-  outputs:
-  - name: workerpool_id
-    description: Cloud Build worker pool ID
-  - name: workerpool_network
-    description: Self Link for Cloud Build workerpool VPC network
-  - name: workerpool_range
-    description: IP Address range for Cloud Build worker pool
-  roles:
-  - level: Project
+  info:
+    title: Cloud Build Private Pool Module
+    source:
+      repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
+      sourceType: git
+      dir: cloudbuild-private-pool
+    version: 1.1.1
+    actuationTool:
+      flavor: Terraform
+      version: '>= 0.13.0'
+    description: {}
+  content:
+    examples:
+    - name: app_cicd
+      location: examples/app_cicd
+    - name: cloudbuild_private_pool
+      location: examples/cloudbuild_private_pool
+    - name: private_cluster_cicd
+      location: examples/private_cluster_cicd
+    - name: standalone_single_project
+      location: examples/standalone_single_project
+  interfaces:
+    variables:
+    - name: create_cloudbuild_network
+      description: 'Whether to create a VPC for the Cloud Build Worker Pool. Set to false if providing an existing VPC name in ''private_pool_vpc_name'' '
+      varType: bool
+      required: true
+    - name: labels
+      description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
+      varType: map(string)
+      defaultValue: {}
+    - name: location
+      description: Region for Cloud Build worker pool
+      varType: string
+      defaultValue: us-central1
+    - name: machine_type
+      description: Machine type for Cloud Build worker pool
+      varType: string
+      defaultValue: e2-medium
+    - name: network_project_id
+      description: Project ID for Cloud Build network.
+      varType: string
+      required: true
+    - name: private_pool_vpc_name
+      description: Set the name of the private pool VPC
+      varType: string
+      defaultValue: cloudbuild-vpc
+    - name: project_id
+      description: Project ID for Cloud Build Private Worker Pool
+      varType: string
+      required: true
+    - name: worker_address
+      description: 'Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix, as it must be /16'
+      varType: string
+      defaultValue: 10.37.0.0
+    - name: worker_pool_name
+      description: Name of Cloud Build Worker Pool
+      varType: string
+      defaultValue: cloudbuild-private-worker-pool
+    - name: worker_pool_no_external_ip
+      description: Whether to disable external IP on the Cloud Build Worker Pool
+      varType: bool
+      defaultValue: false
+    - name: worker_range_name
+      description: Name of Cloud Build Worker IP address range
+      varType: string
+      defaultValue: worker-pool-range
+    outputs:
+    - name: workerpool_id
+      description: Cloud Build worker pool ID
+    - name: workerpool_network
+      description: Self Link for Cloud Build workerpool VPC network
+    - name: workerpool_range
+      description: IP Address range for Cloud Build worker pool
+  requirements:
     roles:
-    - roles/artifactregistry.admin
-    - roles/binaryauthorization.attestorsAdmin
-    - roles/cloudbuild.builds.builder
-    - roles/cloudbuild.workerPoolOwner
-    - roles/clouddeploy.admin
-    - roles/cloudkms.admin
-    - roles/cloudkms.publicKeyViewer
-    - roles/containeranalysis.notes.editor
-    - roles/compute.networkAdmin
-    - roles/iam.serviceAccountAdmin
-    - roles/iam.serviceAccountUser
-    - roles/pubsub.editor
-    - roles/serviceusage.serviceUsageAdmin
-    - roles/source.admin
-    - roles/storage.admin
-    - roles/resourcemanager.projectIamAdmin
-    - roles/viewer
-  - level: Project
-    roles:
-    - roles/compute.networkAdmin
-    - roles/container.admin
-    - roles/binaryauthorization.policyEditor
-    - roles/resourcemanager.projectIamAdmin
-    - roles/iam.serviceAccountAdmin
-    - roles/serviceusage.serviceUsageViewer
-    - roles/iam.serviceAccountUser
-  services:
-  - cloudresourcemanager.googleapis.com
-  - cloudbilling.googleapis.com
-  - clouddeploy.googleapis.com
-  - storage-api.googleapis.com
-  - serviceusage.googleapis.com
-  - cloudbuild.googleapis.com
-  - containerregistry.googleapis.com
-  - iamcredentials.googleapis.com
-  - secretmanager.googleapis.com
-  - sourcerepo.googleapis.com
-  - artifactregistry.googleapis.com
-  - containeranalysis.googleapis.com
-  - cloudkms.googleapis.com
-  - binaryauthorization.googleapis.com
-  - containerscanning.googleapis.com
-  - servicenetworking.googleapis.com
-  - pubsub.googleapis.com
+    - level: Project
+      roles:
+      - roles/artifactregistry.admin
+      - roles/binaryauthorization.attestorsAdmin
+      - roles/cloudbuild.builds.builder
+      - roles/cloudbuild.workerPoolOwner
+      - roles/clouddeploy.admin
+      - roles/cloudkms.admin
+      - roles/cloudkms.publicKeyViewer
+      - roles/containeranalysis.notes.editor
+      - roles/compute.networkAdmin
+      - roles/gkehub.editor
+      - roles/iam.serviceAccountAdmin
+      - roles/iam.serviceAccountUser
+      - roles/pubsub.editor
+      - roles/serviceusage.serviceUsageAdmin
+      - roles/source.admin
+      - roles/storage.admin
+      - roles/resourcemanager.projectIamAdmin
+      - roles/viewer
+    - level: Project
+      roles:
+      - roles/compute.networkAdmin
+      - roles/container.admin
+      - roles/binaryauthorization.policyEditor
+      - roles/resourcemanager.projectIamAdmin
+      - roles/iam.serviceAccountAdmin
+      - roles/serviceusage.serviceUsageViewer
+      - roles/iam.serviceAccountUser
+    services:
+    - cloudresourcemanager.googleapis.com
+    - cloudbilling.googleapis.com
+    - clouddeploy.googleapis.com
+    - storage-api.googleapis.com
+    - serviceusage.googleapis.com
+    - cloudbuild.googleapis.com
+    - containerregistry.googleapis.com
+    - iamcredentials.googleapis.com
+    - secretmanager.googleapis.com
+    - sourcerepo.googleapis.com
+    - artifactregistry.googleapis.com
+    - containeranalysis.googleapis.com
+    - cloudkms.googleapis.com
+    - binaryauthorization.googleapis.com
+    - containerscanning.googleapis.com
+    - servicenetworking.googleapis.com
+    - pubsub.googleapis.com
