@@ -117,25 +117,32 @@ the resources of this blueprint:
 
 - Project level:
   - CI/CD project
-      - `roles/storage.admin`
-      - `roles/artifactregistry.admin`
-      - `roles/binaryauthorization.attestorsAdmin`
-      - `roles/cloudbuild.builds.builder`
-      - `roles/cloudbuild.workerPoolOwner`
-      - `roles/cloudkms.admin`
-      - `roles/cloudkms.publicKeyViewer`
-      - `roles/containeranalysis.notes.editor`
-      - `roles/compute.networkAdmin`
-      - `roles/serviceusage.serviceUsageAdmin`
-      - `roles/source.admin`
-      - `roles/resourcemanager.projectIamAdmin`
-      - `roles/viewer`
+    - `roles/artifactregistry.admin`
+    - `roles/binaryauthorization.attestorsAdmin`
+    - `roles/cloudbuild.builds.builder`
+    - `roles/cloudbuild.workerPoolOwner`
+    - `roles/clouddeploy.admin`
+    - `roles/cloudkms.admin`
+    - `roles/cloudkms.publicKeyViewer`
+    - `roles/containeranalysis.notes.editor`
+    - `roles/compute.networkAdmin`
+    - `roles/gkehub.editor`
+    - `roles/iam.serviceAccountAdmin`
+    - `roles/iam.serviceAccountUser`
+    - `roles/pubsub.editor`
+    - `roles/serviceusage.serviceUsageAdmin`
+    - `roles/source.admin`
+    - `roles/storage.admin`
+    - `roles/resourcemanager.projectIamAdmin`
+    - `roles/viewer`
   - GKE projects
-      - `roles/compute.networkAdmin`
-      - `roles/binaryauthorization.policyEditor`
-      - `roles/resourcemanager.projectIamAdmin`
-      - `roles/serviceusage.serviceUsageViewer`
-      - `roles/iam.serviceAccountUser`
+    - `roles/compute.networkAdmin`
+    - `roles/container.admin`
+    - `roles/binaryauthorization.policyEditor`
+    - `roles/resourcemanager.projectIamAdmin`
+    - `roles/iam.serviceAccountAdmin`
+    - `roles/serviceusage.serviceUsageViewer`
+    - `roles/iam.serviceAccountUser`
 
 The [Project Factory module][project-factory-module] and the
 [IAM module][iam-module] may be used in combination to provision a
