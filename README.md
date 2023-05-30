@@ -122,6 +122,7 @@ the resources of this blueprint:
       - `roles/binaryauthorization.attestorsAdmin`
       - `roles/cloudbuild.builds.builder`
       - `roles/cloudbuild.workerPoolOwner`
+      - `roles/clouddeploy.releaser`
       - `roles/cloudkms.admin`
       - `roles/cloudkms.publicKeyViewer`
       - `roles/containeranalysis.notes.editor`
