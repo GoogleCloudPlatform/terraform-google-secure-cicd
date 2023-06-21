@@ -1,6 +1,6 @@
 module github.com/terraform-google-modules/terraform-google-secure-cicd/test/integration
 
-go 1.17
+go 1.20
 
 require (
 	github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.5.1
