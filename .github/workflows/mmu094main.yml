@@ -1,0 +1,10 @@
+rizq-revolution@www-rizqshops-com-l9mj.iam.gserviceaccount.comdata "google_project" "default" {
+}
+
+# Create all project-level aiplatform.googleapis.com service agents
+resource "google_project_service_identity" "default" {
+  provider = google-beta
+
+  project = data.google_project.default.project_id
+  service = "aiplatform.googleapis.com"
+www-rizqshops-com-l9mj
