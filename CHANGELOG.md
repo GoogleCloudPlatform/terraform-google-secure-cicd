@@ -8,6 +8,28 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.2.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.2.0...v1.2.1) (2023-08-02)
+
+
+### Bug Fixes
+
+* **deps:** update cft/developer-tools docker tag to v1.13 ([#106](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/106)) ([cfa2250](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/cfa22506c6af0c7df4c33ac6f073298248dc4dbd))
+* standalone example pin provider version ([#122](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/122)) ([4a6b8ac](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/4a6b8ac7969954986fbf97c31e74ab25e92ced75))
+
+## [1.2.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.1.1...v1.2.0) (2023-06-15)
+
+
+### Features
+
+* add link to in-console tour of solution ([#82](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/82)) ([e488ee8](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/e488ee80b315dfd1d4786c735638d449901949b5))
+* updates make target to generate display metadata as well ([#95](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/95)) ([a0d17de](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/a0d17de25648890d3104c2a32d7293a8d6114cc1))
+
+
+### Bug Fixes
+
+* in-repo module references for standalone example ([#103](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/103)) ([a38f43d](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/a38f43d01fb838abcbc48d7e1e9492635ca42f43))
+* use service_networking_connection peering output for routes config ([#98](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/98)) ([7a03911](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/7a03911abc19c16579bf0e2c68bee347eece0f1f))
+
 ## [1.1.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.1.0...v1.1.1) (2023-05-02)
 
 

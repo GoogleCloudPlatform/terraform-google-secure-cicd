@@ -12,18 +12,17 @@ Set up a secure CI/CD pipeline that follows best practices for building, scannin
 You can choose whether to deploy your solution through the console directly or download as Terraform from GitHub to deploy later.
 
 ### Architecture
-1. A developer pushes code for a container-based application to the App Source Code repository in Cloud Source Repositories. This repository must include a skaffold.yaml configuration file, a cloudbuild-ci.yaml configuration file, and templated Kubernetes manifests for the respective Kubernetes deployments, services and other objects.
-1. Changes to the App Source Code repo will trigger a build of the containers as defined in the skaffold.yaml configuration.
-1. Metadata about the built containers is stored in the build artifacts Cloud Storage bucket.
-1. The resulting built containers will be scanned for container structure and CVE’s based on a customer-configurable security policy and stored in an Artifact Registry repository.
-1. Upon passing all scans, the containers are signed by the Binary Authorization build attestor.
-1. At the end of the build process, the pipeline creates a new Cloud Deploy release to rollout the newly built container images to the Dev environment.
-1. After successful deployment, the Cloud Deploy operations Pub/Sub topic receives a confirmation message that triggers the post-deployment checks on the live application via Cloud Build.
-1. Upon passing the post-deployment application security tests, the containers are signed by the security attestor.
-1. The Cloud Deploy release is promoted, triggering a rollout to the QA environment. Steps 7-8 repeat, but the containers receive the quality attestor after passing through the QA environment.
-1. The release is promoted for the final time, creating a rollout to the Prod environment.
-1. The GKE clusters validate deployed containers based on the respective Binary Authorization policy, requiring additional attestors from the pipeline at each higher environment.
-1. All Cloud Build and Cloud Deploy processes will run in a private Cloud Build worker pool hosted in a customer-managed VPC.
+1. A developer pushes new code or a code change for a container-based application to Cloud Source Repositories.
+1. The code push invokes a Cloud Build trigger. The Cloud Build trigger starts a build in a Cloud Build private worker pool that's hosted in a customer-managed VPC. The outputs of the build are metadata files, Cloud Build logs, and containers.
+1. The metadata files and the Cloud Build logs are stored in a Cloud Storage bucket.
+1. The pipeline runs security scans (which you configure) and validates the container structure. When the scans and structure pass, the containers are stored in Artifact Registry.
+1. The Cloud Build trigger requests an attestation from Binary Authorization that certifies that the required scans passed. The attestation is stored as a cryptographic signature in Binary Authorization.
+1. The Cloud Build trigger starts a Cloud Deploy release to roll out the containers to the three environments: developer (Dev), QA, and production (Prod). Each environment is one Kubernetes cluster in its own subnet. All three clusters and subnets are in the same GKE VPC. The last cluster is the production environment.
+1. As the rollout starts, Cloud Deploy sends the containers to the developer environment. Google Kubernetes Engine (GKE) uses the policy that's defined for the cluster to check the containers’ build attestation in Binary Authorization. When this check passes, GKE deploys the containers into the Kubernetes cluster.
+1. When Cloud Deploy releases the containers to the developer environment, Cloud Deploy sends a Pub/Sub message that starts the second Cloud Build trigger. This Cloud Build trigger runs post-deployment tests (which you configure) in the developer environment. To run these tests, Cloud Build worker pools communicate with the clusters using Connect Gateway.
+1. When the post-deployment checks succeed, the Cloud Build trigger requests an attestation from Binary Authorization. The attestation certifies that the required tests from the developer environment passed.
+1. Cloud Deploy promotes the release to the second Kubernetes cluster for the QA environment. Steps 7 to 9 run again with some differences: GKE checks for the two attestations before deploying, and after the tests pass, the quality attestation is created.
+1. Cloud Deploy promotes the release to the production environment, which is the third Kubernetes cluster. GKE uses a policy to check for all three attestations in Binary Authorization. When this check passes, GKE deploys the containers in the Kubernetes cluster for the production environment.
 
 ## Documentation
 - [Architecture Diagram](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/assets/secure_cicd_pipeline_v2.svg)
