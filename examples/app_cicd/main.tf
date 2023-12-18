@@ -19,7 +19,9 @@ locals {
 }
 
 module "ci_pipeline" {
-  source                    = "../../modules/secure-ci"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-ci"
+  version = "~> 1.0"
+
   project_id                = var.project_id
   app_source_repo           = "app-source"
   cloudbuild_cd_repo        = "cloudbuild-cd-config"
@@ -35,7 +37,9 @@ module "ci_pipeline" {
 }
 
 module "cd_pipeline" {
-  source           = "../../modules/secure-cd"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
+  version = "~> 1.0"
+
   project_id       = var.project_id
   primary_location = var.primary_location
 
