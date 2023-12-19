@@ -15,7 +15,8 @@
  */
 
 module "cloudbuild_private_pool" {
-  source = "../../modules/cloudbuild-private-pool"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/cloudbuild-private-pool"
+  version = "~> 1.0"
 
   project_id                = var.project_id
   network_project_id        = var.project_id
@@ -56,7 +57,8 @@ locals {
 module "gke_cloudbuild_vpn" {
   for_each = local.gke_networks
 
-  source = "../../modules/workerpool-gke-ha-vpn"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/workerpool-gke-ha-vpn"
+  version = "~> 1.0"
 
   project_id = var.project_id
   location   = "us-central1"
