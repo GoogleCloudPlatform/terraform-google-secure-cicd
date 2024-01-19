@@ -115,6 +115,28 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage destroy --verbose']
 
+# standalone_multi_project
+- id: go-init-standalone-multi-proj-example
+  waitFor:
+    - init-all
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneMultiProjectExample --stage init --verbose']
+- id: go-apply-standalone-multi-proj-example
+  waitFor:
+    - go-init-standalone-multi-proj-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneMultiProjectExample --stage apply --verbose']
+- id: go-verify-standalone-multi-proj-example
+  waitFor:
+    - go-apply-standalone-multi-proj-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneMultiProjectExample --stage verify --verbose']
+- id: go-destroy-standalone-multi-proj-example
+  waitFor:
+    - go-verify-standalone-multi-proj-example
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestStandaloneMultiProjectExample --stage destroy --verbose']
+
 tags:
 - 'ci'
 - 'integration'

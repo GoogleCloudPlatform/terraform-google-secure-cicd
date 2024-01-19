@@ -73,3 +73,16 @@ output "gke_private_cluster_names" {
   description = "List of GKE private clusters"
   value       = zipmap(local.envs, [for env in local.envs : module.gke_private_cluster[env].name])
 }
+
+/**
+ * Standalone multiproject
+ */
+
+output "project_id_standalone_multi" {
+  value = module.project_standalone_multi.project_id
+}
+
+output "gke_project_ids_standalone_multi" {
+  description = "List of GKE project IDs for standalone multi project"
+  value = [for env in local.envs : module.project_standalone_multi_gke[env].project_id]
+}

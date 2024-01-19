@@ -72,10 +72,12 @@ module "gke_cluster" {
 
   node_pools = [
     {
-      name                 = "default-node-pool"
-      location_policy      = "BALANCED"
-      enable_secure_boot   = true
-      total_max_node_count = 2
+      name               = "default-node-pool"
+      location_policy    = "BALANCED"
+      enable_secure_boot = true
+      initial_node_count = 2
+      min_node_count     = 2
+      max_node_count     = 3
     }
   ]
 
