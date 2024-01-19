@@ -84,5 +84,5 @@ output "project_id_standalone_multi" {
 
 output "gke_project_ids_standalone_multi" {
   description = "List of GKE project IDs for standalone multi project"
-  value = [for env in local.envs : module.project_standalone_multi_gke[env].project_id]
+  value       = [for env in local.envs : module.project_standalone_multi_gke[env].project_id]
 }

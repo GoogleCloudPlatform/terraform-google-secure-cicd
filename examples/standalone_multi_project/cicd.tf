@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- locals {
+locals {
   deploy_branch_clusters = {
     "01-${var.env1_name}" = {
       cluster               = module.gke_cluster[var.env1_name].name,

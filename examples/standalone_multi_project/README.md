@@ -18,7 +18,6 @@ This example also creates GKE clusters and accompanying VPC networks for sample 
 | env3\_name | Name of environment 3 | `string` | `"prod"` | no |
 | env3\_project\_id | Environment 3 project ID | `string` | n/a | yes |
 | labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
-| management\_name | Name of management environment | `string` | `"mgmt"` | no |
 | management\_project\_id | Management project ID | `string` | n/a | yes |
 | region | Location in which all regional resources will be deployed | `string` | `"us-central1"` | no |
 

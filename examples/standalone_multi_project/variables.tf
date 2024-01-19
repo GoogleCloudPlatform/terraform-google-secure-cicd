@@ -26,12 +26,6 @@ variable "app_name" {
   default     = "my-app"
 }
 
-variable "management_name" {
-  type        = string
-  description = "Name of management environment"
-  default     = "mgmt"
-}
-
 variable "env1_name" {
   type        = string
   description = "Name of environment 1"
