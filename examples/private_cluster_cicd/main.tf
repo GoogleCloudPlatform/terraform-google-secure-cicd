@@ -20,7 +20,9 @@ locals {
 
 # Secure-CI
 module "ci_pipeline" {
-  source                    = "../../modules/secure-ci"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-ci"
+  version = "~> 1.0"
+
   project_id                = var.project_id
   app_source_repo           = "app-source-pc"
   cloudbuild_cd_repo        = "cloudbuild-cd-config-pc"
@@ -38,7 +40,9 @@ module "ci_pipeline" {
 
 # Secure-CD
 module "cd_pipeline" {
-  source           = "../../modules/secure-cd"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
+  version = "~> 1.0"
+
   project_id       = var.project_id
   primary_location = "us-central1"
 
@@ -57,7 +61,8 @@ module "cd_pipeline" {
 
 # Cloud Build Private Pool
 module "cloudbuild_private_pool" {
-  source = "../../modules/cloudbuild-private-pool"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/cloudbuild-private-pool"
+  version = "~> 1.0"
 
   project_id                = var.project_id
   network_project_id        = var.project_id
@@ -101,7 +106,8 @@ locals {
 module "gke_cloudbuild_vpn" {
   for_each = local.gke_networks
 
-  source = "../../modules/workerpool-gke-ha-vpn"
+  source  = "GoogleCloudPlatform/secure-cicd/google//modules/workerpool-gke-ha-vpn"
+  version = "~> 1.0"
 
   project_id = var.project_id
   location   = "us-central1"
