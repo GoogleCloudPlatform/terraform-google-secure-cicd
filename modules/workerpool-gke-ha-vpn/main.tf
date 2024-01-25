@@ -17,7 +17,7 @@
 # HA VPN
 module "vpn_ha_1" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
-  version    = "~> 2.3.0"
+  version    = "~> 2.3.0, != 2.3.2"
   project_id = var.project_id
   labels     = var.labels
   region     = var.location
@@ -62,7 +62,7 @@ module "vpn_ha_1" {
 
 module "vpn_ha_2" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
-  version    = "~> 2.3.0"
+  version    = "~> 2.3.0, != 2.3.2"
   project_id = var.gke_project
   labels     = var.labels
   region     = var.gke_location
