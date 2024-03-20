@@ -57,8 +57,7 @@ locals {
 module "gke_cloudbuild_vpn" {
   for_each = local.gke_networks
 
-  source  = "GoogleCloudPlatform/secure-cicd/google//modules/workerpool-gke-ha-vpn"
-  version = "~> 1.0"
+  source = "../../modules/workerpool-gke-ha-vpn"
 
   project_id = var.project_id
   location   = "us-central1"

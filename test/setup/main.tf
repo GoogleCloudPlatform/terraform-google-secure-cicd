@@ -301,3 +301,88 @@ module "project_standalone" {
     },
   ]
 }
+
+# Multi Project example
+module "project_standalone_multi" {
+  source  = "terraform-google-modules/project-factory/google"
+  version = "~> 14.0"
+
+  name                    = "secure-cicd-mul-mgmt"
+  random_project_id       = "true"
+  org_id                  = var.org_id
+  folder_id               = var.folder_id
+  billing_account         = var.billing_account
+  default_service_account = "keep"
+
+  activate_apis = [
+    "cloudresourcemanager.googleapis.com",
+    "cloudbilling.googleapis.com",
+    "clouddeploy.googleapis.com",
+    "storage-api.googleapis.com",
+    "serviceusage.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "containeranalysis.googleapis.com",
+    "cloudkms.googleapis.com",
+    "binaryauthorization.googleapis.com",
+    "containerscanning.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "pubsub.googleapis.com",
+    "container.googleapis.com",
+    "cloudtrace.googleapis.com",
+    "monitoring.googleapis.com",
+    "logging.googleapis.com",
+    "compute.googleapis.com",
+    "gkehub.googleapis.com",
+    "connectgateway.googleapis.com",
+  ]
+  activate_api_identities = [
+    {
+      api = "cloudbuild.googleapis.com"
+      roles = [
+        "roles/storage.admin",
+        "roles/artifactregistry.admin",
+        "roles/cloudbuild.builds.builder",
+        "roles/binaryauthorization.attestorsVerifier",
+        "roles/cloudkms.cryptoOperator",
+        "roles/containeranalysis.notes.attacher",
+        "roles/containeranalysis.notes.occurrences.viewer",
+        "roles/source.writer",
+      ]
+    },
+  ]
+}
+
+module "project_standalone_multi_gke" {
+  for_each = toset(local.envs)
+  source   = "terraform-google-modules/project-factory/google"
+  version  = "~> 14.0"
+
+  name                    = "secure-cicd-gke-mul-${each.value}"
+  random_project_id       = "true"
+  org_id                  = var.org_id
+  folder_id               = var.folder_id
+  billing_account         = var.billing_account
+  default_service_account = "keep"
+
+  activate_apis = [
+    "cloudresourcemanager.googleapis.com",
+    "cloudbilling.googleapis.com",
+    "storage-api.googleapis.com",
+    "serviceusage.googleapis.com",
+    "containerregistry.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "secretmanager.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "containeranalysis.googleapis.com",
+    "cloudkms.googleapis.com",
+    "binaryauthorization.googleapis.com",
+    "containerscanning.googleapis.com",
+    "container.googleapis.com",
+    "cloudtrace.googleapis.com",
+    "monitoring.googleapis.com",
+    "logging.googleapis.com"
+  ]
+}

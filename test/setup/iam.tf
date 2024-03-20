@@ -53,6 +53,15 @@ locals {
       }
     ]
   ])
+  gke_multiproj_role_mapping = flatten([
+    for env in local.envs : [
+      for role in local.gke_int_required_roles : {
+        project = module.project_standalone_multi_gke[env].project_id
+        role    = role
+        env     = env
+      }
+    ]
+  ])
 }
 
 resource "google_service_account" "int_test" {
@@ -99,5 +108,25 @@ resource "google_project_iam_member" "gke_int_test_singleproj" {
 
   project = module.project_standalone.project_id
   role    = each.value
+  member  = "serviceAccount:${google_service_account.int_test.email}"
+}
+
+# SA permissions on standalone multi project example, CI/CD (main) project
+resource "google_project_iam_member" "int_test_multiproj" {
+  for_each = toset(local.int_required_roles)
+
+  project = module.project_standalone_multi.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.int_test.email}"
+}
+
+# SA permissions on standalone multi project example, GKE projects
+resource "google_project_iam_member" "gke_int_test_multiproj" {
+  for_each = {
+    for mapping in local.gke_multiproj_role_mapping : "${mapping.env}.${mapping.role}" => mapping
+  }
+
+  project = each.value.project
+  role    = each.value.role
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }
