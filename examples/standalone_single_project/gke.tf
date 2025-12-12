@@ -39,7 +39,7 @@ resource "random_shuffle" "available_zones" {
 module "gke_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version  = "~> 25.0"
+  version  = "~> 42.0"
 
   project_id                  = var.project_id
   name                        = "${var.app_name}-cluster-${each.value}"
@@ -99,7 +99,7 @@ module "gke_cluster" {
 module "fleet_membership" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/fleet-membership"
-  version  = "~> 25.0.0"
+  version  = "~> 42.0.0"
 
   membership_name = "${module.gke_cluster[each.value].name}-membership"
   project_id      = var.project_id
