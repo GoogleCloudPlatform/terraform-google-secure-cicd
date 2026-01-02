@@ -99,7 +99,7 @@ steps:
       if [ -n "${_ATTESTOR_NAME}" ]; then
         gcloud config set project ${PROJECT_ID}
 
-        gsutil cp gs://$_CACHE_BUCKET_NAME/artifacts/build-artifacts-notag.json /artifacts/build-artifacts-notag.json
+        gcloud storage cp gs://$_CACHE_BUCKET_NAME/artifacts/build-artifacts-notag.json /artifacts/build-artifacts-notag.json
         IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
 
         # Public Key for attestor
