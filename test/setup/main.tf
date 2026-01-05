@@ -108,7 +108,7 @@ module "gke_project" {
 module "vpc" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/network/google"
-  version  = "~> 7.0"
+  version  = "~> 13.0"
 
   project_id   = module.gke_project[each.value].project_id
   network_name = "gke-vpc-${each.key}"
@@ -168,7 +168,7 @@ module "gke_cluster" {
 module "vpc_private_cluster" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/network/google"
-  version  = "~> 7.0"
+  version  = "~> 13.0"
 
   project_id   = module.gke_project[each.value].project_id
   network_name = "gke-private-vpc-${each.value}"
