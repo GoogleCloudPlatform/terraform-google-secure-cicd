@@ -24,7 +24,7 @@ WORKDIR /go/src/app
 RUN make out/signer
 RUN cp out/signer /signer
 
-FROM alpine:3.18
+FROM alpine:3.23
 
 ### 1. Get Java via the package manager
 RUN apk update \
