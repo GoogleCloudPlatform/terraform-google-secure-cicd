@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.2.2](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.2.1...v1.2.2) (2026-02-24)
+
+
+### Bug Fixes
+
+* **deps:** update cft/developer-tools docker tag to v1.14 ([#120](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/120)) ([5953b6d](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/5953b6d0a54d95363a9a854d96763472b51752ba))
+
 ## [1.2.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.2.0...v1.2.1) (2023-08-02)
 
 
