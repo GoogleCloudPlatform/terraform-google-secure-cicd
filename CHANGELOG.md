@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.2.2](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.2.1...v1.2.2) (2026-05-11)
+
+
+### Bug Fixes
+
+* restrict vpn_ha version to not pick up 2.3.2 ([94e4334](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/94e433408b37b6713ca65a9b8c81b775c5e5b161))
+
 ## [1.2.1](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.2.0...v1.2.1) (2023-08-02)
 
 
