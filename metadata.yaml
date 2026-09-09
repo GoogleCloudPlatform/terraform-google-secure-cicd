@@ -27,89 +27,115 @@ spec:
     description:
       tagline: Create a CI/CD pipeline that follows security best practices.
       detailed: |-
-        Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE.
+        Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE, Anthos, or Cloud Run.
         You can choose whether to deploy your solution through the console directly or download as Terraform from GitHub to deploy later.
       architecture:
-      - A developer pushes new code or a code change for a container-based application to Cloud Source Repositories.
-      - The code push invokes a Cloud Build trigger. The Cloud Build trigger starts a build in a Cloud Build private worker pool that's hosted in a customer-managed VPC. The outputs of the build are metadata files, Cloud Build logs, and containers.
-      - The metadata files and the Cloud Build logs are stored in a Cloud Storage bucket.
-      - The pipeline runs security scans (which you configure) and validates the container structure. When the scans and structure pass, the containers are stored in Artifact Registry.
-      - The Cloud Build trigger requests an attestation from Binary Authorization that certifies that the required scans passed. The attestation is stored as a cryptographic signature in Binary Authorization.
-      - "The Cloud Build trigger starts a Cloud Deploy release to roll out the containers to the three environments: developer (Dev), QA, and production (Prod). Each environment is one Kubernetes cluster in its own subnet. All three clusters and subnets are in the same GKE VPC. The last cluster is the production environment."
-      - As the rollout starts, Cloud Deploy sends the containers to the developer environment. Google Kubernetes Engine (GKE) uses the policy that's defined for the cluster to check the containers’ build attestation in Binary Authorization. When this check passes, GKE deploys the containers into the Kubernetes cluster.
-      - When Cloud Deploy releases the containers to the developer environment, Cloud Deploy sends a Pub/Sub message that starts the second Cloud Build trigger. This Cloud Build trigger runs post-deployment tests (which you configure) in the developer environment. To run these tests, Cloud Build worker pools communicate with the clusters using Connect Gateway.
-      - When the post-deployment checks succeed, the Cloud Build trigger requests an attestation from Binary Authorization. The attestation certifies that the required tests from the developer environment passed.
-      - "Cloud Deploy promotes the release to the second Kubernetes cluster for the QA environment. Steps 7 to 9 run again with some differences: GKE checks for the two attestations before deploying, and after the tests pass, the quality attestation is created."
-      - Cloud Deploy promotes the release to the production environment, which is the third Kubernetes cluster. GKE uses a policy to check for all three attestations in Binary Authorization. When this check passes, GKE deploys the containers in the Kubernetes cluster for the production environment.
+        - A developer pushes new code or a code change for a container-based application to a Source Repository (Cloud Source Repositories, GitHub, or GitLab).
+        - The code push invokes a Cloud Build trigger. The Cloud Build trigger starts a build in a Cloud Build private worker pool that's hosted in a customer-managed VPC. The outputs of the build are metadata files, Cloud Build logs, and containers.
+        - The metadata files and the Cloud Build logs are stored in a Cloud Storage bucket.
+        - The pipeline runs security scans (which you configure) and validates the container structure. When the scans and structure pass, the containers are stored in Artifact Registry.
+        - The Cloud Build trigger requests an attestation from Binary Authorization that certifies that the required scans passed. The attestation is stored as a cryptographic signature in Binary Authorization.
+        - "The Cloud Build trigger starts a Cloud Deploy release to roll out the containers to the three environments: developer (Dev), QA, and production (Prod). Each environment is one Kubernetes cluster in its own subnet. All three clusters and subnets are in the same GKE VPC. The last cluster is the production environment."
+        - As the rollout starts, Cloud Deploy sends the containers to the developer environment. Google Kubernetes Engine (GKE) uses the policy that's defined for the cluster to check the containers’ build attestation in Binary Authorization. When this check passes, GKE deploys the containers into the Kubernetes cluster.
+        - When Cloud Deploy releases the containers to the developer environment, Cloud Deploy sends a Pub/Sub message that starts the second Cloud Build trigger. This Cloud Build trigger runs post-deployment tests (which you configure) in the developer environment. To run these tests, Cloud Build worker pools communicate with the clusters using Connect Gateway.
+        - When the post-deployment checks succeed, the Cloud Build trigger requests an attestation from Binary Authorization. The attestation certifies that the required tests from the developer environment passed.
+        - "Cloud Deploy promotes the release to the second Kubernetes cluster for the QA environment. Steps 7 to 9 run again with some differences: GKE checks for the two attestations before deploying, and after the tests pass, the quality attestation is created."
+        - Cloud Deploy promotes the release to the production environment, which is the third Kubernetes cluster. GKE uses a policy to check for all three attestations in Binary Authorization. When this check passes, GKE deploys the containers in the Kubernetes cluster for the production environment.
   content:
     documentation:
-    - title: Architecture Diagram
-      url: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/assets/secure_cicd_pipeline_v2.svg
+      - title: Architecture Diagram
+        url: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/assets/secure_cicd_pipeline_v2.svg
     subBlueprints:
-    - name: cloudbuild-private-pool
-      location: modules/cloudbuild-private-pool
-    - name: secure-cd
-      location: modules/secure-cd
-    - name: secure-ci
-      location: modules/secure-ci
-    - name: workerpool-gke-ha-vpn
-      location: modules/workerpool-gke-ha-vpn
+      - name: attestor
+        location: modules/attestor
+      - name: cloudbuild-private-pool
+        location: modules/cloudbuild-private-pool
+      - name: secure-cd
+        location: modules/secure-cd
+      - name: secure-ci
+        location: modules/secure-ci
+      - name: workerpool-gke-ha-vpn
+        location: modules/workerpool-gke-ha-vpn
     examples:
-    - name: app_cicd
-      location: examples/app_cicd
-    - name: cloudbuild_private_pool
-      location: examples/cloudbuild_private_pool
-    - name: private_cluster_cicd
-      location: examples/private_cluster_cicd
-    - name: standalone_single_project
-      location: examples/standalone_single_project
+      - name: standalone_single_project
+        location: examples/standalone_single_project
   interfaces: {}
   requirements:
     roles:
-    - level: Project
-      roles:
-      - roles/artifactregistry.admin
-      - roles/binaryauthorization.attestorsAdmin
-      - roles/cloudbuild.builds.builder
-      - roles/cloudbuild.workerPoolOwner
-      - roles/clouddeploy.admin
-      - roles/cloudkms.admin
-      - roles/cloudkms.publicKeyViewer
-      - roles/containeranalysis.notes.editor
-      - roles/compute.networkAdmin
-      - roles/gkehub.editor
-      - roles/iam.serviceAccountAdmin
-      - roles/iam.serviceAccountUser
-      - roles/pubsub.editor
-      - roles/serviceusage.serviceUsageAdmin
-      - roles/source.admin
-      - roles/storage.admin
-      - roles/resourcemanager.projectIamAdmin
-      - roles/viewer
-    - level: Project
-      roles:
-      - roles/compute.networkAdmin
-      - roles/container.admin
-      - roles/binaryauthorization.policyEditor
-      - roles/resourcemanager.projectIamAdmin
-      - roles/iam.serviceAccountAdmin
-      - roles/serviceusage.serviceUsageViewer
-      - roles/iam.serviceAccountUser
+      - level: Project
+        roles:
+          - roles/compute.networkAdmin
+          - roles/container.admin
+          - roles/binaryauthorization.policyEditor
+          - roles/resourcemanager.projectIamAdmin
+          - roles/iam.serviceAccountAdmin
+          - roles/serviceusage.serviceUsageViewer
+          - roles/iam.serviceAccountUser
+      - level: Project
+        roles:
+          - roles/artifactregistry.admin
+          - roles/binaryauthorization.attestorsAdmin
+          - roles/cloudbuild.builds.builder
+          - roles/cloudbuild.workerPoolOwner
+          - roles/cloudbuild.admin
+          - roles/clouddeploy.admin
+          - roles/cloudkms.admin
+          - roles/cloudkms.publicKeyViewer
+          - roles/containeranalysis.notes.editor
+          - roles/compute.admin
+          - roles/compute.networkAdmin
+          - roles/compute.securityAdmin
+          - roles/gkehub.editor
+          - roles/iam.serviceAccountAdmin
+          - roles/iam.serviceAccountUser
+          - roles/pubsub.editor
+          - roles/serviceusage.serviceUsageAdmin
+          - roles/source.admin
+          - roles/storage.admin
+          - roles/resourcemanager.projectIamAdmin
+          - roles/viewer
+          - roles/secretmanager.admin
+          - roles/servicedirectory.admin
+          - roles/dns.admin
     services:
-    - cloudresourcemanager.googleapis.com
-    - cloudbilling.googleapis.com
-    - clouddeploy.googleapis.com
-    - storage-api.googleapis.com
-    - serviceusage.googleapis.com
-    - cloudbuild.googleapis.com
-    - containerregistry.googleapis.com
-    - iamcredentials.googleapis.com
-    - secretmanager.googleapis.com
-    - sourcerepo.googleapis.com
-    - artifactregistry.googleapis.com
-    - containeranalysis.googleapis.com
-    - cloudkms.googleapis.com
-    - binaryauthorization.googleapis.com
-    - containerscanning.googleapis.com
-    - servicenetworking.googleapis.com
-    - pubsub.googleapis.com
+      - accesscontextmanager.googleapis.com
+      - aiplatform.googleapis.com
+      - anthos.googleapis.com
+      - anthosconfigmanagement.googleapis.com
+      - anthospolicycontroller.googleapis.com
+      - apikeys.googleapis.com
+      - artifactregistry.googleapis.com
+      - binaryauthorization.googleapis.com
+      - certificatemanager.googleapis.com
+      - cloudbilling.googleapis.com
+      - cloudbuild.googleapis.com
+      - clouddeploy.googleapis.com
+      - cloudfunctions.googleapis.com
+      - cloudkms.googleapis.com
+      - cloudresourcemanager.googleapis.com
+      - cloudtrace.googleapis.com
+      - compute.googleapis.com
+      - container.googleapis.com
+      - containeranalysis.googleapis.com
+      - containerscanning.googleapis.com
+      - gkehub.googleapis.com
+      - iam.googleapis.com
+      - iap.googleapis.com
+      - mesh.googleapis.com
+      - modelarmor.googleapis.com
+      - monitoring.googleapis.com
+      - multiclusteringress.googleapis.com
+      - multiclusterservicediscovery.googleapis.com
+      - networkmanagement.googleapis.com
+      - networkservices.googleapis.com
+      - notebooks.googleapis.com
+      - orgpolicy.googleapis.com
+      - secretmanager.googleapis.com
+      - servicedirectory.googleapis.com
+      - servicemanagement.googleapis.com
+      - servicenetworking.googleapis.com
+      - serviceusage.googleapis.com
+      - sourcerepo.googleapis.com
+      - sqladmin.googleapis.com
+      - storage.googleapis.com
+      - trafficdirector.googleapis.com

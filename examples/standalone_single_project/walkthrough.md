@@ -14,10 +14,11 @@
 ## Introduction
 Learn how to use your newly-deployed secure CI/CD pipeline to build and deploy containers to private GKE clusters. This tutorial describes how to do the following:
 
-1. Build a container image on which to run your Cloud Build pipeline
-1. Upload Cloud Build configuration files to define the build pipeline actions
-1. Push code from the Bank of Anthos demo application to your Cloud Source Repository to trigger an application build
-1. View the deployed demo application
+1. Configure your Terraform variables for your chosen repository provider
+2. Build a container image on which to run your Cloud Build pipeline
+3. Upload Cloud Build configuration files to define the build pipeline actions
+4. Push code from the Bank of Anthos demo application to your chosen repository to trigger an application build
+5. View the deployed demo application
 
 Estimated time to complete:
 <walkthrough-tutorial-duration duration="25"></walkthrough-tutorial-duration>
@@ -25,14 +26,17 @@ Estimated time to complete:
 To get started, click **Start**.
 
 ## Set environment variables
-1. Set your active project by running the command below, replcing `your-project-id` with the project ID where you deployed the Secure CI/CD solution:
-    ```
+1. Set your active project by running the command below, replacing `your-project-id` with the project ID where you deployed the Secure CI/CD solution:
+    ```bash
     gcloud config set project your-project-id
     ```
 1. Set the following environment variables. If you chose custom values when deploying the solution, replace the default values below with the values you chose.
-    ```
+    ```bash
     export REGION=us-central1
-    export APP_NAME=my-app
+    export APP_NAME=ci-cd
+
+    # Set this to "CSR", "GITHUB", or "GITLAB" depending on how you deployed the blueprint
+    export REPOSITORY_TYPE="CSR"
     ```
 1. Run the following commands to set additional variables for the tutorial. If you set the above values correctly, you can run this entire block without modifying it.
     ```bash
@@ -47,22 +51,30 @@ To get started, click **Start**.
 
 Click **Next**.
 
-## Create builder image
-Your Cloud Shell Terminal should already be opened to the correct directory. If not, click this button to open Cloud Shell:
-<walkthrough-open-cloud-shell-button></walkthrough-open-cloud-shell-button>
+## Configure Terraform Variables
+Before deploying the infrastructure, you must configure the `terraform.tfvars` file to match your environment and chosen repository provider.
 
-To build your application using Cloud Build, we will create a custom builder image that installs the necessary pacakges to build the application container images using **Skaffold**.
+1. Open the `terraform.tfvars` file in your editor.
+2. Replace the `{PROJECT_ID}` and `{REGION}` placeholders with your actual values.
+3. **If using Cloud Source Repositories (CSR):**
+   * Set `repository_type = "CSR"`
+   * You can delete or comment out the `gitlab_auth`, `github_auth`, `ci_repository`, and `cd_repository` blocks.
+4. **If using GitHub:**
+   * Set `repository_type = "GITHUB"`
+   * Provide the `github_auth` block with your Secret Manager paths for your Personal Access Token and App ID.
+   * Provide the `ci_repository` and `cd_repository` blocks with your GitHub repository names and URLs.
+5. **If using GitLab:**
+   * Set `repository_type = "GITLAB"`
+   * Provide the `gitlab_auth` block with your Secret Manager paths for your API tokens and webhook secrets.
+   * Provide the `ci_repository` and `cd_repository` blocks with your GitLab repository names and URLs.
 
-For convenience, we've pre-configured a Dockerfile to build this image. You can find it in Cloud Shell: `~/cloudshell_open/terraform-google-secure-cicd/examples/private_cluster_cicd/cloud-build-builder/Dockerfile`
+Once your `terraform.tfvars` file is configured, run `terraform init` and `terraform apply` to provision the infrastructure. Once complete, proceed to the next step.
 
-1. Run the following command in Cloud Shell to build the container and store it in Artifact Registry.
-    ```bash
-    gcloud builds submit $BLUEPRINT_FOLDER/examples/private_cluster_cicd/cloud-build-builder --project $PROJECT_ID --config=$BLUEPRINT_FOLDER/examples/private_cluster_cicd/cloud-build-builder/cloudbuild-skaffold-build-image.yaml --region=$REGION --substitutions=_DEFAULT_REGION=$REGION,_GAR_REPOSITORY=$GAR_REPOSITORY
-    ```
+Click **Next**.
 
-You will see the logs for the build process in the Cloud Shell Terminal. Once the build completes,  click **Next** to continue.
+## Configure Cloud Deploy post-deployment tests (CSR)
+*If you deployed the blueprint using `REPOSITORY_TYPE="GITHUB"` or `"GITLAB"`, skip this step and proceed to the next page.*
 
-## Configure Cloud Deploy post-deployment tests
 In this step, we will configure the post-deployment by pushing a premade configuration file to the `cloudbuild-cd-config` repo in Cloud Source Repositories.
 1. Set up the git configuration, replacing the values in quotes with your email address and name.
     ```bash
@@ -92,7 +104,39 @@ In this step, we will configure the post-deployment by pushing a premade configu
 
 Click **Next**.
 
-## Push application source code
+## Configure Cloud Deploy post-deployment tests (GitHub/GitLab)
+*If you deployed the blueprint using `REPOSITORY_TYPE="CSR"`, skip this step and proceed to the next page.*
+
+In this step, we will configure the post-deployment by pushing a premade configuration file to your linked external CD repository.
+1. Set up the git configuration, replacing the values in quotes with your email address and name.
+    ```bash
+    git config --global user.email "name@example.com"
+    git config --global user.name "Your Name"
+    ```
+1. Change into the workspace folder and create a directory for your CD config:
+    ```bash
+    cd $WORKSPACE_FOLDER
+    mkdir external-cd-config
+    cd external-cd-config
+    ```
+1. Copy the Cloud Build configuration to the local folder:
+    ```bash
+    cp $BLUEPRINT_FOLDER/build/cloudbuild-cd.yaml .
+    ```
+1. Initialize the repository and push to your external provider (replace `YOUR_REPO_URL` with the URL you provided in `cd_repository.repository_url` in your `terraform.tfvars`):
+    ```bash
+    git init
+    git checkout -b main
+    git add .
+    git commit -m "Add Cloud Build CD configuration"
+    git remote add origin YOUR_REPO_URL
+    git push -u origin main
+    ```
+
+Click **Next**.
+
+## Push application source code (CSR)
+*If you deployed the blueprint using `REPOSITORY_TYPE="GITHUB"` or `"GITLAB"`, skip this step and proceed to the next page.*
 
 1. Return to the workspace directory:
     ```bash
@@ -120,7 +164,39 @@ Click **Next**.
     git push --all google
     ```
 
-This will trigger the build phase of the CI/CD pipeline and result in the deployment of the Bank of Anthos application on GKE. The combined build and deploy phases may take up to 40 minutes to complete. To view the pipelines in-progress, click **Next**
+This will trigger the build phase of the CI/CD pipeline. Skip the next page and proceed directly to **View pipeline progress**.
+
+## Push application source code (GitHub/GitLab)
+*If you deployed the blueprint using `REPOSITORY_TYPE="CSR"`, you should have completed the previous steps. Skip this page.*
+
+To use an external provider, you must push the application code and CI configuration files to the CI repository you linked during the Terraform deployment.
+
+1. Return to the workspace directory:
+    ```bash
+    cd $WORKSPACE_FOLDER
+    ```
+2. Clone the Bank of Anthos sample application locally:
+    ```bash
+    git clone --branch v0.5.11 https://github.com/GoogleCloudPlatform/bank-of-anthos.git
+    cd bank-of-anthos
+    ```
+3. Copy the required Cloud Build CI configuration and policies into the application folder:
+    ```bash
+    cp $BLUEPRINT_FOLDER/build/cloudbuild-ci.yaml .
+    cp -R $BLUEPRINT_FOLDER/examples/app_cicd/policies ./policies
+    ```
+4. Initialize a new git repository and push it to your linked external CI repository (replace `YOUR_REPO_URL` with the URL you provided in `ci_repository.repository_url` in your `terraform.tfvars`):
+    ```bash
+    rm -rf .git
+    git init
+    git checkout -b main
+    git add .
+    git commit -m "Initial commit with Cloud Build CI configuration"
+    git remote add origin YOUR_REPO_URL
+    git push -u origin main
+    ```
+
+This will trigger the build phase of the CI/CD pipeline and result in the deployment of the Bank of Anthos application on GKE. The combined build and deploy phases may take up to 40 minutes to complete. To view the pipelines in-progress, click **Next**.
 
 ## View pipeline progress
 
@@ -158,4 +234,3 @@ Make sure the organization policy `constraints/compute.restrictLoadBalancerCreat
 Run the following command to make an Organization Policy at the project level to allow load balancer creation:
 ```bash
 gcloud resource-manager org-policies allow constraints/compute.restrictLoadBalancerCreationForTypes EXTERNAL_NETWORK_TCP_UDP --project=$PROJECT_ID
-```

@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,18 @@
 steps:
 - id: swap-module-refs
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && module-swapper']
+  args:
+    [
+      '/bin/bash',
+      '-c',
+      'source /usr/local/bin/task_helper_functions.sh && module-swapper'
+    ]
 - name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   id: 'lint'
-  args: ['/usr/local/bin/test_lint.sh']
+  args:
+    [
+      '/usr/local/bin/test_lint.sh'
+    ]
 tags:
 - 'ci'
 - 'lint'

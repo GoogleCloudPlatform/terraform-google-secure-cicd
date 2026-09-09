@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-output "project_id" {
-  value = module.project.project_id
-}
-
 output "project_id_standalone" {
   value = module.project_standalone.project_id
+}
+
+output "project_number_standalone" {
+  value = module.project_standalone.project_number
 }
 
 output "sa_key" {
@@ -27,8 +27,12 @@ output "sa_key" {
   sensitive = true
 }
 
+output "sa_email" {
+  value = google_service_account.int_test.email
+}
+
 output "folder_id" {
-  value = var.folder_id
+  value = module.folder_seed.id
 }
 
 output "org_id" {
@@ -39,37 +43,6 @@ output "billing_account" {
   value = var.billing_account
 }
 
-output "gke_project_ids" {
-  description = "List of GKE project IDs"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_project[env].project_id])
-}
-
-output "gke_vpc_names" {
-  description = "List of GKE project IDs"
-  value       = zipmap(local.envs, [for env in local.envs : module.vpc[env].network_name])
-}
-
-output "gke_service_accounts" {
-  description = "List of GKE service accounts"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_cluster[env].service_account])
-}
-
-output "gke_cluster_names" {
-  description = "List of GKE clusters"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_cluster[env].name])
-}
-
-output "gke_private_vpc_names" {
-  description = "List of GKE project IDs"
-  value       = zipmap(local.envs, [for env in local.envs : module.vpc_private_cluster[env].network_name])
-}
-
-output "gke_private_service_accounts" {
-  description = "List of GKE private cluster service accounts"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_private_cluster[env].service_account])
-}
-
-output "gke_private_cluster_names" {
-  description = "List of GKE private clusters"
-  value       = zipmap(local.envs, [for env in local.envs : module.gke_private_cluster[env].name])
+output "primary_location" {
+  value = local.primary_location
 }

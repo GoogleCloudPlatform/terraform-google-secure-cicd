@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,92 @@
  * limitations under the License.
  */
 
-output "app_source_repo" {
-  description = "URL of the created CSR app soure repo"
-  value       = module.ci_pipeline.source_repo_urls["${var.app_name}-source"]
+output "project_id" {
+  description = "Project ID in which all resources were deployed"
+  value       = var.project_id
 }
 
-output "cloudbuild_cd_repo_name" {
-  description = "URL of the created CSR app soure repo"
-  value       = "${var.app_name}-cloudbuild-cd-config"
+output "region" {
+  description = "Region in which all regional resources were deployed"
+  value       = var.region
 }
 
-output "gar_repo" {
-  description = "Artifact Registry repo"
+output "gke_cluster_names" {
+  description = "Map of GKE Cluster names by environment"
+  value       = { for k, v in module.gke_cluster : k => v.name }
+}
+
+output "clouddeploy_pipeline_id" {
+  description = "ID of the Cloud Deploy delivery pipeline"
+  value       = module.cd_pipeline.clouddeploy_delivery_pipeline_id
+}
+
+output "cloudbuild_workerpool_id" {
+  description = "ID of the Cloud Build private worker pool"
+  value       = var.private_worker_pool_id == null ? module.cloudbuild_private_pool[0].workerpool_id : var.private_worker_pool_id
+}
+
+output "ci_build_trigger_id" {
+  description = "ID of the CI Cloud Build trigger"
+  value       = module.ci_pipeline.ci_build_trigger_id
+}
+
+output "cd_ordered_trigger_names" {
+  description = "Names of CD Cloud Build triggers in promotion order"
+  value       = module.cd_pipeline.deploy_trigger_names
+}
+
+output "clouddeploy_target_names_ordered" {
+  description = "Names of Cloud Deploy targets in promotion order"
+  value       = module.cd_pipeline.clouddeploy_target_names_ordered
+}
+
+output "gar_repo_name" {
+  description = "Name of the Google Artifact Registry repository"
   value       = module.ci_pipeline.app_artifact_repo
 }
 
-output "neos_tutorial_url" {
-  description = "The URL to launch the in-console tutorial for the Secure CI/CD pipeline solution"
-  value       = "https://console.cloud.google.com/products/solutions/catalog?walkthrough_id=solutions-in-console--secure-cicd-pipeline--tour&project=${var.project_id}"
+output "attestors" {
+  description = "Map of Binary Authorization attestor IDs by name"
+  value       = module.attestors.binauth_attestor_ids
 }
 
-output "console_walkthrough_link" {
-  description = "URL to open the in-console walkthrough."
-  value       = "https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fterraform-google-secure-cicd.git&cloudshell_git_branch=main&cloudshell_tutorial=examples%2Fstandalone_single_project%2Fwalkthrough.md&project=${var.project_id}"
+output "ci_repo_name" {
+  description = "Name of the CI source repository"
+  value       = var.repository_type == "CSR" ? module.ci_pipeline.source_repo_name : var.ci_repository.repository_name
+}
+
+output "cd_repo_name" {
+  description = "Name of the CD source repository"
+  value       = var.repository_type == "CSR" ? module.ci_pipeline.source_repo_name : var.cd_repository.repository_name
+}
+
+output "gitlab_url" {
+  description = "The URL of the GitLab instance."
+  value       = var.gitlab_auth.enterprise_host_uri
+}
+
+output "ci_repo_url" {
+  description = "The URL of the CI repository."
+  value       = var.ci_repository.repository_url
+}
+
+output "cd_repo_url" {
+  description = "The URL of the CD repository."
+  value       = var.cd_repository.repository_url
+}
+
+output "cluster_membership_ids" {
+  description = "GKE cluster membership IDs."
+  value       = { for k, v in module.fleet_membership : k => v.cluster_membership_id }
+}
+
+output "clouddeploy_target_ids" {
+  description = "ID(s) of Cloud Deploy targets"
+  value       = module.cd_pipeline.clouddeploy_target_id
+}
+
+output "ci_service_account" {
+  description = "Service account created and used during the CI infra deployment"
+  value       = module.ci_pipeline.build_sa_email
 }

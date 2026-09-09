@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,16 +37,16 @@ resource "random_shuffle" "available_zones" {
 
 # Private GKE Clusters
 module "gke_cluster" {
+  source  = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
+  version = "44.0"
+
   for_each = toset(local.envs)
-  source   = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version  = "~> 25.0"
 
   project_id                  = var.project_id
   name                        = "${var.app_name}-cluster-${each.value}"
   regional                    = true
   region                      = var.region
-  zones                       = sort(random_shuffle.available_zones.result)
-  network                     = module.vpc.network_name
+  network                     = var.network_name == null ? module.vpc.network_name : var.network_name
   subnetwork                  = local.subnets[each.value].subnet_name
   ip_range_pods               = "${local.subnets[each.value].subnet_name}-gke-pods"
   ip_range_services           = "${local.subnets[each.value].subnet_name}-gke-services"
@@ -54,6 +54,7 @@ module "gke_cluster" {
   create_service_account      = true
   enable_binary_authorization = true
   remove_default_node_pool    = true
+  deletion_protection         = false
 
   grant_registry_access = true
   registry_project_ids  = [var.project_id]
@@ -80,9 +81,13 @@ module "gke_cluster" {
 
   node_pools = [
     {
-      name                 = "default-node-pool"
+      name         = "default-node-pool"
+      machine_type = "e2-medium"
+      disk_size_gb = 100
+
       location_policy      = "BALANCED"
       total_max_node_count = 2
+      total_min_node_count = 1
     }
   ]
 
@@ -92,14 +97,18 @@ module "gke_cluster" {
   cluster_resource_labels = var.labels
 
   depends_on = [
-    module.vpc
+    module.vpc,
+    data.google_compute_zones.available,
+    random_shuffle.available_zones
   ]
 }
+
+
 
 module "fleet_membership" {
   for_each = toset(local.envs)
   source   = "terraform-google-modules/kubernetes-engine/google//modules/fleet-membership"
-  version  = "~> 25.0.0"
+  version  = "~> 44.0"
 
   membership_name = "${module.gke_cluster[each.value].name}-membership"
   project_id      = var.project_id

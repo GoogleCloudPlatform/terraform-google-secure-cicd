@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-# HA VPN
 module "vpn_ha_1" {
   source     = "terraform-google-modules/vpn/google//modules/vpn_ha"
   version    = "~> 2.3.0, != 2.3.2"
@@ -39,10 +38,12 @@ module "vpn_ha_1" {
         asn     = var.gateway_2_asn
       }
       bgp_peer_options                = null
+      bgp_session_name                = "${module.vpn_ha_1.name}-tunnel-0"
       bgp_session_range               = "${cidrhost(var.bgp_range_1, 1)}/30" # 169.254.1.1/30
       ike_version                     = 2
       vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
+      peer_external_gateway_self_link = module.vpn_ha_2.self_link
       shared_secret                   = ""
       peer_external_gateway_self_link = null
       bgp_session_name                = null
@@ -53,10 +54,12 @@ module "vpn_ha_1" {
         asn     = var.gateway_2_asn
       }
       bgp_peer_options                = null
+      bgp_session_name                = "${module.vpn_ha_1.name}-tunnel-1"
       bgp_session_range               = "${cidrhost(var.bgp_range_2, 1)}/30" # 169.254.2.1/30
       ike_version                     = 2
       vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
+      peer_external_gateway_self_link = module.vpn_ha_2.self_link
       shared_secret                   = ""
       peer_external_gateway_self_link = null
       bgp_session_name                = null
@@ -86,10 +89,12 @@ module "vpn_ha_2" {
         asn     = var.gateway_1_asn
       }
       bgp_peer_options                = null
+      bgp_session_name                = "${module.vpn_ha_2.name}-tunnel-0"
       bgp_session_range               = "${cidrhost(var.bgp_range_1, 2)}/30" # 169.254.1.2/30
       ike_version                     = 2
       vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
+      peer_external_gateway_self_link = module.vpn_ha_1.self_link
       shared_secret                   = module.vpn_ha_1.random_secret
       peer_external_gateway_self_link = null
       bgp_session_name                = null
@@ -100,10 +105,12 @@ module "vpn_ha_2" {
         asn     = var.gateway_1_asn
       }
       bgp_peer_options                = null
+      bgp_session_name                = "${module.vpn_ha_2.name}-tunnel-1"
       bgp_session_range               = "${cidrhost(var.bgp_range_2, 2)}/30" # 169.254.2.2/30
       ike_version                     = 2
       vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
+      peer_external_gateway_self_link = module.vpn_ha_1.self_link
       shared_secret                   = module.vpn_ha_1.random_secret
       peer_external_gateway_self_link = null
       bgp_session_name                = null

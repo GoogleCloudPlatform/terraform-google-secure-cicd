@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,117 +12,264 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-timeout: 7200s
+timeout: 14400s
 steps:
-- id: swap-module-refs
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['module-swapper']
-- id: prepare
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && prepare_environment; sleep 120']
-  env:
-  - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
-  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
-- id: init-all
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run all --stage init --verbose']
+  - id: swap-module-refs
+    name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+    args:
+      [
+        'module-swapper'
+      ]
 
-# app_cicd
-- id: go-init-app-cicd-example
-  waitFor:
-    - init-all
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage init --verbose']
-- id: go-apply-app-cicd-example
-  waitFor:
-    - go-init-app-cicd-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage apply --verbose']
-- id: go-verify-app-cicd-example
-  waitFor:
-    - go-apply-app-cicd-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage verify --verbose']
-- id: go-destroy-app-cicd-example
-  waitFor:
-    - go-verify-app-cicd-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestAppCICDExample --stage destroy --verbose']
+  - id: prepare
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "source /usr/local/bin/task_helper_functions.sh && prepare_environment",
+      ]
+    env:
+      - "TF_VAR_org_id=$_ORG_ID"
+      - "TF_VAR_folder_id=$_FOLDER_ID"
+      - "TF_VAR_billing_account=$_BILLING_ACCOUNT"
+    waitFor:
+      - swap-module-refs
 
-# cloudbuild_private_pool
-- id: go-init-cloudbuild_private_pool-example
-  waitFor:
-    - init-all
-    - go-destroy-app-cicd-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage init --verbose']
-- id: go-apply-cloudbuild_private_pool-example
-  waitFor:
-    - go-init-cloudbuild_private_pool-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage apply --verbose']
-- id: go-verify-cloudbuild_private_pool-example
-  waitFor:
-    - go-apply-cloudbuild_private_pool-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage verify --verbose']
-- id: go-destroy-cloudbuild_private_pool-example
-  waitFor:
-    - go-verify-cloudbuild_private_pool-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestCloudBuildPrivatePoolExample --stage destroy --verbose']
+  - id: private-workerpool-init
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestPrivateWorkerPool --stage init --verbose",
+      ]
+    waitFor:
+      - prepare
 
-# private_cluster_cicd
-- id: go-init-private-cluster-cicd-example
-  waitFor:
-    - init-all
-    - go-destroy-cloudbuild_private_pool-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage init --verbose']
-- id: go-apply-private-cluster-cicd-example
-  waitFor:
-    - go-init-private-cluster-cicd-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage apply --verbose']
-- id: go-verify-private-cluster-cicd-example
-  waitFor:
-    - go-apply-private-cluster-cicd-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage verify --verbose']
-- id: go-destroy-private-cluster-cicd-example
-  waitFor:
-    - go-verify-private-cluster-cicd-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestPrivateClusterCICDExample --stage destroy --verbose']
+  - id: private-workerpool-apply
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestPrivateWorkerPool --stage apply --verbose",
+      ]
+    waitFor:
+      - private-workerpool-init
 
-# standalone_single_project
-- id: go-init-standalone-single-proj-example
-  waitFor:
-    - init-all
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage init --verbose']
-- id: go-apply-standalone-single-proj-example
-  waitFor:
-    - go-init-standalone-single-proj-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage apply --verbose']
-- id: go-verify-standalone-single-proj-example
-  waitFor:
-    - go-apply-standalone-single-proj-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage verify --verbose']
-- id: go-destroy-standalone-single-proj-example
-  waitFor:
-    - go-verify-standalone-single-proj-example
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestStandaloneSingleProjectExample --stage destroy --verbose']
+  - id: logging-bucket-init
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestLoggingBucket --stage init --verbose",
+      ]
+    waitFor:
+      - prepare
+
+  - id: logging-bucket-apply
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestLoggingBucket --stage apply --verbose",
+      ]
+    waitFor:
+      - logging-bucket-init
+
+  - id: gitlab-init
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestGitLab --stage init --verbose",
+      ]
+    waitFor:
+      - private-workerpool-apply
+      - logging-bucket-apply
+
+  - id: gitlab-apply
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestGitLab --stage apply --verbose",
+      ]
+    waitFor:
+      - gitlab-init
+
+  - id: wait-startup-script
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestValidateStartupScript --stage verify --verbose",
+      ]
+    waitFor:
+      - gitlab-apply
+      - private-workerpool-apply
+
+  - id: cluster-network-init
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestClusterNetwork --stage init --verbose",
+      ]
+    waitFor:
+      - wait-startup-script
+
+  - id: cluster-network-apply
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestClusterNetwork --stage apply --verbose",
+      ]
+    waitFor:
+      - cluster-network-init
+
+  - id: vpc-sc
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestVPCSC --stage init --verbose && cft test run TestVPCSC --stage apply --verbose",
+      ]
+    env:
+      - "TF_VAR_org_id=$_ORG_ID"
+    waitFor:
+      - cluster-network-apply
+
+  - id: bootstrap-gitlab-vm
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |-
+       gcloud storage cp gs://$(terraform -chdir=/workspace/test/setup/harness/gitlab output -raw gitlab_ssl_bucket_name)/gitlab.crt /usr/local/share/ca-certificates
+        update-ca-certificates
+        if (ls /etc/ssl/certs | grep gitlab.pem); then
+            cft test run TestBootstrapGitlabVM --stage verify --verbose || exit 1
+        else
+            echo ERROR: Was not able to download certificate and update system bundle. && exit 1
+        fi
+    waitFor:
+      - vpc-sc
+
+  - id: single-project-init
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestStandaloneSingleProjectExample --stage init --verbose",
+      ]
+    waitFor:
+      - bootstrap-gitlab-vm
+
+  - id: single-project-apply
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestStandaloneSingleProjectExample --stage apply --verbose",
+      ]
+    waitFor:
+      - single-project-init
+
+  - id: single-project-verify
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestStandaloneSingleProjectExample --stage verify --verbose",
+      ]
+    waitFor:
+      - single-project-apply
+
+  - id: single-project-teardown
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestStandaloneSingleProjectExample --stage teardown --verbose",
+      ]
+    waitFor:
+      - single-project-verify
+    env:
+      - "TF_VAR_org_id=$_ORG_ID"
+      - "TF_VAR_billing_account=$_BILLING_ACCOUNT"
+
+  - id: vpcsc-teardown
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestVPCSC --stage teardown --verbose",
+      ]
+    waitFor:
+      - single-project-teardown
+
+  - id: cluster-network-teardown
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      [
+        "/bin/bash",
+        "-c",
+        "cft test run TestClusterNetwork --stage teardown --verbose",
+      ]
+    waitFor:
+      - vpcsc-teardown
+
+  - id: gitlab-teardown
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      ["/bin/bash", "-c", "cft test run TestGitLab --stage teardown --verbose"]
+    waitFor:
+      - cluster-network-teardown
+
+  - id: logging-bucket-teardown
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      ["/bin/bash", "-c", "cft test run TestLoggingBucket --stage teardown --verbose"]
+    waitFor:
+      - gitlab-teardown
+
+  - id: private-workerpool-teardown
+    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
+    args:
+      ["/bin/bash", "-c", "cft test run TestPrivateWorkerPool --stage teardown --verbose"]
+    waitFor:
+      - gitlab-teardown
+      - logging-bucket-teardown
 
 tags:
-- 'ci'
-- 'integration'
-- 'cd'
-- 'deployment'
+  - "ci"
+  - "integration"
+  - "cd"
+  - "deployment"
 substitutions:
-  _DOCKER_IMAGE_DEVELOPER_TOOLS: 'cft/developer-tools'
-  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '1'
+  _DOCKER_IMAGE_DEVELOPER_TOOLS: "cft/developer-tools"
+  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: "1.25"
+options:
+  machineType: E2_HIGHCPU_8
+  env:
+    - 'TF_PLUGIN_CACHE_DIR=""'
+    - 'TF_VAR_branch_name=$BRANCH_NAME'
+    - "TF_VAR_service_perimeter_mode=ENFORCE"
+    - "TF_VAR_deletion_protection=false"
+    - "TF_VAR_cloud_build_sa=$SERVICE_ACCOUNT_EMAIL"

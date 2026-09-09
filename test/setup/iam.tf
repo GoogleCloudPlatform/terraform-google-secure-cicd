@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,15 @@ locals {
     "roles/binaryauthorization.attestorsAdmin",
     "roles/cloudbuild.builds.builder",
     "roles/cloudbuild.workerPoolOwner",
+    "roles/cloudbuild.workerPoolUser",
+    "roles/cloudbuild.admin",
     "roles/clouddeploy.admin",
     "roles/cloudkms.admin",
     "roles/cloudkms.publicKeyViewer",
     "roles/containeranalysis.notes.editor",
+    "roles/compute.admin",
     "roles/compute.networkAdmin",
+    "roles/compute.securityAdmin",
     "roles/gkehub.editor",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",
@@ -33,7 +37,12 @@ locals {
     "roles/source.admin",
     "roles/storage.admin",
     "roles/resourcemanager.projectIamAdmin",
-    "roles/viewer"
+    "roles/viewer",
+    "roles/secretmanager.admin",
+    "roles/secretmanager.secretAccessor",
+    "roles/servicedirectory.admin",
+    "roles/dns.admin",
+    "roles/logging.logWriter"
   ]
   gke_int_required_roles = [
     "roles/compute.networkAdmin",
@@ -44,60 +53,48 @@ locals {
     "roles/serviceusage.serviceUsageViewer",
     "roles/iam.serviceAccountUser"
   ]
-  gke_proj_role_mapping = flatten([
-    for env in local.envs : [
-      for role in local.gke_int_required_roles : {
-        project = module.gke_project[env].project_id
-        role    = role
-        env     = env
-      }
-    ]
-  ])
 }
 
 resource "google_service_account" "int_test" {
-  project      = module.project.project_id
+  project      = module.project_standalone.project_id
   account_id   = "ci-account"
   display_name = "ci-account"
-}
-
-# SA permissions on CI/CD (main) project
-resource "google_project_iam_member" "int_test" {
-  for_each = toset(local.int_required_roles)
-
-  project = module.project.project_id
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.int_test.email}"
-}
-
-# SA permissions on GKE projects
-resource "google_project_iam_member" "gke_int_test" {
-  for_each = {
-    for mapping in local.gke_proj_role_mapping : "${mapping.env}.${mapping.role}" => mapping
-  }
-
-  project = each.value.project
-  role    = each.value.role
-  member  = "serviceAccount:${google_service_account.int_test.email}"
 }
 
 resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
 }
 
-# SA permissions on standalone single project example
 resource "google_project_iam_member" "int_test_singleproj" {
-  for_each = toset(local.int_required_roles)
+  for_each = toset(concat(local.int_required_roles, local.gke_int_required_roles))
 
   project = module.project_standalone.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }
 
-resource "google_project_iam_member" "gke_int_test_singleproj" {
-  for_each = toset(local.gke_int_required_roles)
+resource "google_organization_iam_member" "org_iam_roles" {
+  for_each = toset([
+    "roles/resourcemanager.organizationAdmin",
+    "roles/compute.xpnAdmin",
+    "roles/orgpolicy.policyAdmin",
+    "roles/accesscontextmanager.policyAdmin",
+    "roles/serviceusage.serviceUsageConsumer"
+  ])
+  org_id = var.org_id
+  role   = each.value
+  member = "serviceAccount:${google_service_account.int_test.email}"
+}
 
-  project = module.project_standalone.project_id
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.int_test.email}"
+resource "google_folder_iam_member" "int_test_connection_admin" {
+  for_each = toset(["roles/resourcemanager.projectCreator", "roles/resourcemanager.folderCreator", "roles/owner", "roles/iam.serviceAccountTokenCreator", "roles/iam.serviceAccountUser", ])
+  folder   = module.folder_seed.id
+  role     = each.value
+  member   = "serviceAccount:${google_service_account.int_test.email}"
+}
+
+resource "google_billing_account_iam_member" "tf_billing_admin" {
+  billing_account_id = var.billing_account
+  role               = "roles/billing.admin"
+  member             = "serviceAccount:${google_service_account.int_test.email}"
 }

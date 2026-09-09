@@ -26,6 +26,9 @@ spec:
   ui:
     input:
       variables:
+        access_level_name:
+          name: access_level_name
+          title: Access Level Name
         additional_substitutions:
           name: additional_substitutions
           title: Additional Substitutions
@@ -35,6 +38,9 @@ spec:
         cache_bucket_name:
           name: cache_bucket_name
           title: Cache Bucket Name
+        cd_repository:
+          name: cd_repository
+          title: Cd Repository
         cloudbuild_cd_repo:
           name: cloudbuild_cd_repo
           title: Cloudbuild Cd Repo
@@ -47,12 +53,21 @@ spec:
         clouddeploy_pipeline_name:
           name: clouddeploy_pipeline_name
           title: Clouddeploy Pipeline Name
+        csr_cloudbuild_cd_repo:
+          name: csr_cloudbuild_cd_repo
+          title: Csr Cloudbuild Cd Repo
         deploy_branch_clusters:
           name: deploy_branch_clusters
           title: Deploy Branch Clusters
         gar_repo_name:
           name: gar_repo_name
           title: Gar Repo Name
+        github_auth:
+          name: github_auth
+          title: Github Auth
+        gitlab_auth:
+          name: gitlab_auth
+          title: Gitlab Auth
         labels:
           name: labels
           title: Labels
@@ -62,3 +77,6 @@ spec:
         project_id:
           name: project_id
           title: Project Id
+        repository_type:
+          name: repository_type
+          title: Repository Type

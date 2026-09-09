@@ -28,176 +28,226 @@ spec:
     version: 1.2.2
     actuationTool:
       flavor: Terraform
-      version: ">= 0.13.0"
+      version: ~> 1.3
     description: {}
   content:
     examples:
-    - name: app_cicd
-      location: examples/app_cicd
-    - name: cloudbuild_private_pool
-      location: examples/cloudbuild_private_pool
-    - name: private_cluster_cicd
-      location: examples/private_cluster_cicd
-    - name: standalone_single_project
-      location: examples/standalone_single_project
+      - name: standalone_single_project
+        location: examples/standalone_single_project
   interfaces:
     variables:
-    - name: additional_substitutions
-      description: Parameters to be substituted in the build specification. All keys should begin with an underscore.
-      varType: map(string)
-      defaultValue: {}
-    - name: app_build_trigger_yaml
-      description: Name of application cloudbuild yaml file
-      varType: string
-      defaultValue: null
-      required: true
-    - name: app_source_repo
-      description: Name of repo that contains app source code along with cloudbuild yaml
-      varType: string
-      defaultValue: app-source
-    - name: attestor_names_prefix
-      description: A list of Binary Authorization attestors to create. The first attestor specified in this list will be used as the build-attestor during the CI phase.
-      varType: list(string)
-      defaultValue: null
-      required: true
-    - name: build_image_config_yaml
-      description: Name of image builder yaml file
-      varType: string
-      defaultValue: null
-      required: true
-    - name: cache_bucket_name
-      description: Name of cloudbuild artifact and cache GCS bucket
-      varType: string
-      defaultValue: ""
-    - name: cloudbuild_cd_repo
-      description: Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks
-      varType: string
-      defaultValue: cloudbuild-cd-config
-    - name: cloudbuild_private_pool
-      description: Cloud Build private pool self-link
-      varType: string
-      defaultValue: ""
-    - name: cloudbuild_service_account_roles
-      description: IAM roles given to the Cloud Build service account to enable security scanning operations
-      varType: list(string)
-      defaultValue:
-      - roles/artifactregistry.admin
-      - roles/binaryauthorization.attestorsVerifier
-      - roles/cloudbuild.builds.builder
-      - roles/clouddeploy.developer
-      - roles/clouddeploy.releaser
-      - roles/cloudkms.cryptoOperator
-      - roles/containeranalysis.notes.attacher
-      - roles/containeranalysis.notes.occurrences.viewer
-      - roles/source.writer
-      - roles/storage.admin
-      - roles/cloudbuild.workerPoolUser
-      - roles/ondemandscanning.admin
-      - roles/logging.logWriter
-    - name: clouddeploy_pipeline_name
-      description: Cloud Deploy pipeline name
-      varType: string
-      defaultValue: deploy-pipeline
-    - name: gar_repo_name_suffix
-      description: Docker artifact regitery repo to store app build images
-      varType: string
-      defaultValue: app-image-repo
-    - name: labels
-      description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
-      varType: map(string)
-      defaultValue: {}
-    - name: primary_location
-      description: Region used for key-ring
-      varType: string
-      defaultValue: null
-      required: true
-    - name: project_id
-      description: Project ID for CICD Pipeline Project
-      varType: string
-      defaultValue: null
-      required: true
-    - name: runner_build_folder
-      description: Path to the source folder for the cloud builds submit command. Leave blank if `skip_provisioners = true`
-      varType: string
-      defaultValue: ""
-    - name: skip_provisioners
-      description: Skip modules that use provisioners/local-exec
-      varType: bool
-      defaultValue: false
-    - name: trigger_branch_name
-      description: A regular expression to match one or more branches for the build trigger.
-      varType: string
-      defaultValue: null
-      required: true
-    - name: use_tf_google_credentials_env_var
-      description: Optional GOOGLE_CREDENTIALS environment variable to be activated.
-      varType: bool
-      defaultValue: false
+      - name: project_id
+        description: Project ID for CICD Pipeline Project
+        varType: string
+        required: true
+      - name: primary_location
+        description: Primary Google Cloud region for deploying resources like Artifact Registry, Cloud Storage buckets, and Cloud Build triggers.
+        varType: string
+        required: true
+      - name: attestor_names_prefix
+        description: A list of Binary Authorization attestors to create. The first attestor specified in this list will be used as the build-attestor during the CI phase.
+        varType: list(string)
+        required: true
+      - name: access_level_name
+        description: (VPC-SC) Access Level full name. When providing this variable, additional identities will be added to the access level, these are required to work within an enforced VPC-SC Perimeter.
+        varType: string
+      - name: app_build_trigger_yaml
+        description: Name of application cloudbuild yaml file
+        varType: string
+        required: true
+      - name: csr_app_source_repo
+        description: Name of repo that contains app source code along with cloudbuild yaml
+        varType: string
+        defaultValue: app-source
+      - name: cache_bucket_name
+        description: Name of cloudbuild artifact and cache GCS bucket
+        varType: string
+        defaultValue: ""
+      - name: gar_repo_name_suffix
+        description: Docker artifact registry repo to store app build images
+        varType: string
+        defaultValue: app-image-repo
+      - name: trigger_branch_name
+        description: A regular expression to match one or more branches for the build trigger.
+        varType: string
+        required: true
+      - name: cloudbuild_service_account_roles
+        description: IAM roles given to the Cloud Build service account to enable security scanning operations
+        varType: list(string)
+        defaultValue:
+          - roles/artifactregistry.admin
+          - roles/binaryauthorization.attestorsVerifier
+          - roles/cloudbuild.builds.builder
+          - roles/cloudbuild.connectionViewer
+          - roles/clouddeploy.developer
+          - roles/clouddeploy.releaser
+          - roles/cloudkms.cryptoOperator
+          - roles/containeranalysis.notes.attacher
+          - roles/containeranalysis.notes.occurrences.viewer
+          - roles/serviceusage.serviceUsageConsumer
+          - roles/source.writer
+          - roles/storage.admin
+          - roles/cloudbuild.workerPoolUser
+          - roles/ondemandscanning.admin
+          - roles/logging.logWriter
+      - name: additional_substitutions
+        description: Parameters to be substituted in the build specification. All keys should begin with an underscore.
+        varType: map(string)
+        defaultValue: {}
+      - name: cloudbuild_private_pool
+        description: Cloud Build private pool self-link
+        varType: string
+        defaultValue: ""
+      - name: clouddeploy_pipeline_name
+        description: Cloud Deploy pipeline name
+        varType: string
+        defaultValue: deploy-pipeline
+      - name: labels
+        description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
+        varType: map(string)
+        defaultValue: {}
+      - name: bucket_kms_key
+        description: KMS Key id to be used to encrypt bucket.
+        varType: string
+      - name: repository_type
+        description: The type of the repository. Must be one of 'GITHUB', 'GITLAB', or 'CSR'.
+        varType: string
+        required: true
+      - name: ci_repository
+        description: The CI repository to configure. The key is a short name for the service.
+        varType: |-
+          object({
+              repository_name = string
+              repository_url  = string
+            })
+      - name: github_auth
+        description: Authentication configuration for GitHub. Required only if repo_type is 'GITHUBv2'.
+        varType: |-
+          object({
+              secret_id         = string
+              app_id_secret_id  = string
+              secret_project_id = string
+            })
+      - name: gitlab_auth
+        description: Authentication configuration for GitLab. Required only if repo_type is 'GITLABv2'.
+        varType: |-
+          object({
+              read_authorizer_credential_secret_id = string
+              authorizer_credential_secret_id      = string
+              webhook_secret_id                    = string
+              enterprise_host_uri                  = optional(string)
+              enterprise_service_directory         = optional(string)
+              enterprise_ca_certificate            = optional(string)
+              secret_project_id                    = string
+            })
     outputs:
-    - name: app_artifact_repo
-      description: GAR Repo created to store runner images
-    - name: binauth_attestor_ids
-      description: IDs of Attestors
-    - name: binauth_attestor_names
-      description: Names of Attestors
-    - name: binauth_attestor_project_id
-      description: Project ID where attestors get created
-    - name: build_sa_email
-      description: Cloud Build Service Account email address
-    - name: build_trigger_name
-      description: The name of the cloud build trigger for the app source repo.
-    - name: cache_bucket_name
-      description: The name of the storage bucket for cloud build.
-    - name: source_repo_names
-      description: Name of the created CSR repos
-    - name: source_repo_urls
-      description: URLS of the created CSR repos
+      - name: app_artifact_repo
+        description: GAR Repo created to store runner images
+      - name: binauth_attestor_ids
+        description: IDs of Attestors
+      - name: binauth_attestor_names
+        description: Names of Attestors
+      - name: binauth_attestor_project_id
+        description: Project ID where attestors get created
+      - name: build_sa_email
+        description: Cloud Build Service Account email address
+      - name: cache_bucket_name
+        description: The name of the storage bucket for cloud build.
+      - name: ci_build_trigger_id
+        description: ID of the CI Cloud Build trigger.
+      - name: skaffold_builder_image_tag
+        description: The full path to the built Skaffold builder image in Artifact Registry.
+      - name: source_repo_name
+        description: Name of the created CSR repos
+      - name: source_repo_url
+        description: URLS of the created CSR repos
+      - name: standalone_bucket_kms_key
+        description: KMS Key for standalone bucket.
   requirements:
     roles:
-    - level: Project
-      roles:
-      - roles/artifactregistry.admin
-      - roles/binaryauthorization.attestorsAdmin
-      - roles/cloudbuild.builds.builder
-      - roles/cloudbuild.workerPoolOwner
-      - roles/clouddeploy.admin
-      - roles/cloudkms.admin
-      - roles/cloudkms.publicKeyViewer
-      - roles/containeranalysis.notes.editor
-      - roles/compute.networkAdmin
-      - roles/gkehub.editor
-      - roles/iam.serviceAccountAdmin
-      - roles/iam.serviceAccountUser
-      - roles/pubsub.editor
-      - roles/serviceusage.serviceUsageAdmin
-      - roles/source.admin
-      - roles/storage.admin
-      - roles/resourcemanager.projectIamAdmin
-      - roles/viewer
-    - level: Project
-      roles:
-      - roles/compute.networkAdmin
-      - roles/container.admin
-      - roles/binaryauthorization.policyEditor
-      - roles/resourcemanager.projectIamAdmin
-      - roles/iam.serviceAccountAdmin
-      - roles/serviceusage.serviceUsageViewer
-      - roles/iam.serviceAccountUser
+      - level: Project
+        roles:
+          - roles/compute.networkAdmin
+          - roles/container.admin
+          - roles/binaryauthorization.policyEditor
+          - roles/resourcemanager.projectIamAdmin
+          - roles/iam.serviceAccountAdmin
+          - roles/serviceusage.serviceUsageViewer
+          - roles/iam.serviceAccountUser
+      - level: Project
+        roles:
+          - roles/artifactregistry.admin
+          - roles/binaryauthorization.attestorsAdmin
+          - roles/cloudbuild.builds.builder
+          - roles/cloudbuild.workerPoolOwner
+          - roles/cloudbuild.admin
+          - roles/clouddeploy.admin
+          - roles/cloudkms.admin
+          - roles/cloudkms.publicKeyViewer
+          - roles/containeranalysis.notes.editor
+          - roles/compute.admin
+          - roles/compute.networkAdmin
+          - roles/compute.securityAdmin
+          - roles/gkehub.editor
+          - roles/iam.serviceAccountAdmin
+          - roles/iam.serviceAccountUser
+          - roles/pubsub.editor
+          - roles/serviceusage.serviceUsageAdmin
+          - roles/source.admin
+          - roles/storage.admin
+          - roles/resourcemanager.projectIamAdmin
+          - roles/viewer
+          - roles/secretmanager.admin
+          - roles/servicedirectory.admin
+          - roles/dns.admin
     services:
-    - cloudresourcemanager.googleapis.com
-    - cloudbilling.googleapis.com
-    - clouddeploy.googleapis.com
-    - storage-api.googleapis.com
-    - serviceusage.googleapis.com
-    - cloudbuild.googleapis.com
-    - containerregistry.googleapis.com
-    - iamcredentials.googleapis.com
-    - secretmanager.googleapis.com
-    - sourcerepo.googleapis.com
-    - artifactregistry.googleapis.com
-    - containeranalysis.googleapis.com
-    - cloudkms.googleapis.com
-    - binaryauthorization.googleapis.com
-    - containerscanning.googleapis.com
-    - servicenetworking.googleapis.com
-    - pubsub.googleapis.com
+      - accesscontextmanager.googleapis.com
+      - aiplatform.googleapis.com
+      - anthos.googleapis.com
+      - anthosconfigmanagement.googleapis.com
+      - anthospolicycontroller.googleapis.com
+      - apikeys.googleapis.com
+      - artifactregistry.googleapis.com
+      - binaryauthorization.googleapis.com
+      - certificatemanager.googleapis.com
+      - cloudbilling.googleapis.com
+      - cloudbuild.googleapis.com
+      - clouddeploy.googleapis.com
+      - cloudfunctions.googleapis.com
+      - cloudkms.googleapis.com
+      - cloudresourcemanager.googleapis.com
+      - cloudtrace.googleapis.com
+      - compute.googleapis.com
+      - container.googleapis.com
+      - containeranalysis.googleapis.com
+      - containerscanning.googleapis.com
+      - gkehub.googleapis.com
+      - iam.googleapis.com
+      - iap.googleapis.com
+      - mesh.googleapis.com
+      - modelarmor.googleapis.com
+      - monitoring.googleapis.com
+      - multiclusteringress.googleapis.com
+      - multiclusterservicediscovery.googleapis.com
+      - networkmanagement.googleapis.com
+      - networkservices.googleapis.com
+      - notebooks.googleapis.com
+      - orgpolicy.googleapis.com
+      - secretmanager.googleapis.com
+      - servicedirectory.googleapis.com
+      - servicemanagement.googleapis.com
+      - servicenetworking.googleapis.com
+      - serviceusage.googleapis.com
+      - sourcerepo.googleapis.com
+      - sqladmin.googleapis.com
+      - storage.googleapis.com
+      - trafficdirector.googleapis.com
+    providerVersions:
+      - source: hashicorp/google
+        version: "> 4, < 8"
+      - source: hashicorp/google-beta
+        version: "> 4, < 8"
+      - source: hashicorp/null
+        version: ">= 3.3.0"
+      - source: hashicorp/random
+        version: ">= 3.7.2"

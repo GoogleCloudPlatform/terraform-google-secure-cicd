@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,21 @@ locals {
   ]
 }
 
-# Cloud Deploy Execution Service Account
-# https://cloud.google.com/deploy/docs/cloud-deploy-service-account#execution_service_account
 resource "google_service_account" "clouddeploy_execution_sa" {
   project      = var.project_id
   account_id   = "clouddeploy-execution-sa"
   display_name = "clouddeploy-execution-sa"
+}
+
+resource "google_access_context_manager_access_level_condition" "additional_member_condition" {
+  access_level = var.access_level_name
+
+  members = [
+    "serviceAccount:${google_service_account.clouddeploy_execution_sa.email}"
+  ]
+  depends_on = [
+    time_sleep.wait_access_level_propagation
+  ]
 }
 
 resource "google_project_iam_member" "cd_sa_iam" {
@@ -45,12 +54,10 @@ resource "google_project_iam_member" "cd_sa_iam" {
   member  = "serviceAccount:${google_service_account.clouddeploy_execution_sa.email}"
 }
 
-# Cloud Deploy Service Agent
 resource "google_project_service_identity" "clouddeploy_service_agent" {
   provider = google-beta
-
-  project = var.project_id
-  service = "clouddeploy.googleapis.com"
+  project  = var.project_id
+  service  = "clouddeploy.googleapis.com"
 }
 
 resource "google_project_iam_member" "clouddeploy_service_agent_role" {
@@ -59,14 +66,12 @@ resource "google_project_iam_member" "clouddeploy_service_agent_role" {
   member  = "serviceAccount:${google_project_service_identity.clouddeploy_service_agent.email}"
 }
 
-# IAM membership for Cloud Build SA to act as Cloud Deploy Execution SA
 resource "google_service_account_iam_member" "cloudbuild_clouddeploy_impersonation" {
   service_account_id = google_service_account.clouddeploy_execution_sa.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${var.cloudbuild_service_account}"
 }
 
-# IAM membership for Cloud Deploy Execution SA deploy to GKE
 resource "google_project_iam_member" "clouddeploy_gke_dev" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
@@ -74,7 +79,6 @@ resource "google_project_iam_member" "clouddeploy_gke_dev" {
   member   = "serviceAccount:${google_service_account.clouddeploy_execution_sa.email}"
 }
 
-# IAM membership for Cloud Build SA to deploy to GKE
 resource "google_project_iam_member" "cloudbuild_gke_dev" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
@@ -82,9 +86,6 @@ resource "google_project_iam_member" "cloudbuild_gke_dev" {
   member   = "serviceAccount:${var.cloudbuild_service_account}"
 }
 
-# IAM grants for deploying to GKE via Connect Gateway
-# https://cloud.google.com/anthos/multicluster-management/gateway/setup#grant_roles_for_access_through_kubectl
-# Cloud Deploy Execution SA deploy to cluster
 resource "google_project_iam_member" "clouddeploy_gkehub_viewer" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
@@ -98,7 +99,6 @@ resource "google_project_iam_member" "clouddeploy_gkehub_gatewayadmin" {
   member   = "serviceAccount:${google_service_account.clouddeploy_execution_sa.email}"
 }
 
-# Cloud Build SA to deploy to cluster
 resource "google_project_iam_member" "cloudbuild_gkehub_viewer" {
   for_each = var.deploy_branch_clusters
   project  = each.value.project_id
@@ -112,7 +112,6 @@ resource "google_project_iam_member" "cloudbuild_gkehub_gatewayadmin" {
   member   = "serviceAccount:${var.cloudbuild_service_account}"
 }
 
-# IAM membership for Binary Authorization service agents in GKE projects on attestors
 resource "google_project_service_identity" "binauth_service_agent" {
   provider = google-beta
   for_each = var.deploy_branch_clusters
@@ -127,4 +126,39 @@ resource "google_binary_authorization_attestor_iam_member" "binauthz_verifier" {
   attestor = each.value.attestor
   role     = "roles/binaryauthorization.attestorsVerifier"
   member   = "serviceAccount:${google_project_service_identity.binauth_service_agent[each.value.env].email}"
+}
+
+resource "google_service_account_iam_member" "sa_impersonate_self" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.cloudbuild_service_account}"
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${var.cloudbuild_service_account}"
+}
+
+resource "google_secret_manager_secret_iam_member" "gitlab_pat_accessor" {
+  count = var.repository_type == "GITLAB" && var.gitlab_auth != null ? 1 : 0
+
+  secret_id = var.gitlab_auth.authorizer_credential_secret_id
+
+  role   = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${var.cloudbuild_service_account}"
+}
+
+resource "google_project_service_identity" "clouddeploy_sa" {
+  provider = google-beta
+  project  = var.project_id
+  service  = "clouddeploy.googleapis.com"
+}
+
+resource "google_project_iam_member" "clouddeploy_service_agent_workerpool_access" {
+  project = split("/", var.cloudbuild_private_pool)[1]
+  role    = "roles/cloudbuild.workerPoolUser"
+  member  = "serviceAccount:${google_project_service_identity.clouddeploy_sa.email}"
+}
+
+resource "time_sleep" "wait_access_level_propagation" {
+  depends_on = [
+    google_service_account.clouddeploy_execution_sa,
+  ]
+  destroy_duration = "5m"
+  create_duration  = "2m"
 }

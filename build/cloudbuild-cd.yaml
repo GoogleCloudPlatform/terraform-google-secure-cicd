@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ options:
   pool:
     name: $_CLOUDBUILD_PRIVATE_POOL
   substitution_option: 'ALLOW_LOOSE'
-  # machineType: 'E2_HIGHCPU_32'
 artifacts:
   objects:
     location: gs://$_CACHE_BUCKET_NAME/artifacts/$BRANCH_NAME
@@ -28,8 +27,8 @@ artifacts:
       - '/workspace/svcs-endpoints-filtered.json'
       - '/workspace/zap_report_${_TARGET_ID}_${_RELEASE_ID}.html'
 logsBucket: gs://$_CACHE_BUCKET_NAME/build_logs
-steps:
 
+steps:
 ############################### Post-Deploy Checks ###########################
 
 # Get endpoint IPs
@@ -78,7 +77,7 @@ steps:
       ENDPOINT="$${ENDPOINTS[$$INDEX]}"
       echo "Checking $$ENDPOINT"
 
-      docker container run --user root -v zapvolume:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t http://$$ENDPOINT -r zap_report_${_TARGET_ID}_${_RELEASE_ID}.html -z '-config api.disablekey=true' -I
+      docker container run --user root -v zapvolume:/zap/wrk/:rw -t zaproxy/zap-stable zap-baseline.py -t http://$$ENDPOINT -r zap_report_${_TARGET_ID}_${_RELEASE_ID}.html -z '-config api.disablekey=true' -I
       cp /zap/wrk/zap_report_${_TARGET_ID}_${_RELEASE_ID}.html /workspace/zap_report_${_TARGET_ID}_${_RELEASE_ID}.html
   volumes:
     - name: 'zapvolume'
@@ -94,8 +93,6 @@ steps:
     - '-xe'
     - -c
     - |
-      # Only run this step if there is an attestor supplied in the trigger substitutions
-      # This step will be skipped for the final environment, when there are no more attestations to add
       if [ -n "${_ATTESTOR_NAME}" ]; then
         gcloud config set project ${PROJECT_ID}
 
@@ -126,17 +123,3 @@ steps:
       fi
   waitFor:
     - 'zaproxy-endpoint-scan'
-
-############################### Artifact Promotion ###########################
-
-- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
-  id: "promote-manifests"
-  entrypoint: "/bin/bash"
-  args:
-    - '-xe'
-    - -c
-    - |
-      gcloud deploy releases promote --release=$_RELEASE_ID --delivery-pipeline=$_CLOUDDEPLOY_PIPELINE_NAME --region=$_DEFAULT_REGION
-
-  waitFor:
-    - 'binary-authorization-checkpoint'

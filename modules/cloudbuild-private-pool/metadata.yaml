@@ -28,124 +28,156 @@ spec:
     version: 1.2.2
     actuationTool:
       flavor: Terraform
-      version: ">= 0.13.0"
+      version: ~> 1.3
     description: {}
   content:
     examples:
-    - name: app_cicd
-      location: examples/app_cicd
-    - name: cloudbuild_private_pool
-      location: examples/cloudbuild_private_pool
-    - name: private_cluster_cicd
-      location: examples/private_cluster_cicd
-    - name: standalone_single_project
-      location: examples/standalone_single_project
+      - name: standalone_single_project
+        location: examples/standalone_single_project
   interfaces:
     variables:
-    - name: create_cloudbuild_network
-      description: Whether to create a VPC for the Cloud Build Worker Pool. Set to false if providing an existing VPC name in 'private_pool_vpc_name'
-      varType: bool
-      defaultValue: null
-      required: true
-    - name: labels
-      description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
-      varType: map(string)
-      defaultValue: {}
-    - name: location
-      description: Region for Cloud Build worker pool
-      varType: string
-      defaultValue: us-central1
-    - name: machine_type
-      description: Machine type for Cloud Build worker pool
-      varType: string
-      defaultValue: e2-medium
-    - name: network_project_id
-      description: Project ID for Cloud Build network.
-      varType: string
-      defaultValue: null
-      required: true
-    - name: private_pool_vpc_name
-      description: Set the name of the private pool VPC
-      varType: string
-      defaultValue: cloudbuild-vpc
-    - name: project_id
-      description: Project ID for Cloud Build Private Worker Pool
-      varType: string
-      defaultValue: null
-      required: true
-    - name: worker_address
-      description: "Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix length."
-      varType: string
-      defaultValue: 10.37.0.0
-    - name: worker_address_prefix_length
-      description: Prefix length, such as 24 for /24 or 16 for /16. Must be 24 or lower.
-      varType: string
-      defaultValue: "16"
-    - name: worker_pool_name
-      description: Name of Cloud Build Worker Pool
-      varType: string
-      defaultValue: cloudbuild-private-worker-pool
-    - name: worker_pool_no_external_ip
-      description: Whether to disable external IP on the Cloud Build Worker Pool
-      varType: bool
-      defaultValue: false
-    - name: worker_range_name
-      description: Name of Cloud Build Worker IP address range
-      varType: string
-      defaultValue: worker-pool-range
+      - name: project_id
+        description: Project ID for Cloud Build Private Worker Pool
+        varType: string
+        required: true
+      - name: network_project_id
+        description: Project ID for Cloud Build network.
+        varType: string
+        required: true
+      - name: create_cloudbuild_network
+        description: "Whether to create a VPC for the Cloud Build Worker Pool. Set to false if providing an existing VPC name in 'private_pool_vpc_name' "
+        varType: bool
+        required: true
+      - name: private_pool_vpc_name
+        description: Set the name of the private pool VPC
+        varType: string
+        defaultValue: cloudbuild-vpc
+      - name: worker_address
+        description: "Choose an address range for the Cloud Build Private Pool workers. example: 10.37.0.0. Do not include a prefix length."
+        varType: string
+        defaultValue: 10.37.0.0
+      - name: worker_address_prefix_length
+        description: Prefix length, such as 24 for /24 or 16 for /16. Must be 24 or lower.
+        varType: string
+        defaultValue: "16"
+      - name: worker_pool_name
+        description: Name of Cloud Build Worker Pool
+        varType: string
+        defaultValue: cloudbuild-private-worker-pool
+      - name: worker_range_name
+        description: Name of Cloud Build Worker IP address range
+        varType: string
+        defaultValue: worker-pool-range
+      - name: worker_pool_no_external_ip
+        description: Whether to disable external IP on the Cloud Build Worker Pool
+        varType: bool
+        defaultValue: false
+      - name: location
+        description: Region for Cloud Build worker pool
+        varType: string
+        defaultValue: us-central1
+      - name: machine_type
+        description: Machine type for Cloud Build worker pool
+        varType: string
+        defaultValue: e2-medium
+      - name: labels
+        description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
+        varType: map(string)
+        defaultValue: {}
     outputs:
-    - name: workerpool_id
-      description: Cloud Build worker pool ID
-    - name: workerpool_network
-      description: Self Link for Cloud Build workerpool VPC network
-    - name: workerpool_range
-      description: IP Address range for Cloud Build worker pool
+      - name: peering_name
+        description: The name of the VPC network peering connection
+      - name: workerpool_id
+        description: Cloud Build worker pool ID
+      - name: workerpool_network
+        description: Self Link for Cloud Build workerpool VPC network
+      - name: workerpool_network_id
+        description: ID of the VPC network where the worker pool is peered
+      - name: workerpool_network_name
+        description: Name of the VPC network where the worker pool is peered
+      - name: workerpool_range
+        description: IP Address range for Cloud Build worker pool
   requirements:
     roles:
-    - level: Project
-      roles:
-      - roles/artifactregistry.admin
-      - roles/binaryauthorization.attestorsAdmin
-      - roles/cloudbuild.builds.builder
-      - roles/cloudbuild.workerPoolOwner
-      - roles/clouddeploy.admin
-      - roles/cloudkms.admin
-      - roles/cloudkms.publicKeyViewer
-      - roles/containeranalysis.notes.editor
-      - roles/compute.networkAdmin
-      - roles/gkehub.editor
-      - roles/iam.serviceAccountAdmin
-      - roles/iam.serviceAccountUser
-      - roles/pubsub.editor
-      - roles/serviceusage.serviceUsageAdmin
-      - roles/source.admin
-      - roles/storage.admin
-      - roles/resourcemanager.projectIamAdmin
-      - roles/viewer
-    - level: Project
-      roles:
-      - roles/compute.networkAdmin
-      - roles/container.admin
-      - roles/binaryauthorization.policyEditor
-      - roles/resourcemanager.projectIamAdmin
-      - roles/iam.serviceAccountAdmin
-      - roles/serviceusage.serviceUsageViewer
-      - roles/iam.serviceAccountUser
+      - level: Project
+        roles:
+          - roles/compute.networkAdmin
+          - roles/container.admin
+          - roles/binaryauthorization.policyEditor
+          - roles/resourcemanager.projectIamAdmin
+          - roles/iam.serviceAccountAdmin
+          - roles/serviceusage.serviceUsageViewer
+          - roles/iam.serviceAccountUser
+      - level: Project
+        roles:
+          - roles/artifactregistry.admin
+          - roles/binaryauthorization.attestorsAdmin
+          - roles/cloudbuild.builds.builder
+          - roles/cloudbuild.workerPoolOwner
+          - roles/cloudbuild.admin
+          - roles/clouddeploy.admin
+          - roles/cloudkms.admin
+          - roles/cloudkms.publicKeyViewer
+          - roles/containeranalysis.notes.editor
+          - roles/compute.admin
+          - roles/compute.networkAdmin
+          - roles/compute.securityAdmin
+          - roles/gkehub.editor
+          - roles/iam.serviceAccountAdmin
+          - roles/iam.serviceAccountUser
+          - roles/pubsub.editor
+          - roles/serviceusage.serviceUsageAdmin
+          - roles/source.admin
+          - roles/storage.admin
+          - roles/resourcemanager.projectIamAdmin
+          - roles/viewer
+          - roles/secretmanager.admin
+          - roles/servicedirectory.admin
+          - roles/dns.admin
     services:
-    - cloudresourcemanager.googleapis.com
-    - cloudbilling.googleapis.com
-    - clouddeploy.googleapis.com
-    - storage-api.googleapis.com
-    - serviceusage.googleapis.com
-    - cloudbuild.googleapis.com
-    - containerregistry.googleapis.com
-    - iamcredentials.googleapis.com
-    - secretmanager.googleapis.com
-    - sourcerepo.googleapis.com
-    - artifactregistry.googleapis.com
-    - containeranalysis.googleapis.com
-    - cloudkms.googleapis.com
-    - binaryauthorization.googleapis.com
-    - containerscanning.googleapis.com
-    - servicenetworking.googleapis.com
-    - pubsub.googleapis.com
+      - accesscontextmanager.googleapis.com
+      - aiplatform.googleapis.com
+      - anthos.googleapis.com
+      - anthosconfigmanagement.googleapis.com
+      - anthospolicycontroller.googleapis.com
+      - apikeys.googleapis.com
+      - artifactregistry.googleapis.com
+      - binaryauthorization.googleapis.com
+      - certificatemanager.googleapis.com
+      - cloudbilling.googleapis.com
+      - cloudbuild.googleapis.com
+      - clouddeploy.googleapis.com
+      - cloudfunctions.googleapis.com
+      - cloudkms.googleapis.com
+      - cloudresourcemanager.googleapis.com
+      - cloudtrace.googleapis.com
+      - compute.googleapis.com
+      - container.googleapis.com
+      - containeranalysis.googleapis.com
+      - containerscanning.googleapis.com
+      - gkehub.googleapis.com
+      - iam.googleapis.com
+      - iap.googleapis.com
+      - mesh.googleapis.com
+      - modelarmor.googleapis.com
+      - monitoring.googleapis.com
+      - multiclusteringress.googleapis.com
+      - multiclusterservicediscovery.googleapis.com
+      - networkmanagement.googleapis.com
+      - networkservices.googleapis.com
+      - notebooks.googleapis.com
+      - orgpolicy.googleapis.com
+      - secretmanager.googleapis.com
+      - servicedirectory.googleapis.com
+      - servicemanagement.googleapis.com
+      - servicenetworking.googleapis.com
+      - serviceusage.googleapis.com
+      - sourcerepo.googleapis.com
+      - sqladmin.googleapis.com
+      - storage.googleapis.com
+      - trafficdirector.googleapis.com
+    providerVersions:
+      - source: hashicorp/google
+        version: ">= 4.3.0, < 8"
+      - source: hashicorp/google-beta
+        version: ">= 4.3.0, < 8"

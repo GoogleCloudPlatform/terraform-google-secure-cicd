@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ locals {
 # Private Cluster VPCs
 module "vpc" {
   source  = "terraform-google-modules/network/google"
-  version = "~> 6.0"
+  version = "~> 18.0"
+
+  count = var.network_name == null ? 1 : 0
 
   project_id   = var.project_id
   network_name = "${var.app_name}-vpc"
@@ -48,15 +50,4 @@ module "vpc" {
 
   subnets          = values(local.subnets)
   secondary_ranges = local.secondary_ranges
-}
-
-resource "google_compute_network_peering_routes_config" "gke_peering_routes_config" {
-  for_each = toset(local.envs)
-
-  project = var.project_id
-  peering = module.gke_cluster[each.value].peering_name
-  network = module.vpc.network_name
-
-  import_custom_routes = true
-  export_custom_routes = true
 }

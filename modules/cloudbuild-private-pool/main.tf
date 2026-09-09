@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-# Networking config
 resource "google_project_service" "servicenetworking" {
   project            = var.network_project_id
   service            = "servicenetworking.googleapis.com"
@@ -49,8 +48,6 @@ data "google_compute_network" "workerpool_vpc" {
 }
 
 resource "google_compute_global_address" "worker_range" {
-  provider = google-beta # labels support require google-beta
-
   name          = var.worker_range_name
   project       = var.network_project_id
   labels        = var.labels
@@ -81,7 +78,6 @@ resource "google_compute_network_peering_routes_config" "service_networking_peer
   ]
 }
 
-# Cloud Build Worker Pool
 resource "google_cloudbuild_worker_pool" "pool" {
   name     = var.worker_pool_name
   project  = var.project_id

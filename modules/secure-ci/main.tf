@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,48 @@
  * limitations under the License.
  */
 
-locals {
-  gar_name          = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
-  cache_bucket_name = var.cache_bucket_name == "" ? "${var.project_id}-cloudbuild" : "${var.project_id}-${var.cache_bucket_name}"
+resource "random_string" "suffix" {
+  length  = 4
+  special = false
+  upper   = false
 }
 
-resource "google_sourcerepo_repository" "repos" {
-  for_each = toset([var.cloudbuild_cd_repo, var.app_source_repo])
-  name     = each.key
-  project  = var.project_id
+resource "google_sourcerepo_repository" "csr_ci_repository" {
+  count = local.use_csr ? 1 : 0
+
+  project                      = var.project_id
+  name                         = var.csr_app_source_repo
+  create_ignore_already_exists = true
+}
+
+module "cloudbuild_repositories" {
+  count = local.use_csr ? 0 : 1
+
+  source  = "terraform-google-modules/bootstrap/google//modules/cloudbuild_repo_connection"
+  version = "12.0.0"
+
+  project_id = var.project_id
+
+  connection_config = {
+    connection_type = "${var.repository_type}v2"
+
+    github_secret_id        = var.github_auth != null ? var.github_auth.secret_id : null
+    github_app_id_secret_id = var.github_auth != null ? var.github_auth.app_id_secret_id : null
+
+    gitlab_read_authorizer_credential_secret_id = var.gitlab_auth != null ? var.gitlab_auth.read_authorizer_credential_secret_id : null
+    gitlab_authorizer_credential_secret_id      = var.gitlab_auth != null ? var.gitlab_auth.authorizer_credential_secret_id : null
+    gitlab_webhook_secret_id                    = var.gitlab_auth != null ? var.gitlab_auth.webhook_secret_id : null
+    gitlab_enterprise_host_uri                  = var.gitlab_auth != null ? var.gitlab_auth.enterprise_host_uri : null
+    gitlab_enterprise_service_directory         = var.gitlab_auth != null ? var.gitlab_auth.enterprise_service_directory : null
+    gitlab_enterprise_ca_certificate            = var.gitlab_auth != null ? var.gitlab_auth.enterprise_ca_certificate : null
+  }
+
+  cloud_build_repositories = local.repos
 }
 
 resource "google_storage_bucket" "cache_bucket" {
   project                     = var.project_id
-  name                        = local.cache_bucket_name
+  name                        = "${local.cache_bucket_name}-${random_string.suffix.id}"
   location                    = var.primary_location
   uniform_bucket_level_access = true
   force_destroy               = true
@@ -35,79 +63,77 @@ resource "google_storage_bucket" "cache_bucket" {
     enabled = true
   }
   labels = var.labels
+
+  dynamic "encryption" {
+    for_each = var.bucket_kms_key != null ? [1] : []
+    content {
+      default_kms_key_name = var.bucket_kms_key
+    }
+  }
 }
 
-resource "google_service_account" "build_sa" {
-  account_id   = "build-sa"
-  display_name = "Service Account for ${var.app_source_repo} Cloud Build triggers"
-  project      = var.project_id
-}
-
-resource "google_storage_bucket_iam_member" "cloudbuild_artifacts_iam" {
-  bucket     = google_storage_bucket.cache_bucket.name
-  role       = "roles/storage.admin"
-  member     = "serviceAccount:${google_service_account.build_sa.email}"
-  depends_on = [google_storage_bucket.cache_bucket]
-}
-
-resource "google_cloudbuild_trigger" "app_build_trigger" {
+resource "google_cloudbuild_trigger" "csr_app_build_trigger" {
+  count    = local.use_csr ? 1 : 0
   project  = var.project_id
-  name     = "${var.app_source_repo}-trigger"
+  name     = "${var.csr_app_source_repo}-trigger"
   location = var.primary_location
   trigger_template {
     branch_name = var.trigger_branch_name
-    repo_name   = var.app_source_repo
+    repo_name   = var.csr_app_source_repo
   }
-  substitutions = merge(
-    {
-      _GAR_REPOSITORY            = local.gar_name
-      _DEFAULT_REGION            = var.primary_location
-      _CACHE_BUCKET_NAME         = google_storage_bucket.cache_bucket.name
-      _ATTESTOR_NAME             = module.attestors[var.attestor_names_prefix[0]].attestor
-      _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
-      _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name
-    },
-    var.additional_substitutions
-  )
+
+  substitutions   = local.common_substitutions
   service_account = google_service_account.build_sa.id
   filename        = var.app_build_trigger_yaml
-  depends_on      = [google_sourcerepo_repository.repos]
+  depends_on = [
+    google_sourcerepo_repository.csr_ci_repository,
+    time_sleep.wait_for_cb_iam
+  ]
 }
 
-# Build the Cloud Build builder image
-module "gcloud" {
-  source                            = "terraform-google-modules/gcloud/google"
-  count                             = var.skip_provisioners ? 0 : 1
-  version                           = "~> 3.1.0"
-  platform                          = "linux"
-  create_cmd_entrypoint             = "${path.module}/scripts/cloud-build-submit.sh"
-  create_cmd_body                   = "${var.runner_build_folder} ${var.project_id} ${var.build_image_config_yaml} ${var.primary_location} ${local.gar_name} ${google_storage_bucket.cache_bucket.url}/source"
-  use_tf_google_credentials_env_var = var.use_tf_google_credentials_env_var
-}
-
-# Cloud Build Service Account permissions
-resource "google_project_iam_member" "build_sa_project_iam" {
-  for_each = toset(var.cloudbuild_service_account_roles)
+resource "google_cloudbuild_trigger" "app_build_trigger" {
+  count    = local.use_csr ? 0 : 1
   project  = var.project_id
-  role     = each.value
-  member   = "serviceAccount:${google_service_account.build_sa.email}"
+  name     = "${local.second_gen_repo_name}-trigger"
+  location = var.primary_location
+  repository_event_config {
+    repository = local.second_gen_repo_id
+    push {
+      branch = var.trigger_branch_name # Assumes the same branch for all
+    }
+  }
+
+  substitutions   = local.common_substitutions
+  service_account = google_service_account.build_sa.id
+  filename        = var.app_build_trigger_yaml
+  depends_on = [
+    module.cloudbuild_repositories,
+    time_sleep.wait_for_cb_iam
+  ]
 }
 
 resource "google_artifact_registry_repository" "image_repo" {
-  provider      = google-beta
   project       = var.project_id
   location      = var.primary_location
   repository_id = format("%s-%s", var.project_id, var.gar_repo_name_suffix)
   description   = "Docker repository for application images"
   format        = "DOCKER"
   labels        = var.labels
+  vulnerability_scanning_config {
+    enablement_config = "INHERITED"
+  }
 }
 
 resource "google_artifact_registry_repository_iam_member" "terraform-image-iam" {
-  provider   = google-beta
   project    = var.project_id
   location   = google_artifact_registry_repository.image_repo.location
   repository = google_artifact_registry_repository.image_repo.name
   role       = "roles/artifactregistry.admin"
   member     = "serviceAccount:${google_service_account.build_sa.email}"
+}
+
+resource "google_project_service" "containerscanning_api" {
+  project = var.project_id
+
+  service = "containerscanning.googleapis.com"
 }
