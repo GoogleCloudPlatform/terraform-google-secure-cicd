@@ -261,6 +261,7 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 	standaloneSingleProjT := tft.NewTFBlueprintTest(t,
 		tft.WithVars(vars),
 		tft.WithTFDir("../../../examples/standalone_single_project"),
+		tft.WithRetryableTerraformErrors(testutils.RetryableTransientErrors, 4, 2*time.Minute),
 	)
 
 	standaloneSingleProjT.DefineVerify(func(assert *assert.Assertions) {
