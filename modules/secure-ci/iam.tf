@@ -19,7 +19,7 @@ data "google_project" "project" {
 
 resource "google_service_account" "build_sa" {
   account_id   = "build-sa"
-  display_name = "Service Account for ${var.csr_app_source_repo} Cloud Build triggers"
+  display_name = "Service Account for ${var.ci_repository.repository_name} Cloud Build triggers"
   project      = var.project_id
 }
 
@@ -89,8 +89,11 @@ resource "google_project_iam_member" "cloudbuild_sa_connection_viewer" {
 }
 
 resource "time_sleep" "wait_for_cb_iam" {
-  depends_on      = [google_project_iam_member.cloudbuild_sa_connection_viewer]
-  create_duration = "30s"
+  depends_on = [
+    google_project_iam_member.cloudbuild_sa_connection_viewer,
+    google_project_iam_member.build_sa_project_iam
+  ]
+  create_duration = "240s"
 }
 
 resource "time_sleep" "wait_access_level_propagation" {

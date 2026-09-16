@@ -30,7 +30,7 @@ spec:
         Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE, Anthos, or Cloud Run.
         You can choose whether to deploy your solution through the console directly or download as Terraform from GitHub to deploy later.
       architecture:
-        - A developer pushes new code or a code change for a container-based application to a Source Repository (Cloud Source Repositories, GitHub, or GitLab).
+        - A developer pushes new code or a code change for a container-based application to a Source Repository (GitHub or GitLab).
         - The code push invokes a Cloud Build trigger. The Cloud Build trigger starts a build in a Cloud Build private worker pool that's hosted in a customer-managed VPC. The outputs of the build are metadata files, Cloud Build logs, and containers.
         - The metadata files and the Cloud Build logs are stored in a Cloud Storage bucket.
         - The pipeline runs security scans (which you configure) and validates the container structure. When the scans and structure pass, the containers are stored in Artifact Registry.

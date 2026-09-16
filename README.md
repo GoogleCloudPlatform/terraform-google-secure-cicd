@@ -12,7 +12,7 @@ Set up a secure CI/CD pipeline that follows best practices for building, scannin
 You can choose whether to deploy your solution through the console directly or download as Terraform from GitHub to deploy later.
 
 ### Architecture
-1. A developer pushes new code or a code change for a container-based application to a Source Repository (Cloud Source Repositories, GitHub, or GitLab).
+1. A developer pushes new code or a code change for a container-based application to a Source Repository (GitHub or GitLab).
 1. The code push invokes a Cloud Build trigger. The Cloud Build trigger starts a build in a Cloud Build private worker pool that's hosted in a customer-managed VPC. The outputs of the build are metadata files, Cloud Build logs, and containers.
 1. The metadata files and the Cloud Build logs are stored in a Cloud Storage bucket.
 1. The pipeline runs security scans (which you configure) and validates the container structure. When the scans and structure pass, the containers are stored in Artifact Registry.
@@ -38,11 +38,18 @@ module "ci_pipeline" {
 
   project_id              = {PROJECT_ID}
   primary_location        = "us-central1"
-  repository_type         = "CSR"
-  csr_app_source_repo     = "my-app-source"
+  repository_type         = "GITHUB"
+  ci_repository = {
+    repository_name = "my-app-source"
+    repository_url  = "https://github.com/my-org/my-app-source.git"
+  }
+  github_auth = {
+    secret_id         = "projects/{SECRETS_PROJECT_ID}/secrets/github-pat"
+    app_id_secret_id  = "projects/{SECRETS_PROJECT_ID}/secrets/github-app-id"
+    secret_project_id = "{SECRETS_PROJECT_ID}"
+  }
   attestor_names_prefix   = ["build", "security", "quality"]
   app_build_trigger_yaml  = "cloudbuild-ci.yaml"
-  build_image_config_yaml = "cloudbuild-skaffold-build-image.yaml"
   trigger_branch_name     = "^main$"
 }
 
@@ -52,8 +59,16 @@ module "cd_pipeline" {
 
   project_id                 = {PROJECT_ID}
   primary_location           = "us-central1"
-  repository_type            = "CSR"
-  csr_cloudbuild_cd_repo     = "cloudbuild-cd-config-pc"
+  repository_type            = "GITHUB"
+  cd_repository = {
+    repository_name = "cloudbuild-cd-config"
+    repository_url  = "https://github.com/my-org/cloudbuild-cd-config.git"
+  }
+  github_auth = {
+    secret_id         = "projects/{SECRETS_PROJECT_ID}/secrets/github-pat"
+    app_id_secret_id  = "projects/{SECRETS_PROJECT_ID}/secrets/github-app-id"
+    secret_project_id = "{SECRETS_PROJECT_ID}"
+  }
   gar_repo_name              = module.ci_pipeline.app_artifact_repo
   app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
   cache_bucket_name          = module.ci_pipeline.cache_bucket_name

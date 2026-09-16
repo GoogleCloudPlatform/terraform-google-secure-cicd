@@ -73,3 +73,16 @@ resource "time_sleep" "wait_service_network_peering" {
 
   create_duration = "30s"
 }
+
+resource "google_project_iam_member" "allow_standalone_cloudbuild_workerpool" {
+  project = module.private_workerpool_project.project_id
+  role    = "roles/cloudbuild.workerPoolUser"
+  member  = "serviceAccount:service-${var.project_number_standalone}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "allow_standalone_legacy_cloudbuild_workerpool" {
+  project = module.private_workerpool_project.project_id
+  role    = "roles/cloudbuild.workerPoolUser"
+  member  = "serviceAccount:${var.project_number_standalone}@cloudbuild.gserviceaccount.com"
+}
+

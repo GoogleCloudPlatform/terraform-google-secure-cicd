@@ -66,12 +66,12 @@ output "attestors" {
 
 output "ci_repo_name" {
   description = "Name of the CI source repository"
-  value       = var.repository_type == "CSR" ? module.ci_pipeline.source_repo_name : var.ci_repository.repository_name
+  value       = var.ci_repository.repository_name
 }
 
 output "cd_repo_name" {
   description = "Name of the CD source repository"
-  value       = var.repository_type == "CSR" ? module.ci_pipeline.source_repo_name : var.cd_repository.repository_name
+  value       = var.cd_repository.repository_name
 }
 
 output "gitlab_url" {

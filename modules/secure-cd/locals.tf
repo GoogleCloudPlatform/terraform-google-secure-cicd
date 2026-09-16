@@ -15,17 +15,12 @@
  */
 
 locals {
-  use_csr = var.repository_type == "CSR"
-  repos   = local.use_csr ? {} : { for repo in [var.cd_repository] : repo.repository_name => repo }
+  repos = { for repo in [var.cd_repository] : repo.repository_name => repo }
 
-  cd_repo_source = local.use_csr ? {
-    uri        = "https://source.developers.google.com/p/${var.project_id}/r/${var.csr_cloudbuild_cd_repo}"
-    repo_type  = "CLOUD_SOURCE_REPOSITORIES"
-    repository = null
-    } : {
+  cd_repo_source = {
     uri        = null
     repo_type  = var.repository_type == "GITHUB" ? var.repository_type : "UNKNOWN"
-    repository = values(module.cloudbuild_repositories[0].cloud_build_repositories_2nd_gen_repositories)[0].id
+    repository = values(module.cloudbuild_repositories.cloud_build_repositories_2nd_gen_repositories)[0].id
   }
   deploy_projects = distinct([
     for env_name, env_config in var.deploy_branch_clusters : env_config.project_id

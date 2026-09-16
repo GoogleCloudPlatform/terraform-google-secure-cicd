@@ -17,7 +17,6 @@ package testutils
 import (
 	"fmt"
 	"log"
-	"regexp"
 	"time"
 )
 
@@ -80,34 +79,17 @@ var (
 
 // Retry retries a function a given number of times with a delay between attempts.
 func Retry(retries int, delay time.Duration, f func() error) error {
+	var err error
 	for i := 0; i < retries; i++ {
-		err := f()
+		err = f()
 		if err == nil {
 			return nil
 		}
 
 		log.Printf("Attempt %d failed: %v. Retrying in %s...", i+1, err, delay)
-
-		// Check if the error is a transient one
-		isTransient := false
-		errMsg := err.Error()
-		for pattern, desc := range RetryableTransientErrors {
-			if matched, _ := regexp.MatchString(pattern, errMsg); matched {
-				log.Printf("Detected transient error: %s - %s", desc, errMsg)
-				isTransient = true
-				break
-			}
+		if i < retries-1 {
+			time.Sleep(delay)
 		}
-
-		if !isTransient && i == retries-1 {
-			return fmt.Errorf("function failed after %d retries with non-transient error: %w", retries, err)
-		} else if !isTransient {
-			// Not a transient error, and not the last retry, so we can't assume it will pass.
-			// Break early for non-retryable errors.
-			return fmt.Errorf("function failed with non-transient error: %w", err)
-		}
-
-		time.Sleep(delay)
 	}
-	return fmt.Errorf("function failed after %d retries", retries)
+	return fmt.Errorf("function failed after %d retries: %w", retries, err)
 }

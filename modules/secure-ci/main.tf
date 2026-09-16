@@ -20,17 +20,7 @@ resource "random_string" "suffix" {
   upper   = false
 }
 
-resource "google_sourcerepo_repository" "csr_ci_repository" {
-  count = local.use_csr ? 1 : 0
-
-  project                      = var.project_id
-  name                         = var.csr_app_source_repo
-  create_ignore_already_exists = true
-}
-
 module "cloudbuild_repositories" {
-  count = local.use_csr ? 0 : 1
-
   source  = "terraform-google-modules/bootstrap/google//modules/cloudbuild_repo_connection"
   version = "12.0.0"
 
@@ -55,7 +45,7 @@ module "cloudbuild_repositories" {
 
 resource "google_storage_bucket" "cache_bucket" {
   project                     = var.project_id
-  name                        = "${local.cache_bucket_name}-${random_string.suffix.id}"
+  name                        = "${var.cache_bucket_name}-${random_string.suffix.id}"
   location                    = var.primary_location
   uniform_bucket_level_access = true
   force_destroy               = true
@@ -72,27 +62,7 @@ resource "google_storage_bucket" "cache_bucket" {
   }
 }
 
-resource "google_cloudbuild_trigger" "csr_app_build_trigger" {
-  count    = local.use_csr ? 1 : 0
-  project  = var.project_id
-  name     = "${var.csr_app_source_repo}-trigger"
-  location = var.primary_location
-  trigger_template {
-    branch_name = var.trigger_branch_name
-    repo_name   = var.csr_app_source_repo
-  }
-
-  substitutions   = local.common_substitutions
-  service_account = google_service_account.build_sa.id
-  filename        = var.app_build_trigger_yaml
-  depends_on = [
-    google_sourcerepo_repository.csr_ci_repository,
-    time_sleep.wait_for_cb_iam
-  ]
-}
-
 resource "google_cloudbuild_trigger" "app_build_trigger" {
-  count    = local.use_csr ? 0 : 1
   project  = var.project_id
   name     = "${local.second_gen_repo_name}-trigger"
   location = var.primary_location

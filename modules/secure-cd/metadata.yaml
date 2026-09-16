@@ -44,9 +44,6 @@ spec:
         description: Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines.
         varType: string
         required: true
-      - name: csr_cloudbuild_cd_repo
-        description: Name of the CSR repo that stores the Cloud Build CD phase configs - for post-deployment checks
-        varType: string
       - name: gar_repo_name
         description: Docker artifact registry repo to store app build images
         varType: string
@@ -94,7 +91,7 @@ spec:
         description: (VPC-SC) Access Level full name. When providing this variable, additional identities will be added to the access level, these are required to work within an enforced VPC-SC Perimeter.
         varType: string
       - name: repository_type
-        description: The type of the repository. Must be one of 'GITHUB', 'GITLAB', or 'CSR'.
+        description: The type of the repository. Must be one of 'GITHUB' or 'GITLAB'.
         varType: string
         required: true
       - name: cd_repository
@@ -127,8 +124,6 @@ spec:
     outputs:
       - name: binauthz_policy_required_attestations
         description: Binary Authorization policy required attestation in GKE projects
-      - name: cd_repo_name
-        description: Name of the CD source repository
       - name: clouddeploy_delivery_pipeline_id
         description: ID of the Cloud Deploy delivery pipeline
       - name: clouddeploy_target_id

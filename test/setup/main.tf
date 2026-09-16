@@ -88,7 +88,6 @@ module "project_standalone" {
     "servicemanagement.googleapis.com",
     "servicenetworking.googleapis.com",
     "serviceusage.googleapis.com",
-    "sourcerepo.googleapis.com",
     "sqladmin.googleapis.com",
     "storage.googleapis.com",
     "trafficdirector.googleapis.com",
@@ -104,7 +103,6 @@ module "project_standalone" {
         "roles/cloudkms.cryptoOperator",
         "roles/containeranalysis.notes.attacher",
         "roles/containeranalysis.notes.occurrences.viewer",
-        "roles/source.writer",
       ]
     },
     {

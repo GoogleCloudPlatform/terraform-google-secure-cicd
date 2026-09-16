@@ -24,12 +24,6 @@ variable "primary_location" {
   description = "Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines."
 }
 
-variable "csr_cloudbuild_cd_repo" {
-  type        = string
-  description = "Name of the CSR repo that stores the Cloud Build CD phase configs - for post-deployment checks"
-  default     = null
-}
-
 variable "gar_repo_name" {
   type        = string
   description = "Docker artifact registry repo to store app build images"
@@ -90,8 +84,12 @@ variable "access_level_name" {
 }
 
 variable "repository_type" {
-  description = "The type of the repository. Must be one of 'GITHUB', 'GITLAB', or 'CSR'."
+  description = "The type of the repository. Must be one of 'GITHUB' or 'GITLAB'."
   type        = string
+  validation {
+    condition     = contains(["GITHUB", "GITLAB"], var.repository_type)
+    error_message = "The repository_type must be either 'GITHUB' or 'GITLAB'."
+  }
   validation {
     condition = (
       var.repository_type != "GITHUB" ||
@@ -105,13 +103,6 @@ variable "repository_type" {
       (var.gitlab_auth != null && var.github_auth == null)
     )
     error_message = "When repository_type is 'GITLAB', the 'gitlab_auth' variable must be set, and 'github_auth' must not be set."
-  }
-  validation {
-    condition = (
-      var.repository_type != "CSR" ||
-      (var.github_auth == null && var.gitlab_auth == null)
-    )
-    error_message = "When repository_type is 'CSR', neither 'github_auth' nor 'gitlab_auth' should be set."
   }
 }
 

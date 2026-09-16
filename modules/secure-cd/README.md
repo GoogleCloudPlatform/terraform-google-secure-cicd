@@ -10,7 +10,7 @@ This module provisions the following resources:
 
 * **Cloud Deploy Pipeline & Targets**: Creates a delivery pipeline and deployment targets (GKE, Anthos, or Cloud Run) based on your environment definitions.
 * **Cloud Build Triggers**: Sets up Pub/Sub-driven Cloud Build triggers that execute the actual deployment manifests (e.g., `cloudbuild-cd.yaml`) when Cloud Deploy initiates a rollout.
-* **Source Code Repositories**: Supports native Cloud Source Repositories (CSR) or 2nd-gen Cloud Build repository connections (GitHub/GitLab) for storing your CD configuration files.
+* **Source Code Repositories**: Supports 2nd-gen Cloud Build repository connections (GitHub/GitLab) for storing your CD configuration files.
 * **Binary Authorization Policies**: Enforces `REQUIRE_ATTESTATION` rules on the target clusters, ensuring images are signed by the required attestors before deployment.
 * **Pub/Sub Notifications**: Creates a Pub/Sub topic to handle Cloud Deploy operational notifications.
 * **IAM & Security**: Provisions a dedicated Cloud Deploy execution Service Account and configures all necessary cross-service IAM bindings (e.g., allowing Cloud Build to impersonate the execution SA, granting GKE developer roles, and allowing the BinAuthz service agent to verify attestations).
@@ -25,8 +25,7 @@ Ensure the following APIs are enabled in your GCP project:
 * `cloudbuild.googleapis.com`
 * `binaryauthorization.googleapis.com`
 * `pubsub.googleapis.com`
-* `sourcerepo.googleapis.com` (If using CSR)
-* `secretmanager.googleapis.com` (If using GitHub/GitLab auth)
+* `secretmanager.googleapis.com`
 
 ### IAM Roles
 
@@ -39,53 +38,8 @@ The identity executing this Terraform module needs the following minimum roles (
 * `roles/iam.serviceAccountAdmin` (To create the Cloud Deploy execution service account)
 * `roles/pubsub.admin` (To create the Cloud Deploy operations topic)
 * `roles/resourcemanager.projectIamAdmin` (To grant necessary roles to the execution and build service accounts)
-* `roles/source.admin` (To create the CSR repository, if applicable)
 
 ## Usage
-
-### Basic Usage (Cloud Source Repositories & GKE)
-
-```hcl
-module "cd_pipeline" {
-  source = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-cd"
-
-  project_id                 = "my-gcp-project-id"
-  primary_location           = "us-central1"
-  repository_type            = "CSR"
-  csr_cloudbuild_cd_repo     = "my-cd-config-repo"
-  gar_repo_name              = "my-app-image-repo"
-  app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
-  cache_bucket_name          = "my-build-cache-bucket"
-  clouddeploy_pipeline_name  = "my-app-delivery-pipeline"
-  cloudbuild_service_account = "build-sa@my-gcp-project-id.iam.gserviceaccount.com"
-
-  deploy_branch_clusters = {
-    "dev" = {
-      cluster               = "dev-cluster"
-      anthos_membership     = ""
-      project_id            = "my-gcp-project-id"
-      location              = "us-central1"
-      required_attestations = ["projects/my-gcp-project-id/attestors/build-attestor"]
-      env_attestation       = "projects/my-gcp-project-id/attestors/security-attestor"
-      next_env              = "qa"
-      target_type           = "gke"
-    },
-    "qa" = {
-      cluster               = "qa-cluster"
-      anthos_membership     = ""
-      project_id            = "my-gcp-project-id"
-      location              = "us-central1"
-      required_attestations = [
-        "projects/my-gcp-project-id/attestors/build-attestor",
-        "projects/my-gcp-project-id/attestors/security-attestor"
-      ]
-      env_attestation       = "projects/my-gcp-project-id/attestors/qa-attestor"
-      next_env              = ""
-      target_type           = "gke"
-    }
-  }
-}
-```
 
 ### Usage with GitLab (2nd Gen Repositories)
 
@@ -108,9 +62,9 @@ module "cd_pipeline" {
   }
 
   gitlab_auth = {
-    read_authorizer_credential_secret_id = "projects/123/secrets/gitlab-read-token"
-    authorizer_credential_secret_id      = "projects/123/secrets/gitlab-authorizer-token"
-    webhook_secret_id                    = "projects/123/secrets/gitlab-webhook-secret"
+    read_authorizer_credential_secret_id = "projects/my-secrets-project/secrets/gitlab-read-token"
+    authorizer_credential_secret_id      = "projects/my-secrets-project/secrets/gitlab-authorizer-token"
+    webhook_secret_id                    = "projects/my-secrets-project/secrets/gitlab-webhook-secret"
     secret_project_id                    = "my-secrets-project"
   }
 
@@ -142,21 +96,19 @@ module "cd_pipeline" {
 | cloudbuild\_private\_pool | Cloud Build private pool self-link | `string` | `""` | no |
 | cloudbuild\_service\_account | Cloud Build SA email address | `string` | n/a | yes |
 | clouddeploy\_pipeline\_name | Cloud Deploy pipeline name | `string` | n/a | yes |
-| csr\_cloudbuild\_cd\_repo | Name of the CSR repo that stores the Cloud Build CD phase configs - for post-deployment checks | `string` | `null` | no |
 | deploy\_branch\_clusters | A list of environment deployments, ordered by 'env\_number'. target\_type can be one of `gke`, `anthos_cluster`, or `run`. See [clouddeploy\_target Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) for more details | <pre>map(object({<br>    name                  = string<br>    cluster               = string<br>    anthos_membership     = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    env_number            = number<br>    target_type           = string<br>  }))</pre> | `{}` | no |
 | gar\_repo\_name | Docker artifact registry repo to store app build images | `string` | n/a | yes |
 | github\_auth | Authentication configuration for GitHub. Required only if repo\_type is 'GITHUBv2'. | <pre>object({<br>    secret_id         = string<br>    app_id_secret_id  = string<br>    secret_project_id = string<br>  })</pre> | `null` | no |
 | gitlab\_auth | Authentication configuration for GitLab. Required only if repo\_type is 'GITLABv2'. | <pre>object({<br>    read_authorizer_credential_secret_id = string<br>    authorizer_credential_secret_id      = string<br>    webhook_secret_id                    = string<br>    enterprise_host_uri                  = optional(string)<br>    enterprise_service_directory         = optional(string)<br>    enterprise_ca_certificate            = optional(string)<br>    secret_project_id                    = string<br>  })</pre> | `null` | no |
 | primary\_location | Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines. | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
-| repository\_type | The type of the repository. Must be one of 'GITHUB', 'GITLAB', or 'CSR'. | `string` | n/a | yes |
+| repository\_type | The type of the repository. Must be one of 'GITHUB' or 'GITLAB'. | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | binauthz\_policy\_required\_attestations | Binary Authorization policy required attestation in GKE projects |
-| cd\_repo\_name | Name of the CD source repository |
 | clouddeploy\_delivery\_pipeline\_id | ID of the Cloud Deploy delivery pipeline |
 | clouddeploy\_target\_id | ID(s) of Cloud Deploy targets |
 | clouddeploy\_target\_names\_ordered | Names of Cloud Deploy targets in promotion order |

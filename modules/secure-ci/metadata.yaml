@@ -55,14 +55,10 @@ spec:
         description: Name of application cloudbuild yaml file
         varType: string
         required: true
-      - name: csr_app_source_repo
-        description: Name of repo that contains app source code along with cloudbuild yaml
-        varType: string
-        defaultValue: app-source
       - name: cache_bucket_name
         description: Name of cloudbuild artifact and cache GCS bucket
         varType: string
-        defaultValue: ""
+        defaultValue: bkt-cloudbuild
       - name: gar_repo_name_suffix
         description: Docker artifact registry repo to store app build images
         varType: string
@@ -85,7 +81,6 @@ spec:
           - roles/containeranalysis.notes.attacher
           - roles/containeranalysis.notes.occurrences.viewer
           - roles/serviceusage.serviceUsageConsumer
-          - roles/source.writer
           - roles/storage.admin
           - roles/cloudbuild.workerPoolUser
           - roles/ondemandscanning.admin
@@ -110,7 +105,7 @@ spec:
         description: KMS Key id to be used to encrypt bucket.
         varType: string
       - name: repository_type
-        description: The type of the repository. Must be one of 'GITHUB', 'GITLAB', or 'CSR'.
+        description: The type of the repository. Must be one of 'GITHUB' or 'GITLAB'.
         varType: string
         required: true
       - name: ci_repository
@@ -157,10 +152,6 @@ spec:
         description: ID of the CI Cloud Build trigger.
       - name: skaffold_builder_image_tag
         description: The full path to the built Skaffold builder image in Artifact Registry.
-      - name: source_repo_name
-        description: Name of the created CSR repos
-      - name: source_repo_url
-        description: URLS of the created CSR repos
       - name: standalone_bucket_kms_key
         description: KMS Key for standalone bucket.
   requirements:

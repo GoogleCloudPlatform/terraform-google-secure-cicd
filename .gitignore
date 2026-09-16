@@ -4,6 +4,11 @@
 # OSX trash
 .DS_Store
 
+# BMAD installation and output files
+_bmad/*
+_bmad-output/*
+.agents/*
+
 # Python
 *.pyc
 
