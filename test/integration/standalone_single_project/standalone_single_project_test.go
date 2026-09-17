@@ -58,27 +58,66 @@ func runCmd(t *testing.T, dir, name string, args ...string) {
 	}
 }
 
-func getLatestReleaseName(t *testing.T, projectID, region, pipelineID, targetName string) string {
+func getLatestReleaseName(t *testing.T, projectID, region, pipelineID string) string {
 	var latestRelease string
-	err := testutils.Retry(20, 30*time.Second, func() error {
-		releases := gcloud.Runf(t, "deploy releases list --delivery-pipeline=%s --project %s --region %s", pipelineID, projectID, region).Array()
-		for _, release := range releases {
-			fullReleaseName := release.Get("name").String()
-
-			rollouts := gcloud.Runf(t, "deploy rollouts list --delivery-pipeline=%s --release=%s --project %s --region %s --filter='state=SUCCEEDED AND targetId=%s' --format=json", pipelineID, fullReleaseName, projectID, region, targetName).Array()
-
-			if len(rollouts) > 0 {
-				parts := strings.Split(fullReleaseName, "/")
-				latestRelease = parts[len(parts)-1]
-				return nil
-			}
+	err := testutils.Retry(30, 20*time.Second, func() error {
+		releases := gcloud.Runf(t, "deploy releases list --delivery-pipeline=%s --project %s --region %s --format json", pipelineID, projectID, region).Array()
+		if len(releases) == 0 {
+			return fmt.Errorf("no releases found yet for pipeline %s", pipelineID)
 		}
-		return fmt.Errorf("no successful release found for target %s", targetName)
+		fullReleaseName := releases[0].Get("name").String()
+		parts := strings.Split(fullReleaseName, "/")
+		latestRelease = parts[len(parts)-1]
+		t.Logf("Found latest release: %s", latestRelease)
+		return nil
 	})
 	if err != nil {
 		t.Fatalf("Failed to get latest release name: %v", err)
 	}
 	return latestRelease
+}
+
+func waitForRollout(t *testing.T, projectID, region, pipelineID, releaseName, targetName string) {
+	t.Logf("Waiting for Cloud Deploy rollout of release %s on target %s to succeed...", releaseName, targetName)
+	err := testutils.Retry(40, 30*time.Second, func() error {
+		rollouts := gcloud.Runf(t, "deploy rollouts list --delivery-pipeline=%s --release=%s --project %s --region %s --filter='targetId=%s' --format json", pipelineID, releaseName, projectID, region, targetName).Array()
+		if len(rollouts) == 0 {
+			return fmt.Errorf("rollout on target %s for release %s not created yet (rendering in progress)", targetName, releaseName)
+		}
+
+		latestRollout := rollouts[0]
+		state := latestRollout.Get("state").String()
+		rolloutID := latestRollout.Get("name").String()
+		t.Logf("Rollout %s on target %s state: %s", rolloutID, targetName, state)
+
+		if state == "SUCCEEDED" {
+			t.Logf("Rollout %s on target %s finished successfully.", rolloutID, targetName)
+			return nil
+		} else if state == "IN_PROGRESS" || state == "PENDING_RELEASE" || state == "PENDING_APPROVAL" || state == "PENDING" {
+			return fmt.Errorf("rollout %s on target %s is still in progress with state: %s", rolloutID, targetName, state)
+		} else {
+			deployingBuild := latestRollout.Get("deployingBuild").String()
+			if deployingBuild != "" {
+				logs := gcloud.RunCmd(t, fmt.Sprintf("builds log %s --project=%s --region=%s", deployingBuild, projectID, region))
+				t.Logf("Rollout %s build-log: %s", rolloutID, logs)
+				if strings.Contains(logs, "Waiting for deployments to stabilize") ||
+					strings.Contains(logs, "Insufficient memory") ||
+					strings.Contains(logs, "Insufficient CPU") ||
+					strings.Contains(logs, "didn't match Pod's node affinity/selector") ||
+					strings.Contains(logs, "FailedScaleUp") {
+					t.Logf("Retrying rollout job due to cluster scaling/stabilization...")
+					parts := strings.Split(rolloutID, "/")
+					shortRolloutName := parts[len(parts)-1]
+					gcloud.Runf(t, "deploy rollouts retry-job %s --delivery-pipeline=%s --release=%s --project=%s --region=%s --phase-id=stable --job-id=deploy", shortRolloutName, pipelineID, releaseName, projectID, region)
+					return fmt.Errorf("retrying rollout %s after cluster scaling failure", shortRolloutName)
+				}
+			}
+			return fmt.Errorf("rollout %s on target %s failed with state: %s", rolloutID, targetName, state)
+		}
+	})
+	if err != nil {
+		t.Fatalf("Rollout for target %s failed: %v", targetName, err)
+	}
 }
 
 func promoteRelease(t *testing.T, projectID, region, pipeline, release, toEnv string) {
@@ -325,12 +364,13 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 			waitForCIBuild(t, projectID, region, ciUuid)
 		}
 
-		var latestRelease string
+		latestRelease := getLatestReleaseName(t, projectID, region, cloudDeployPipelineID)
+
 		for i, trigger := range cdOrderedTriggerNamesList {
 			triggerID := trigger.String()
 			targetName := clouddeployTargetNamesOrderedList[i].String()
-			t.Logf("Waiting for Cloud Deploy release/rollout on target %s to succeed...", targetName)
-			latestRelease = getLatestReleaseName(t, projectID, region, cloudDeployPipelineID, targetName)
+
+			waitForRollout(t, projectID, region, cloudDeployPipelineID, latestRelease, targetName)
 
 			t.Logf("Running CD trigger %s for target %s", triggerID, targetName)
 			runTrigger(t, projectID, region, triggerID)
