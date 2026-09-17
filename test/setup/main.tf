@@ -49,6 +49,7 @@ module "project_standalone" {
   folder_id               = module.folder_seed.id
   billing_account         = var.billing_account
   default_service_account = "keep"
+  deletion_policy         = "DELETE"
 
   activate_apis = [
     "accesscontextmanager.googleapis.com",

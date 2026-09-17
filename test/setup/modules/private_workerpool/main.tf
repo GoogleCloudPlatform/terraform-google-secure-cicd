@@ -25,6 +25,7 @@ module "private_workerpool_project" {
   folder_id                = var.folder_id
   billing_account          = var.billing_account
   default_service_account  = "KEEP"
+  deletion_policy          = "DELETE"
 
   auto_create_network = true
 
