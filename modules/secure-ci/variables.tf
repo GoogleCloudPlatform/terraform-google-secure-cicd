@@ -21,7 +21,7 @@ variable "project_id" {
 
 variable "primary_location" {
   type        = string
-  description = "Region used for key-ring"
+  description = "Primary Google Cloud region for deploying resources like Artifact Registry, Cloud Storage buckets, and Cloud Build triggers."
 }
 
 variable "attestor_names_prefix" {
@@ -29,50 +29,27 @@ variable "attestor_names_prefix" {
   type        = list(string)
 }
 
+variable "access_level_name" {
+  description = "(VPC-SC) Access Level full name. When providing this variable, additional identities will be added to the access level, these are required to work within an enforced VPC-SC Perimeter."
+  type        = string
+  default     = null
+}
+
 variable "app_build_trigger_yaml" {
   type        = string
   description = "Name of application cloudbuild yaml file"
 }
 
-variable "runner_build_folder" {
-  type        = string
-  description = "Path to the source folder for the cloud builds submit command. Leave blank if `skip_provisioners = true`"
-  default     = ""
-}
-
-variable "build_image_config_yaml" {
-  type        = string
-  description = "Name of image builder yaml file"
-}
-
-variable "app_source_repo" {
-  type        = string
-  description = "Name of repo that contains app source code along with cloudbuild yaml"
-  default     = "app-source"
-}
-
-variable "cloudbuild_cd_repo" {
-  type        = string
-  description = "Name of repo that stores the Cloud Build CD phase configs - for post-deployment checks"
-  default     = "cloudbuild-cd-config"
-}
-
 variable "cache_bucket_name" {
   type        = string
   description = "Name of cloudbuild artifact and cache GCS bucket"
-  default     = ""
+  default     = "bkt-cloudbuild"
 }
 
 variable "gar_repo_name_suffix" {
   type        = string
-  description = "Docker artifact regitery repo to store app build images"
+  description = "Docker artifact registry repo to store app build images"
   default     = "app-image-repo"
-}
-
-variable "use_tf_google_credentials_env_var" {
-  description = "Optional GOOGLE_CREDENTIALS environment variable to be activated."
-  type        = bool
-  default     = false
 }
 
 variable "trigger_branch_name" {
@@ -87,12 +64,13 @@ variable "cloudbuild_service_account_roles" {
     "roles/artifactregistry.admin",
     "roles/binaryauthorization.attestorsVerifier",
     "roles/cloudbuild.builds.builder",
+    "roles/cloudbuild.connectionViewer",
     "roles/clouddeploy.developer",
     "roles/clouddeploy.releaser",
     "roles/cloudkms.cryptoOperator",
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",
-    "roles/source.writer",
+    "roles/serviceusage.serviceUsageConsumer",
     "roles/storage.admin",
     "roles/cloudbuild.workerPoolUser",
     "roles/ondemandscanning.admin",
@@ -118,14 +96,70 @@ variable "clouddeploy_pipeline_name" {
   default     = "deploy-pipeline"
 }
 
-variable "skip_provisioners" {
-  description = "Skip modules that use provisioners/local-exec"
-  type        = bool
-  default     = false
-}
-
 variable "labels" {
   description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
   type        = map(string)
   default     = {}
+}
+
+variable "bucket_kms_key" {
+  description = "KMS Key id to be used to encrypt bucket."
+  type        = string
+  default     = null
+}
+
+variable "repository_type" {
+  description = "The type of the repository. Must be one of 'GITHUB' or 'GITLAB'."
+  type        = string
+  validation {
+    condition     = contains(["GITHUB", "GITLAB"], var.repository_type)
+    error_message = "The repository_type must be either 'GITHUB' or 'GITLAB'."
+  }
+  validation {
+    condition = (
+      var.repository_type != "GITHUB" ||
+      (var.github_auth != null && var.gitlab_auth == null)
+    )
+    error_message = "When repository_type is 'GITHUB', the 'github_auth' variable must be set, and 'gitlab_auth' must not be set."
+  }
+  validation {
+    condition = (
+      var.repository_type != "GITLAB" ||
+      (var.gitlab_auth != null && var.github_auth == null)
+    )
+    error_message = "When repository_type is 'GITLAB', the 'gitlab_auth' variable must be set, and 'github_auth' must not be set."
+  }
+}
+
+variable "ci_repository" {
+  type = object({
+    repository_name = string
+    repository_url  = string
+  })
+  description = "The CI repository to configure. The key is a short name for the service."
+  default     = null
+}
+
+variable "github_auth" {
+  type = object({
+    secret_id         = string
+    app_id_secret_id  = string
+    secret_project_id = string
+  })
+  description = "Authentication configuration for GitHub. Required only if repo_type is 'GITHUBv2'."
+  default     = null
+}
+
+variable "gitlab_auth" {
+  type = object({
+    read_authorizer_credential_secret_id = string
+    authorizer_credential_secret_id      = string
+    webhook_secret_id                    = string
+    enterprise_host_uri                  = optional(string)
+    enterprise_service_directory         = optional(string)
+    enterprise_ca_certificate            = optional(string)
+    secret_project_id                    = string
+  })
+  description = "Authentication configuration for GitLab. Required only if repo_type is 'GITLABv2'."
+  default     = null
 }

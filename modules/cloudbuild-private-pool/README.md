@@ -60,8 +60,11 @@ module "cloudbuild_private_pool" {
 
 | Name | Description |
 |------|-------------|
+| peering\_name | The name of the VPC network peering connection |
 | workerpool\_id | Cloud Build worker pool ID |
 | workerpool\_network | Self Link for Cloud Build workerpool VPC network |
+| workerpool\_network\_id | ID of the VPC network where the worker pool is peered |
+| workerpool\_network\_name | Name of the VPC network where the worker pool is peered |
 | workerpool\_range | IP Address range for Cloud Build worker pool |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -23,15 +23,17 @@ Run `make generate_docs` to generate new Inputs and Outputs tables.
 
 ## Integration Testing
 
-Integration tests are used to verify the behaviour of the root module,
+Integration tests are used to verify the behavior of the root module,
 submodules, and example modules. Additions, changes, and fixes should
 be accompanied with tests.
+
+**The authoritative execution of integration tests occurs in Google Cloud Build, orchestrated by `int.cloudbuild.yaml` files located in the `build/` directory.** Local execution using `make docker_test_integration` is provided for development and debugging purposes.
 
 The integration tests are run using [Kitchen][kitchen],
 [Kitchen-Terraform][kitchen-terraform], and [InSpec][inspec]. These
 tools are packaged within a Docker image for convenience.
 
-The general strategy for these tests is to verify the behaviour of the
+The general strategy for these tests is to verify the behavior of the
 [example modules](./examples/), thus ensuring that the root module,
 submodules, and example modules are all functionally correct.
 
@@ -87,10 +89,65 @@ noninteractively, using the prepared test project.
 1. Run `kitchen_do destroy <EXAMPLE_NAME>` to destroy the example module
    state.
 
-## Linting and Formatting
+## Terraform Module Development Guidelines
 
-Many of the files in the repository can be linted or formatted to
-maintain a standard of quality.
+To ensure consistency, maintainability, and clarity across our Terraform modules, please adhere to the following guidelines:
+
+### Module File Structure
+
+Each Terraform module (`modules/<module-name>/`) should generally follow this file structure:
+
+*   `main.tf`: Contains the primary resource definitions, module calls, and core logic of the module.
+*   `variables.tf`: Declares all input variables for the module. Each variable *must* have a clear, comprehensive `description` explaining its purpose, type, default value (if applicable), and any constraints or dependencies.
+*   `outputs.tf`: Declares all output values from the module. Each output *must* have a clear `description` explaining what value it exports and its intended use.
+*   `locals.tf`: Used for defining local variables and computed values. This helps in simplifying complex expressions, centralizing frequently used values, and improving readability.
+*   `iam.tf`: Dedicated to Identity and Access Management (IAM) resource definitions, if applicable to the module.
+*   `versions.tf`: Specifies the required Terraform version and provider versions, ensuring compatibility.
+*   `README.md`: Contains the auto-generated `terraform-docs` output for inputs and outputs, along with a general description of the module.
+
+### Variable Best Practices
+
+*   **Descriptive `description` fields:** As verified during our documentation audit, clear and accurate descriptions for variables and outputs are paramount. They enable both human and AI contributors to understand the module's interface without needing to delve into its implementation details.
+*   **Explicit types and defaults:** Always specify `type` for variables. Use `default` values when a reasonable default exists, and clearly document its implications.
+*   **Validation Rules:** Use `validation` blocks for complex constraints that cannot be expressed by `type` alone.
+
+### Use of `locals.tf`
+
+Leverage `locals.tf` to:
+
+*   **Simplify expressions:** Break down complex logic into more manageable local variables.
+*   **Centralize values:** Define values that are used multiple times across different resources within the module.
+*   **Improve readability:** Give meaningful names to derived values, making the module's logic easier to follow.
+
+## Domain Terminology
+
+This section defines key terms, acronyms, and concepts specific to this project, enhancing clarity for all contributors.
+
+*   **Secure CI/CD pipeline:** The primary focus of this repository, implementing best practices for continuous integration and continuous delivery on Google Cloud.
+*   **Terraform modules:** Reusable infrastructure as code components provided in this repository for deploying Google Cloud resources.
+*   **Google Cloud:** The cloud platform where the CI/CD pipelines and associated resources are deployed.
+*   **GKE (Google Kubernetes Engine):** Google Cloud's managed Kubernetes service, a common deployment target for containers in this pipeline.
+*   **Cloud Run:** Google Cloud's fully managed compute platform for deploying containerized applications.
+*   **Binary Authorization:** A security control on Google Cloud that enforces deployment policies for images to GKE. It ensures only trusted images are deployed.
+*   **Cloud Build:** Google Cloud's serverless CI/CD platform, used extensively in this repository for building, testing, and deploying.
+*   **Cloud Deploy:** Google Cloud's managed service for continuous delivery to various runtime environments, including GKE.
+*   **Artifact Registry:** Google Cloud's universal package manager, used here for storing container images.
+*   **Attestation:** A verifiable record, typically cryptographic, that asserts facts about a software artifact, crucial for Binary Authorization.
+*   **VPC (Virtual Private Cloud):** A virtual network on Google Cloud that provides network isolation and connectivity for your resources.
+*   **Service Account:** A special type of Google account used by applications and services to make authorized API calls.
+*   **Kitchen/Kitchen-Terraform/InSpec:** Tools used in conjunction for integration testing Terraform modules, bundled within a Docker image.
+
+## Code Conventions and Linting
+
+To maintain a consistent code style and quality across the repository, the following linters and formatters are used:
+
+- **Terraform:** `terraform fmt` for formatting and `tflint` for linting.
+- **Go:** `gofmt` for formatting.
+- **Python:** `flake8` for linting.
+- **Dockerfiles:** `hadolint` for linting.
+- **Shell Scripts:** `shellcheck` for linting.
+
+These tools are executed automatically as part of the `make docker_test_lint` command and are enforced in the CI/CD pipeline.
 
 ### Execution
 

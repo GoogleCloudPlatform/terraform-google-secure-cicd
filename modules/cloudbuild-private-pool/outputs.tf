@@ -28,3 +28,18 @@ output "workerpool_network" {
   value       = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].self_link : data.google_compute_network.workerpool_vpc[0].self_link
   description = "Self Link for Cloud Build workerpool VPC network"
 }
+
+output "peering_name" {
+  value       = google_service_networking_connection.worker_pool_connection.peering
+  description = "The name of the VPC network peering connection"
+}
+
+output "workerpool_network_name" {
+  value       = var.private_pool_vpc_name
+  description = "Name of the VPC network where the worker pool is peered"
+}
+
+output "workerpool_network_id" {
+  value       = var.create_cloudbuild_network ? google_compute_network.private_pool_vpc[0].id : data.google_compute_network.workerpool_vpc[0].id
+  description = "ID of the VPC network where the worker pool is peered"
+}

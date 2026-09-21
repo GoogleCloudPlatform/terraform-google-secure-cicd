@@ -19,19 +19,14 @@ output "cache_bucket_name" {
   value       = google_storage_bucket.cache_bucket.name
 }
 
-output "build_trigger_name" {
-  description = "The name of the cloud build trigger for the app source repo."
-  value       = google_cloudbuild_trigger.app_build_trigger.name
-}
-
 output "binauth_attestor_names" {
   description = "Names of Attestors"
-  value       = [for attestor_name in var.attestor_names_prefix : module.attestors[attestor_name].attestor]
+  value       = keys(local.attestors)
 }
 
 output "binauth_attestor_ids" {
   description = "IDs of Attestors"
-  value       = { for attestor_name in var.attestor_names_prefix : attestor_name => "projects/${var.project_id}/attestors/${module.attestors[attestor_name].attestor}" }
+  value       = { for key, attestor in local.attestors : key => attestor.id }
 }
 
 output "binauth_attestor_project_id" {
@@ -44,17 +39,22 @@ output "app_artifact_repo" {
   value       = google_artifact_registry_repository.image_repo.name
 }
 
-output "source_repo_names" {
-  description = "Name of the created CSR repos"
-  value       = [for repo in google_sourcerepo_repository.repos : repo.name]
-}
-
-output "source_repo_urls" {
-  description = "URLS of the created CSR repos"
-  value       = { for repo in google_sourcerepo_repository.repos : repo.name => repo.url }
-}
-
 output "build_sa_email" {
   description = "Cloud Build Service Account email address"
   value       = google_service_account.build_sa.email
+}
+
+output "standalone_bucket_kms_key" {
+  description = "KMS Key for standalone bucket."
+  value       = var.bucket_kms_key
+}
+
+output "skaffold_builder_image_tag" {
+  description = "The full path to the built Skaffold builder image in Artifact Registry."
+  value       = local.skaffold_builder_image_tag
+}
+
+output "ci_build_trigger_id" {
+  description = "ID of the CI Cloud Build trigger."
+  value       = google_cloudbuild_trigger.app_build_trigger.id
 }
