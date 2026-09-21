@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ steps:
     - -c
     - |
       RELEASE_NAME='release-$SHORT_SHA'
-      gcloud deploy releases create $${RELEASE_NAME} --delivery-pipeline=${_CLOUDDEPLOY_PIPELINE_NAME} --build-artifacts=/artifacts/build-artifacts.json --region=${_DEFAULT_REGION}
+      gcloud deploy releases create $${RELEASE_NAME} --delivery-pipeline=${_CLOUDDEPLOY_PIPELINE_NAME} --build-artifacts=/artifacts/build-artifacts.json --region=${_DEFAULT_REGION} --gcs-source-staging-dir="gs://${_CACHE_BUCKET_NAME}/source"
   volumes:
     - path: '/artifacts'
       name: 'artifacts'
