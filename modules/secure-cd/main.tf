@@ -16,7 +16,7 @@
 
 module "cloudbuild_repositories" {
   source  = "terraform-google-modules/bootstrap/google//modules/cloudbuild_repo_connection"
-  version = "12.0.0"
+  version = "13.0.0"
 
   project_id = var.project_id
 
