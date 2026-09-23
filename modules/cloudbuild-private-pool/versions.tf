@@ -28,9 +28,9 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:cloudbuild-private-pool/v1.2.2"
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:cloudbuild-private-pool/v2.0.0"
   }
   provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:cloudbuild-private-pool/v1.2.2"
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:cloudbuild-private-pool/v2.0.0"
   }
 }
