@@ -44,8 +44,3 @@ output "clouddeploy_target_names_ordered" {
   description = "Names of Cloud Deploy targets in promotion order"
   value       = [for env_obj in local.ordered_deploy_branch_clusters : google_clouddeploy_target.deploy_target[env_obj.name].name]
 }
-
-output "cd_repo_name" {
-  description = "Name of the CD source repository"
-  value       = local.use_csr ? google_sourcerepo_repository.csr_cd_repository[0].name : null
-}

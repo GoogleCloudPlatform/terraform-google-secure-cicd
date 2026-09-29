@@ -49,6 +49,7 @@ module "project_standalone" {
   folder_id               = module.folder_seed.id
   billing_account         = var.billing_account
   default_service_account = "keep"
+  deletion_policy         = "DELETE"
 
   activate_apis = [
     "accesscontextmanager.googleapis.com",
@@ -88,7 +89,6 @@ module "project_standalone" {
     "servicemanagement.googleapis.com",
     "servicenetworking.googleapis.com",
     "serviceusage.googleapis.com",
-    "sourcerepo.googleapis.com",
     "sqladmin.googleapis.com",
     "storage.googleapis.com",
     "trafficdirector.googleapis.com",
@@ -104,7 +104,6 @@ module "project_standalone" {
         "roles/cloudkms.cryptoOperator",
         "roles/containeranalysis.notes.attacher",
         "roles/containeranalysis.notes.occurrences.viewer",
-        "roles/source.writer",
       ]
     },
     {

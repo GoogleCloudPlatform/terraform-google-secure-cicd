@@ -40,9 +40,9 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-ci/v1.2.2"
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-ci/v2.0.0"
   }
   provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-ci/v1.2.2"
+    module_name = "blueprints/terraform/terraform-google-secure-cicd:secure-ci/v2.0.0"
   }
 }

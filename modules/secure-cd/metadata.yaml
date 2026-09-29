@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,15 +25,13 @@ spec:
       repo: https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd.git
       sourceType: git
       dir: /modules/secure-cd
-    version: 1.2.2
+    version: 2.0.0
     actuationTool:
       flavor: Terraform
       version: ~> 1.3
     description: {}
   content:
     examples:
-      - name: mortgage-agent
-        location: examples/mortgage-agent
       - name: standalone_single_project
         location: examples/standalone_single_project
   interfaces:
@@ -42,17 +40,10 @@ spec:
         description: Project ID for CICD Pipeline Project
         varType: string
         required: true
-      - name: secure_pipeline_name
-        description: Name of the secure pipeline, used to uniquely identify resources.
-        varType: string
-        defaultValue: secure-pipeline
       - name: primary_location
         description: Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines.
         varType: string
         required: true
-      - name: csr_cloudbuild_cd_repo
-        description: Name of the CSR repo that stores the Cloud Build CD phase configs - for post-deployment checks
-        varType: string
       - name: gar_repo_name
         description: Docker artifact registry repo to store app build images
         varType: string
@@ -100,7 +91,7 @@ spec:
         description: (VPC-SC) Access Level full name. When providing this variable, additional identities will be added to the access level, these are required to work within an enforced VPC-SC Perimeter.
         varType: string
       - name: repository_type
-        description: The type of the repository. Must be one of 'GITHUB', 'GITLAB', or 'CSR'.
+        description: The type of the repository. Must be one of 'GITHUB' or 'GITLAB'.
         varType: string
         required: true
       - name: cd_repository
@@ -133,8 +124,6 @@ spec:
     outputs:
       - name: binauthz_policy_required_attestations
         description: Binary Authorization policy required attestation in GKE projects
-      - name: cd_repo_name
-        description: Name of the CD source repository
       - name: clouddeploy_delivery_pipeline_id
         description: ID of the Cloud Deploy delivery pipeline
       - name: clouddeploy_target_id

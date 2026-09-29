@@ -39,16 +39,6 @@ output "app_artifact_repo" {
   value       = google_artifact_registry_repository.image_repo.name
 }
 
-output "source_repo_name" {
-  description = "Name of the created CSR repos"
-  value       = local.use_csr ? google_sourcerepo_repository.csr_ci_repository[0].name : null
-}
-
-output "source_repo_url" {
-  description = "URLS of the created CSR repos"
-  value       = local.use_csr ? google_sourcerepo_repository.csr_ci_repository[0].url : null
-}
-
 output "build_sa_email" {
   description = "Cloud Build Service Account email address"
   value       = google_service_account.build_sa.email
@@ -66,5 +56,5 @@ output "skaffold_builder_image_tag" {
 
 output "ci_build_trigger_id" {
   description = "ID of the CI Cloud Build trigger."
-  value       = google_cloudbuild_trigger.app_build_trigger[0].id
+  value       = google_cloudbuild_trigger.app_build_trigger.id
 }

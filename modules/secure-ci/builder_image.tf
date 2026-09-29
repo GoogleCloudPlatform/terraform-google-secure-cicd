@@ -37,6 +37,7 @@ resource "null_resource" "build_skaffold_builder_image" {
         --substitutions=_DEFAULT_REGION="${var.primary_location}",_GAR_REPOSITORY="${google_artifact_registry_repository.image_repo.name}" \
         --service-account="${google_service_account.build_sa.id}" \
         --gcs-log-dir="${google_storage_bucket.cache_bucket.url}/cloudbuild-logs" \
+        --gcs-source-staging-dir="${google_storage_bucket.cache_bucket.url}/source" \
         --worker-pool="${var.cloudbuild_private_pool}"
     EOT
   }

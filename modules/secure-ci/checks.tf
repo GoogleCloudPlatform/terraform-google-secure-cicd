@@ -15,7 +15,7 @@
  */
 check "gcs_bucket_name_length" {
   assert {
-    condition     = length(local.cache_bucket_name) < 63
-    error_message = "The following constructed log bucket names are too long (max 63 characters): ${local.cache_bucket_name}. Please shorten the corresponding 'repository_name' in your variables or the 'project_id'."
+    condition     = length("${var.cache_bucket_name}-${random_string.suffix.id}") < 63
+    error_message = "The following constructed log bucket names are too long (max 63 characters): ${var.cache_bucket_name}-${random_string.suffix.id}. Please shorten the 'cache_bucket_name' variable."
   }
 }

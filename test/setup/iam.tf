@@ -34,7 +34,6 @@ locals {
     "roles/iam.serviceAccountUser",
     "roles/pubsub.editor",
     "roles/serviceusage.serviceUsageAdmin",
-    "roles/source.admin",
     "roles/storage.admin",
     "roles/resourcemanager.projectIamAdmin",
     "roles/viewer",
@@ -87,10 +86,18 @@ resource "google_organization_iam_member" "org_iam_roles" {
 }
 
 resource "google_folder_iam_member" "int_test_connection_admin" {
-  for_each = toset(["roles/resourcemanager.projectCreator", "roles/resourcemanager.folderCreator", "roles/owner", "roles/iam.serviceAccountTokenCreator", "roles/iam.serviceAccountUser", ])
-  folder   = module.folder_seed.id
-  role     = each.value
-  member   = "serviceAccount:${google_service_account.int_test.email}"
+  for_each = toset([
+    "roles/resourcemanager.projectCreator",
+    "roles/resourcemanager.folderCreator",
+    "roles/owner",
+    "roles/iam.serviceAccountTokenCreator",
+    "roles/iam.serviceAccountUser",
+    "roles/cloudbuild.workerPoolUser",
+    "roles/cloudbuild.admin"
+  ])
+  folder = module.folder_seed.id
+  role   = each.value
+  member = "serviceAccount:${google_service_account.int_test.email}"
 }
 
 resource "google_billing_account_iam_member" "tf_billing_admin" {

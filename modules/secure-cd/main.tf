@@ -14,17 +14,7 @@
  * limitations under the License.
  */
 
-resource "google_sourcerepo_repository" "csr_cd_repository" {
-  count = local.use_csr ? 1 : 0
-
-  project                      = var.project_id
-  name                         = var.csr_cloudbuild_cd_repo
-  create_ignore_already_exists = true
-}
-
 module "cloudbuild_repositories" {
-  count = local.use_csr ? 0 : 1
-
   source  = "terraform-google-modules/bootstrap/google//modules/cloudbuild_repo_connection"
   version = "12.0.0"
 

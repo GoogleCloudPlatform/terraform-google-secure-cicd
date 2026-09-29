@@ -35,15 +35,13 @@ To get started, click **Start**.
     export REGION=us-central1
     export APP_NAME=ci-cd
 
-    # Set this to "CSR", "GITHUB", or "GITLAB" depending on how you deployed the blueprint
-    export REPOSITORY_TYPE="CSR"
+    # Set this to "GITHUB" or "GITLAB" depending on how you deployed the blueprint
+    export REPOSITORY_TYPE="GITLAB"
     ```
 1. Run the following commands to set additional variables for the tutorial. If you set the above values correctly, you can run this entire block without modifying it.
     ```bash
     export PROJECT_ID=$(gcloud config get project)
     export GAR_REPOSITORY=$PROJECT_ID-$APP_NAME-image-repo
-    export CLOUDBUILD_CD_REPO=$APP_NAME-cloudbuild-cd-config
-    export APP_SOURCE_REPO=$APP_NAME-source
     export BLUEPRINT_FOLDER=$PWD
     export WORKSPACE_FOLDER=~/workspace-$(date +%s)
     mkdir $WORKSPACE_FOLDER
@@ -56,14 +54,11 @@ Before deploying the infrastructure, you must configure the `terraform.tfvars` f
 
 1. Open the `terraform.tfvars` file in your editor.
 2. Replace the `{PROJECT_ID}` and `{REGION}` placeholders with your actual values.
-3. **If using Cloud Source Repositories (CSR):**
-   * Set `repository_type = "CSR"`
-   * You can delete or comment out the `gitlab_auth`, `github_auth`, `ci_repository`, and `cd_repository` blocks.
-4. **If using GitHub:**
+3. **If using GitHub:**
    * Set `repository_type = "GITHUB"`
    * Provide the `github_auth` block with your Secret Manager paths for your Personal Access Token and App ID.
    * Provide the `ci_repository` and `cd_repository` blocks with your GitHub repository names and URLs.
-5. **If using GitLab:**
+4. **If using GitLab:**
    * Set `repository_type = "GITLAB"`
    * Provide the `gitlab_auth` block with your Secret Manager paths for your API tokens and webhook secrets.
    * Provide the `ci_repository` and `cd_repository` blocks with your GitLab repository names and URLs.
@@ -72,41 +67,7 @@ Once your `terraform.tfvars` file is configured, run `terraform init` and `terra
 
 Click **Next**.
 
-## Configure Cloud Deploy post-deployment tests (CSR)
-*If you deployed the blueprint using `REPOSITORY_TYPE="GITHUB"` or `"GITLAB"`, skip this step and proceed to the next page.*
-
-In this step, we will configure the post-deployment by pushing a premade configuration file to the `cloudbuild-cd-config` repo in Cloud Source Repositories.
-1. Set up the git configuration, replacing the values in quotes with your email address and name.
-    ```bash
-    git config --global user.email "name@example.com"
-    git config --global user.name "Your Name"
-    ```
-1. Change into the workspace folder:
-    ```bash
-    cd $WORKSPACE_FOLDER
-    ```
-1. Clone the repo:
-    ```bash
-    gcloud source repos clone $CLOUDBUILD_CD_REPO --project=$PROJECT_ID
-    cd $CLOUDBUILD_CD_REPO
-    git checkout -b main
-    ```
-1. Copy the Cloud Build configuration to the local repo:
-    ```bash
-    cp $BLUEPRINT_FOLDER/build/cloudbuild-cd.yaml $WORKSPACE_FOLDER/$CLOUDBUILD_CD_REPO/
-    ```
-1. Commit changes:
-    ```bash
-    git add .
-    git commit -m "initial commit"
-    git push -u origin main
-    ```
-
-Click **Next**.
-
-## Configure Cloud Deploy post-deployment tests (GitHub/GitLab)
-*If you deployed the blueprint using `REPOSITORY_TYPE="CSR"`, skip this step and proceed to the next page.*
-
+## Configure Cloud Deploy post-deployment tests
 In this step, we will configure the post-deployment by pushing a premade configuration file to your linked external CD repository.
 1. Set up the git configuration, replacing the values in quotes with your email address and name.
     ```bash
@@ -135,41 +96,8 @@ In this step, we will configure the post-deployment by pushing a premade configu
 
 Click **Next**.
 
-## Push application source code (CSR)
-*If you deployed the blueprint using `REPOSITORY_TYPE="GITHUB"` or `"GITLAB"`, skip this step and proceed to the next page.*
-
-1. Return to the workspace directory:
-    ```bash
-    cd $WORKSPACE_FOLDER
-    ```
-1. Clone the Bank of Anthos sample application:
-    ```bash
-    git clone --branch v0.5.11 https://github.com/GoogleCloudPlatform/bank-of-anthos.git
-    cd bank-of-anthos
-    git checkout -b main
-    ```
-1. Copy the Cloud Build configuration to the Bank of Anthos demo application folder
-    ```bash
-    cp $BLUEPRINT_FOLDER/build/cloudbuild-ci.yaml $WORKSPACE_FOLDER/bank-of-anthos/
-    ```
-1. Copy `policies` folder to the Bank of Anthos folder
-    ```bash
-    cp -R $BLUEPRINT_FOLDER/examples/app_cicd/policies $WORKSPACE_FOLDER/bank-of-anthos/policies
-    ```
-1. Push the code to the `app-source` Cloud Source Repository
-    ```bash
-    git remote add google https://source.developers.google.com/p/$PROJECT_ID/r/$APP_SOURCE_REPO
-    git add .
-    git commit -m "initial commit"
-    git push --all google
-    ```
-
-This will trigger the build phase of the CI/CD pipeline. Skip the next page and proceed directly to **View pipeline progress**.
-
-## Push application source code (GitHub/GitLab)
-*If you deployed the blueprint using `REPOSITORY_TYPE="CSR"`, you should have completed the previous steps. Skip this page.*
-
-To use an external provider, you must push the application code and CI configuration files to the CI repository you linked during the Terraform deployment.
+## Push application source code
+To use your Git provider, push the application code and CI configuration files to the CI repository you linked during the Terraform deployment.
 
 1. Return to the workspace directory:
     ```bash

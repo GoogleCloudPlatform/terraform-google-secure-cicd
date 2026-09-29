@@ -36,8 +36,6 @@ resource "google_service_account" "clouddeploy_execution_sa" {
 }
 
 resource "google_access_context_manager_access_level_condition" "additional_member_condition" {
-  count = var.access_level_name != null ? 1 : 0
-
   access_level = var.access_level_name
 
   members = [
