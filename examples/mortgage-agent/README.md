@@ -429,8 +429,6 @@ The reasoning engine is not managed by Terraform (the ADK SDK creates it). Delet
 | app\_build\_trigger\_yaml | Name of application cloudbuild yaml file for the CI pipeline. | `string` | `"cloudbuild-ci.yaml"` | no |
 | app\_deploy\_trigger\_yaml | Name of application cloudbuild yaml file for the CD pipeline. | `string` | `"cloudbuild-cd.yaml"` | no |
 | bucket\_force\_destroy | When deleting a bucket, this boolean option will delete all contained objects. If false, Terraform will fail to delete buckets which contain objects. | `bool` | `false` | no |
-| cd\_repository | The CD repository to configure. The key is a short name for the service. | <pre>object({<br>    repository_name = string<br>    repository_url  = string<br>  })</pre> | `null` | no |
-| ci\_repository | The CI repository to configure. The key is a short name for the service. | <pre>object({<br>    repository_name = string<br>    repository_url  = string<br>  })</pre> | `null` | no |
 | cloudbuild\_private\_pool\_machine\_type | Machine type for Cloud Build private pool | `string` | `"e2-medium"` | no |
 | dns\_zone\_domain | The domain name for the public DNS zone (must end with a dot, e.g., 'example.com.'). Certificate Manager validates the MCP LB cert against this zone. | `string` | `null` | no |
 | dns\_zone\_name | The name of the existing Cloud DNS managed zone. If not provided, derived from dns\_zone\_domain. | `string` | `null` | no |
@@ -449,8 +447,6 @@ The reasoning engine is not managed by Terraform (the ADK SDK creates it). Delet
 | mcp\_services | Map of MCP service name to deployment configuration. The map key becomes the Cloud Run service name AND the URL-mask token (e.g. legacy-dms.<mcp\_internal\_dns\_zone.domain> -> Cloud Run service 'legacy-dms'). | <pre>map(object({<br>    image = string<br>    ci_repository = object({<br>      repository_name = string<br>      repository_url  = string<br>    })<br>    cd_repository = object({<br>      repository_name = string<br>      repository_url  = string<br>    })<br>    container_port     = optional(number, 8080)<br>    otel_service_name  = optional(string)<br>    min_instance_count = optional(number, 0)<br>    max_instance_count = optional(number, 3)<br>    cpu                = optional(string, "1")<br>    memory             = optional(string, "512Mi")<br>    env                = optional(map(string), {})<br>  }))</pre> | `{}` | no |
 | mcp\_ssl\_certificate\_id | Optional existing Certificate Manager regional certificate ID to attach to<br>the MCP internal HTTPS LB (same project and region as the LB).<br><br>Leave null/empty to issue a Google-managed cert via DNS-01 against<br>dns\_zone\_domain (requires a delegated public Cloud DNS zone and<br>dns\_zone\_name). When set, issuance and DNS-01 records are skipped.<br><br>Format:<br>  projects/<project>/locations/<region>/certificates/<name><br><br>In both modes the cert must be a public CA and cover mcp.<dns\_zone\_domain><br>and *.mcp.<dns\_zone\_domain>. dns\_zone\_domain is always required so private<br>MCP hostnames match those SANs. | `string` | `null` | no |
 | mcp\_tool\_specs | Map of MCP service name -> path to its toolspec.json (relative to the terraform/ directory or absolute). Required for every key in var.mcp\_services; the toolspec is uploaded into the Agent Registry entry as the MCP server spec. Note: the var.mcp\_services key (which becomes the Agent Registry service ID and the LB hostname) does not need to match the source directory name (e.g. income-verification -> ../src/income-verification-api/toolspec.json). | `map(string)` | `{}` | no |
-| model\_armor\_deidentify\_template\_id | DLP de-identify template ID used by the response Model Armor template when SDP is ENABLED. | `string` | `"agw-ssn-redaction-template"` | no |
-| model\_armor\_inspect\_template\_id | DLP inspect template ID used by the response Model Armor template when SDP is ENABLED. | `string` | `"agw-ssn-inspect-template"` | no |
 | model\_armor\_malicious\_uri\_enforcement | Malicious URI filter enforcement setting (ENABLED or DISABLED) | `string` | `"ENABLED"` | no |
 | model\_armor\_pi\_jailbreak\_confidence | PI and jailbreak filter confidence level (LOW\_AND\_ABOVE, MEDIUM\_AND\_ABOVE, or HIGH) | `string` | `"LOW_AND_ABOVE"` | no |
 | model\_armor\_pi\_jailbreak\_enforcement | PI and jailbreak filter enforcement setting (ENABLED or DISABLED) | `string` | `"ENABLED"` | no |
@@ -464,8 +460,6 @@ The reasoning engine is not managed by Terraform (the ADK SDK creates it). Delet
 | name\_prefix | Prefix for resource names | `string` | `"gateway"` | no |
 | org\_id | GCP organization ID (numeric). Required for Agent Identity IAM bindings. | `string` | `null` | no |
 | primary\_subnet\_cidr | CIDR range for the primary subnet | `string` | `"10.0.0.0/20"` | no |
-| private\_worker\_pool\_id | Optional private worker pool id if using already existing worker pool | `any` | `null` | no |
-| project\_deletion\_policy | Project deletion policy. Possible values are: "PREVENT", "ABANDON", "DELETE". | `string` | `"DELETE"` | no |
 | project\_id | The GCP project ID | `string` | n/a | yes |
 | project\_number | The numeric identifier (e.g., 123456789012) of the Google Cloud project. | `string` | n/a | yes |
 | proxy\_subnet\_cidr | CIDR range for the proxy-only subnet | `string` | `"10.9.0.0/24"` | no |

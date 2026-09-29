@@ -103,13 +103,13 @@ module "cd_pipeline" {
 | primary\_location | Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines. | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 | repository\_type | The type of the repository. Must be one of 'GITHUB' or 'GITLAB'. | `string` | n/a | yes |
+| secure\_pipeline\_name | Name of the secure pipeline, used to uniquely identify resources. | `string` | `"secure-pipeline"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | binauthz\_policy\_required\_attestations | Binary Authorization policy required attestation in GKE projects |
-| cd\_repo\_name | Name of the CD source repository |
 | clouddeploy\_delivery\_pipeline\_id | ID of the Cloud Deploy delivery pipeline |
 | clouddeploy\_target\_id | ID(s) of Cloud Deploy targets |
 | clouddeploy\_target\_names\_ordered | Names of Cloud Deploy targets in promotion order |

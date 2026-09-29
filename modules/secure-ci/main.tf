@@ -62,8 +62,7 @@ resource "google_storage_bucket" "cache_bucket" {
   }
 }
 
-resource "google_cloudbuild_trigger" "csr_app_build_trigger" {
-  count    = local.use_csr ? 1 : 0
+resource "google_cloudbuild_trigger" "app_build_trigger" {
   project  = var.project_id
   name     = "${local.second_gen_repo_name}-trigger"
   location = var.primary_location

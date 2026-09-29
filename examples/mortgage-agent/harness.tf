@@ -65,10 +65,6 @@ resource "time_sleep" "wait_enable_apis" {
   depends_on = [google_project_service.enable_apis]
 }
 
-data "google_storage_project_service_account" "gcs_sa" {
-  project = var.project_id
-}
-
 resource "google_project_service_identity" "network_services" {
   provider = google-beta
   project  = var.project_id

@@ -45,12 +45,6 @@ variable "terraform_service_account" {
   type        = string
 }
 
-variable "project_deletion_policy" {
-  description = "Project deletion policy. Possible values are: \"PREVENT\", \"ABANDON\", \"DELETE\"."
-  type        = string
-  default     = "DELETE"
-}
-
 variable "enabled_services" {
   description = "List of Google Cloud APIs to enable"
   type        = list(string)
@@ -276,18 +270,6 @@ variable "model_armor_response_template_id" {
   default     = "agw-response-template"
 }
 
-variable "model_armor_inspect_template_id" {
-  description = "DLP inspect template ID used by the response Model Armor template when SDP is ENABLED."
-  type        = string
-  default     = "agw-ssn-inspect-template"
-}
-
-variable "model_armor_deidentify_template_id" {
-  description = "DLP de-identify template ID used by the response Model Armor template when SDP is ENABLED."
-  type        = string
-  default     = "agw-ssn-redaction-template"
-}
-
 variable "model_armor_rai_filters" {
   description = "RAI (Responsible AI) filter configurations. filter_type can be: SEXUALLY_EXPLICIT, HATE_SPEECH, HARASSMENT, DANGEROUS. confidence_level can be: LOW_AND_ABOVE, MEDIUM_AND_ABOVE, HIGH"
   type = list(object({
@@ -498,24 +480,6 @@ variable "repository_type" {
   }
 }
 
-variable "ci_repository" {
-  type = object({
-    repository_name = string
-    repository_url  = string
-  })
-  description = "The CI repository to configure. The key is a short name for the service."
-  default     = null
-}
-
-variable "cd_repository" {
-  type = object({
-    repository_name = string
-    repository_url  = string
-  })
-  description = "The CD repository to configure. The key is a short name for the service."
-  default     = null
-}
-
 variable "app_build_trigger_yaml" {
   type        = string
   description = "Name of application cloudbuild yaml file for the CI pipeline."
@@ -562,17 +526,4 @@ variable "labels" {
   description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
   type        = map(string)
   default     = {}
-}
-
-variable "private_worker_pool_id" {
-  description = "Optional private worker pool id if using already existing worker pool"
-  validation {
-    condition     = var.private_worker_pool_id != ""
-    error_message = "private_worker_pool_id cannot be empty, only null or a valid value."
-  }
-  validation {
-    condition     = var.private_worker_pool_id == null ? true : can(regex("^projects/[a-z0-9-]+/locations/[a-z0-9-]+/workerPools/[a-z0-9-]+$", var.private_worker_pool_id))
-    error_message = "The private_worker_pool_id must follow the exact format: 'projects/PROJECT/locations/LOCATION/workerPools/POOL_NAME'."
-  }
-  default = null
 }

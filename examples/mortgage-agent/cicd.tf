@@ -38,7 +38,6 @@ module "ci_pipeline" {
 
   source = "../../modules/secure-ci"
 
-  secure_pipeline_name = each.key
 
   project_id                = var.project_id
   repository_type           = var.repository_type
