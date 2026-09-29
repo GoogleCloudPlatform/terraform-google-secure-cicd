@@ -58,7 +58,7 @@ locals {
 }
 
 module "ci_pipeline" {
-  source = "../../modules/secure-ci"
+  source = "marcelorobj/secure-cicd/google//modules/secure-ci"
 
   project_id                = var.project_id
   repository_type           = var.repository_type
@@ -78,7 +78,7 @@ module "ci_pipeline" {
 }
 
 module "cd_pipeline" {
-  source = "../../modules/secure-cd"
+  source = "marcelorobj/secure-cicd/google//modules/secure-cd"
 
   project_id                 = var.project_id
   primary_location           = var.region
@@ -100,7 +100,7 @@ module "cd_pipeline" {
 }
 
 module "cloudbuild_private_pool" {
-  source = "../../modules/cloudbuild-private-pool"
+  source = "marcelorobj/secure-cicd/google//modules/cloudbuild-private-pool"
 
   count = var.private_worker_pool_id == null ? 1 : 0
 
@@ -118,7 +118,7 @@ module "cloudbuild_private_pool" {
 }
 
 module "attestors" {
-  source = "../../modules/attestor"
+  source = "marcelorobj/secure-cicd/google//modules/attestor"
 
   project_id            = var.project_id
   primary_location      = var.region
