@@ -66,7 +66,9 @@ class TestListMcpConnections:
     def test_default_urls(self):
         from agent import agent as agent_module
 
-        with mock.patch.object(agent_module, "DISCOVERED_MCP_SERVERS", self._MOCK_DISCOVERED):
+        with mock.patch.object(
+            agent_module, "DISCOVERED_MCP_SERVERS", self._MOCK_DISCOVERED
+        ):
             result = list_mcp_connections()
             assert result["count"] == 3
             connections = result["connections"]
@@ -86,7 +88,9 @@ class TestListMcpConnections:
                 "tools": ["get_custom"],
             }
         ]
-        with mock.patch.object(agent_module, "DISCOVERED_MCP_SERVERS", custom_servers):
+        with mock.patch.object(
+            agent_module, "DISCOVERED_MCP_SERVERS", custom_servers
+        ):
             result = list_mcp_connections()
             assert result["count"] == 1
             connections = result["connections"]

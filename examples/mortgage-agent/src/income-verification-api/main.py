@@ -94,13 +94,16 @@ def verify_applicant(first_name: str, last_name: str) -> ToolResult:
     Returns:
         ToolResult with verified income data in structured_content.
     """
-    # content=[] suppresses the duplicate raw-text representation; Model Armor's
-    # CONTENT_AUTHZ only redacts structuredContent, so leaving content[] populated
-    # leaks SSNs around the redactor.
+    # content=[] suppresses duplicate raw-text representation; Model Armor's
+    # CONTENT_AUTHZ only redacts structuredContent, so leaving content[]
+    # populated leaks SSNs around the redactor.
     with trace_tool(tracer, "verify_applicant"):
+        err_msg = (
+            f"No verification records found for {first_name} {last_name}."
+        )
         result = _verify(first_name, last_name) or {
             "status": "error",
-            "error": f"No verification records found for {first_name} {last_name}.",
+            "error": err_msg,
         }
         return ToolResult(content=[], structured_content=result)
 
@@ -119,7 +122,10 @@ PREFIX = "/income-verification"
 
 rest_app = FastAPI(
     title="Income Verification API",
-    description="Verify applicant income through third-party income verification service.",
+    description=(
+        "Verify applicant income through third-party income "
+        "verification service."
+    ),
     version="1.0.0",
 )
 
@@ -135,11 +141,15 @@ async def verify(req: VerifyRequest):
         result = _verify(req.first_name, req.last_name)
         if result:
             return result
+        not_found_msg = (
+            f"No verification records found for "
+            f"{req.first_name} {req.last_name}."
+        )
         return JSONResponse(
             status_code=404,
             content={
                 "status": "error",
-                "error": f"No verification records found for {req.first_name} {req.last_name}.",
+                "error": not_found_msg,
             },
         )
 

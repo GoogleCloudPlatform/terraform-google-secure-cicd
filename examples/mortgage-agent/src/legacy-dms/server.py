@@ -118,13 +118,21 @@ _DOCUMENTS = {
 # ---------------------------------------------------------------------------
 
 
-def _search_documents(applicant_last_name: str, document_type: str, years: int = 2) -> dict:
+def _search_documents(
+    applicant_last_name: str, document_type: str, years: int = 2
+) -> dict:
     """Search for applicant documents and return matching metadata."""
-    if applicant_last_name.lower() == "sterling" and "tax" in document_type.lower():
+    if (
+        applicant_last_name.lower() == "sterling"
+        and "tax" in document_type.lower()
+    ):
         results = [
             {
                 "document_id": "DOC-2024-SM-1040",
-                "title": "U.S. Individual Income Tax Return - Form 1040 (TY2024)",
+                "title": (
+                    "U.S. Individual Income Tax Return - "
+                    "Form 1040 (TY2024)"
+                ),
                 "tax_year": 2024,
                 "applicants": "Julian & Elena Sterling",
                 "filing_status": "Married Filing Jointly",
@@ -132,7 +140,10 @@ def _search_documents(applicant_last_name: str, document_type: str, years: int =
             },
             {
                 "document_id": "DOC-2023-SM-1040",
-                "title": "U.S. Individual Income Tax Return - Form 1040 (TY2023)",
+                "title": (
+                    "U.S. Individual Income Tax Return - "
+                    "Form 1040 (TY2023)"
+                ),
                 "tax_year": 2023,
                 "applicants": "Julian & Elena Sterling",
                 "filing_status": "Married Filing Jointly",
@@ -175,22 +186,28 @@ def _get_document(document_id: str) -> dict:
 
 
 @mcp.tool()
-def search_documents(applicant_last_name: str, document_type: str, years: int = 2) -> ToolResult:
+def search_documents(
+    applicant_last_name: str, document_type: str, years: int = 2
+) -> ToolResult:
     """Search the document management system for applicant documents.
 
     Args:
         applicant_last_name: Last name of the applicant to search for.
-        document_type: Type of document (e.g. 'tax_return', 'pay_stub', 'bank_statement').
+        document_type: Type of document (e.g. 'tax_return', 'pay_stub').
         years: Number of years of documents to retrieve (default 2).
 
     Returns:
         ToolResult with matching document metadata in structured_content.
     """
-    # content=[] suppresses the duplicate raw-text representation; Model Armor's
-    # CONTENT_AUTHZ only redacts structuredContent, so leaving content[] populated
-    # leaks SSNs around the redactor.
+    # content=[] suppresses duplicate raw-text representation; Model Armor's
+    # CONTENT_AUTHZ only redacts structuredContent, so leaving content[]
+    # populated leaks SSNs around the redactor.
     with trace_tool(tracer, "search_documents"):
-        return ToolResult(content=[], structured_content=_search_documents(applicant_last_name, document_type, years))
+        docs = _search_documents(applicant_last_name, document_type, years)
+        return ToolResult(
+            content=[],
+            structured_content=docs,
+        )
 
 
 @mcp.tool()
@@ -204,7 +221,10 @@ def get_document(document_id: str) -> ToolResult:
         ToolResult with the full document content in structured_content.
     """
     with trace_tool(tracer, "get_document"):
-        return ToolResult(content=[], structured_content=_get_document(document_id))
+        return ToolResult(
+            content=[],
+            structured_content=_get_document(document_id),
+        )
 
 
 # ---------------------------------------------------------------------------

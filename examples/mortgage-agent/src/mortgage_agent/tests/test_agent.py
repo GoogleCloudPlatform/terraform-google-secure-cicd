@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import json
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -32,7 +33,9 @@ from agent.agent import (
 def _make_http_status_error(status_code: int) -> httpx.HTTPStatusError:
     response = MagicMock(spec=httpx.Response)
     response.status_code = status_code
-    return httpx.HTTPStatusError("error", request=MagicMock(), response=response)
+    return httpx.HTTPStatusError(
+        "error", request=MagicMock(), response=response
+    )
 
 
 class TestFindHttpStatusError:
@@ -73,7 +76,7 @@ class TestFindHttpStatusError:
 
 
 def _make_tool_context(state: dict | None = None) -> MagicMock:
-    """ToolContext mock whose `.state` is a real dict so .get/__setitem__ work."""
+    """ToolContext mock whose `.state` is a real dict."""
     ctx = MagicMock()
     ctx.state = {} if state is None else state
     return ctx
@@ -140,8 +143,7 @@ class TestHandleToolError:
 
 
 class TestInstructionRendering:
-    """The instruction must enumerate live registry tool names, not just prefixes,
-    so the LLM has no room to invent plausible-but-wrong tool names."""
+    """The instruction must enumerate live registry tool names."""
 
     _DISCOVERED = [
         {
@@ -162,7 +164,9 @@ class TestInstructionRendering:
     ]
 
     def test_render_includes_live_tool_names_and_descriptions(self):
-        with patch.object(agent_module, "DISCOVERED_MCP_SERVERS", self._DISCOVERED):
+        with patch.object(
+            agent_module, "DISCOVERED_MCP_SERVERS", self._DISCOVERED
+        ):
             doc = _render_mcp_services_doc()
         # Concrete prefixed names appear.
         assert "`legacy_dms_search_documents`" in doc
@@ -206,7 +210,11 @@ class TestInstructionRendering:
         with patch.object(
             agent_module,
             "DISCOVERED_MCP_SERVERS",
-            [{"name": "future-service", "tool_name_prefix": "future_service", "tools": []}],
+            [{
+                "name": "future-service",
+                "tool_name_prefix": "future_service",
+                "tools": [],
+            }],
         ):
             doc = _render_mcp_services_doc()
         assert "**future-service** (tools prefixed `future_service_*`)" in doc
@@ -217,7 +225,10 @@ class TestInstructionRendering:
         with patch.object(
             agent_module,
             "DISCOVERED_MCP_SERVERS",
-            [{"name": "future-service", "tool_name_prefix": "future_service"}],
+            [{
+                "name": "future-service",
+                "tool_name_prefix": "future_service",
+            }],
         ):
             doc = _render_mcp_services_doc()
         assert "**future-service** (tools prefixed `future_service_*`)" in doc
@@ -231,10 +242,14 @@ class TestInstructionRendering:
             doc = _render_mcp_services_doc()
         assert "**broken-service** (no tools advertised)" in doc
 
-    def test_built_agent_instruction_contains_live_tool_names_and_guardrails(self):
+    def test_built_agent_instruction_contains_live_tool_names(self):
         with (
-            patch.object(agent_module, "_discover_mcp_toolsets", return_value=[]),
-            patch.object(agent_module, "DISCOVERED_MCP_SERVERS", self._DISCOVERED),
+            patch.object(
+                agent_module, "_discover_mcp_toolsets", return_value=[]
+            ),
+            patch.object(
+                agent_module, "DISCOVERED_MCP_SERVERS", self._DISCOVERED
+            ),
         ):
             built = agent_module._build_agent()
         instruction = built.instruction
@@ -247,13 +262,13 @@ class TestInstructionRendering:
         assert "`corporate_email_*`" not in instruction
         assert "`income_verification_*`" not in instruction
         # Anti-hallucination guardrails are in place.
-        assert "Only call tools by the exact names listed below." in instruction
+        assert "Only call tools by the exact names" in instruction
         assert "never use a colon (`:`)" in instruction
         assert "Never invent tool names." in instruction
 
 
 class TestConnectionTimeoutNoMutation:
-    """We rely on ADK's 5s default for fail-fast on denied calls; do not mutate it."""
+    """Rely on ADK's 5s default for fail-fast on denied calls."""
 
     def test_discover_does_not_override_toolset_timeout(self, monkeypatch):
         monkeypatch.setenv("MCP_REGISTRY_PROJECT", "test-project")
@@ -284,8 +299,7 @@ class TestConnectionTimeoutNoMutation:
         }
         registry_instance.get_mcp_toolset.return_value = toolset
 
-        # Reset module-level cache so the discovery actually runs (other
-        # tests in this file may have populated it via real or mocked calls).
+        # Reset module-level cache so discovery actually runs.
         agent_module._CACHED_TOOLSETS = None
         agent_module._CACHED_DISCOVERED = None
 
@@ -309,13 +323,20 @@ class TestDiscoverFallback:
         monkeypatch.setenv("MCP_REGISTRY_LOCATION", "us-central1")
         monkeypatch.setenv("MCP_REGISTRY_LIST_ATTEMPTS", "1")
         monkeypatch.delenv("MCP_INTERNAL_DNS_DOMAIN", raising=False)
-        monkeypatch.setenv(
-            "MCP_DISCOVERED_SERVERS_JSON",
-            '[{"name":"legacy-dms","resolved_url":"https://legacy-dms.mcp.example/mcp","tool_name_prefix":"legacy_dms","tools":["search_documents"]}]',
-        )
+        snapshot = json.dumps([
+            {
+                "name": "legacy-dms",
+                "resolved_url": "https://legacy-dms.mcp.example/mcp",
+                "tool_name_prefix": "legacy_dms",
+                "tools": ["search_documents"],
+            }
+        ])
+        monkeypatch.setenv("MCP_DISCOVERED_SERVERS_JSON", snapshot)
 
         toolset = MagicMock()
-        toolset._connection_params = MagicMock(url="https://legacy-dms.mcp.example/mcp")
+        toolset._connection_params = MagicMock(
+            url="https://legacy-dms.mcp.example/mcp"
+        )
         toolset.tool_name_prefix = "legacy_dms"
 
         agent_module._CACHED_TOOLSETS = None
@@ -326,14 +347,18 @@ class TestDiscoverFallback:
                 "google.adk.integrations.agent_registry.AgentRegistry",
                 side_effect=OSError("Network is unreachable"),
             ),
-            patch.object(agent_module, "_toolset_from_http_url", return_value=toolset) as built,
+            patch.object(
+                agent_module, "_toolset_from_http_url", return_value=toolset
+            ) as built,
         ):
             result = _discover_mcp_toolsets()
 
         assert result == [toolset]
         built.assert_called_once()
         assert agent_module.DISCOVERED_MCP_SERVERS[0]["name"] == "legacy-dms"
-        assert agent_module.DISCOVERED_MCP_SERVERS[0]["tools"] == ["search_documents"]
+        assert agent_module.DISCOVERED_MCP_SERVERS[0]["tools"] == [
+            "search_documents"
+        ]
         agent_module._CACHED_TOOLSETS = None
         agent_module._CACHED_DISCOVERED = None
 

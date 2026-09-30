@@ -31,16 +31,17 @@ Usage:
 
     # Create with PSC Interface and agent identity
     python deploy_agent.py --project=PROJECT_ID --region=us-central1 \
-        --network-attachment=projects/PROJECT/regions/REGION/networkAttachments/NAME \
+        --network-attachment=\
+projects/PROJECT/regions/REGION/networkAttachments/NAME \
         --enable-agent-identity
 
     # Pin the model endpoint to a specific location (default: global)
     python deploy_agent.py --project=PROJECT_ID --region=us-central1 \
         --model-endpoint-location=us-central1
 
-    # Register an existing reasoning engine in Gemini Enterprise only (no redeploy)
+    # Register existing reasoning engine in Gemini Enterprise (no redeploy)
     OAUTH_CLIENT_SECRET=... python deploy_agent.py --project=PROJECT_ID \
-        --ge-deploy-only=projects/PROJECT/locations/REGION/reasoningEngines/ENGINE_ID \
+        --ge-deploy-only=projects/P/locations/R/reasoningEngines/ENGINE_ID \
         --app-id=GE_ENGINE_ID \
         --oauth-client-id=CLIENT_ID
 """
@@ -78,7 +79,10 @@ def _ge_deploy(
     credentials.refresh(google.auth.transport.requests.Request())
     access_token = credentials.token
 
-    base_url = f"https://global-discoveryengine.googleapis.com/v1alpha/projects/{project}/locations/global"
+    base_url = (
+        f"https://global-discoveryengine.googleapis.com/v1alpha/projects/"
+        f"{project}/locations/global"
+    )
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
@@ -90,8 +94,14 @@ def _ge_deploy(
     # linked to an agent).  Matching by displayName instead of reasoning
     # engine reference ensures cleanup works across redeploys that create
     # new reasoning engines.
-    agents_url = f"{base_url}/collections/default_collection/engines/{app_id}/assistants/default_assistant/agents"
-    print(f"Checking for existing agent in Gemini Enterprise engine '{app_id}'...")
+    agents_url = (
+        f"{base_url}/collections/default_collection/engines/{app_id}/"
+        f"assistants/default_assistant/agents"
+    )
+    print(
+        f"Checking for existing agent in Gemini Enterprise engine "
+        f"'{app_id}'..."
+    )
     list_req = urllib.request.Request(agents_url, headers=headers)
     try:
         with urllib.request.urlopen(list_req) as resp:
@@ -100,19 +110,29 @@ def _ge_deploy(
                 if agent.get("displayName") == display_name:
                     existing_name = agent["name"]
                     print(f"  Deleting existing agent: {existing_name}...")
-                    del_agent_url = f"https://global-discoveryengine.googleapis.com/v1alpha/{existing_name}"
-                    del_agent_req = urllib.request.Request(del_agent_url, headers=headers, method="DELETE")
+                    del_agent_url = (
+                        f"https://global-discoveryengine.googleapis.com/"
+                        f"v1alpha/{existing_name}"
+                    )
+                    del_agent_req = urllib.request.Request(
+                        del_agent_url, headers=headers, method="DELETE"
+                    )
                     with urllib.request.urlopen(del_agent_req) as del_resp:
                         del_resp.read()
                     print("  Deleted.")
     except urllib.error.HTTPError as e:
         body = e.read().decode()
-        print(f"WARNING: could not list/delete agents: {e.code} {body}", file=sys.stderr)
+        print(
+            f"WARNING: could not list/delete agents: {e.code} {body}",
+            file=sys.stderr,
+        )
 
     # Step 2: Delete existing authorizations by prefix (now unlinked).
     # Handles both legacy non-suffixed IDs (e.g. "mortgage-agent") and
     # timestamp-suffixed IDs (e.g. "mortgage-agent_1712505600000").
-    auth_prefix = f"projects/{project}/locations/global/authorizations/{agent_name}"
+    auth_prefix = (
+        f"projects/{project}/locations/global/authorizations/{agent_name}"
+    )
     print(f"Cleaning up authorizations matching '{agent_name}*'...")
     list_auth_url = f"{base_url}/authorizations"
     list_auth_req = urllib.request.Request(list_auth_url, headers=headers)
@@ -121,31 +141,52 @@ def _ge_deploy(
             auth_list = json.loads(resp.read())
             for auth in auth_list.get("authorizations", []):
                 auth_name = auth.get("name", "")
-                if auth_name == auth_prefix or auth_name.startswith(f"{auth_prefix}_"):
+                if (
+                    auth_name == auth_prefix
+                    or auth_name.startswith(f"{auth_prefix}_")
+                ):
                     print(f"  Deleting authorization: {auth_name}...")
-                    del_auth_url = f"https://global-discoveryengine.googleapis.com/v1alpha/{auth_name}"
-                    del_auth_req = urllib.request.Request(del_auth_url, headers=headers, method="DELETE")
+                    del_auth_url = (
+                        f"https://global-discoveryengine.googleapis.com/"
+                        f"v1alpha/{auth_name}"
+                    )
+                    del_auth_req = urllib.request.Request(
+                        del_auth_url, headers=headers, method="DELETE"
+                    )
                     try:
                         with urllib.request.urlopen(del_auth_req) as del_resp:
                             del_resp.read()
                         print("  Deleted.")
                     except urllib.error.HTTPError as e:
                         body = e.read().decode()
-                        print(f"WARNING: delete authorization failed: {e.code} {body}", file=sys.stderr)
+                        print(
+                            f"WARNING: delete authorization failed: "
+                            f"{e.code} {body}",
+                            file=sys.stderr,
+                        )
     except urllib.error.HTTPError as e:
         body = e.read().decode()
-        print(f"WARNING: could not list authorizations: {e.code} {body}", file=sys.stderr)
+        print(
+            f"WARNING: could not list authorizations: {e.code} {body}",
+            file=sys.stderr,
+        )
 
     # Step 3: Create authorization with timestamp-suffixed ID.
     # The Gemini Enterprise backend requires this format for proper OAuth token
     # storage; simple IDs cause an infinite consent loop.
     auth_id = f"{agent_name}_{int(time.time() * 1000)}"
-    auth_resource_name = f"projects/{project}/locations/global/authorizations/{auth_id}"
+    auth_resource_name = (
+        f"projects/{project}/locations/global/authorizations/{auth_id}"
+    )
     auth_url = f"{base_url}/authorizations?authorizationId={auth_id}"
+    redirect_uri = (
+        "https%3A%2F%2Fvertexaisearch.cloud.google.com%2Fstatic%2Foauth%2F"
+        "oauth.html"
+    )
     authorization_uri = (
         "https://accounts.google.com/o/oauth2/v2/auth"
         f"?client_id={oauth_client_id}"
-        "&redirect_uri=https%3A%2F%2Fvertexaisearch.cloud.google.com%2Fstatic%2Foauth%2Foauth.html"
+        f"&redirect_uri={redirect_uri}"
         "&scope=https://www.googleapis.com/auth/cloud-platform"
         "&include_granted_scopes=true"
         "&response_type=code"
@@ -165,7 +206,9 @@ def _ge_deploy(
     ).encode()
 
     print(f"Creating authorization '{auth_id}'...")
-    auth_req = urllib.request.Request(auth_url, data=auth_body, headers=headers, method="POST")
+    auth_req = urllib.request.Request(
+        auth_url, data=auth_body, headers=headers, method="POST"
+    )
     try:
         with urllib.request.urlopen(auth_req) as resp:
             auth_resp = json.loads(resp.read())
@@ -173,7 +216,10 @@ def _ge_deploy(
             print(f"  Authorization created: {auth_resource_name}")
     except urllib.error.HTTPError as e:
         body = e.read().decode()
-        print(f"ERROR creating authorization: {e.code} {body}", file=sys.stderr)
+        print(
+            f"ERROR creating authorization: {e.code} {body}",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Step 4: Create agent registration
@@ -201,7 +247,9 @@ def _ge_deploy(
     ).encode()
 
     print(f"Registering agent in Gemini Enterprise engine '{app_id}'...")
-    agent_req = urllib.request.Request(agents_url, data=agent_body, headers=headers, method="POST")
+    agent_req = urllib.request.Request(
+        agents_url, data=agent_body, headers=headers, method="POST"
+    )
     try:
         with urllib.request.urlopen(agent_req) as resp:
             agent_resp = json.loads(resp.read())
@@ -214,7 +262,9 @@ def _ge_deploy(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Deploy mortgage assistant agent to Vertex AI Agent Engine")
+    parser = argparse.ArgumentParser(
+        description="Deploy mortgage assistant agent to Vertex AI Agent Engine"
+    )
     parser.add_argument(
         "--project",
         default=os.environ.get("PROJECT_ID"),
@@ -239,9 +289,11 @@ def main() -> None:
         "--update",
         default=None,
         metavar="RESOURCE_NAME",
-        help="Update an existing agent in-place instead of creating a new one. "
-        "Pass the full resource name "
-        "(e.g. projects/PROJECT/locations/REGION/reasoningEngines/ENGINE_ID)",
+        help=(
+            "Update an existing agent in-place instead of creating a new one. "
+            "Pass the full resource name "
+            "(e.g. projects/P/locations/R/reasoningEngines/ENGINE_ID)"
+        ),
     )
     parser.add_argument(
         "--network-attachment",
@@ -266,7 +318,8 @@ def main() -> None:
     parser.add_argument(
         "--agent-gateway",
         default=None,
-        help="Agent Gateway resource name (e.g. projects/PROJECT/locations/REGION/agentGateways/GATEWAY_ID)",
+        help="Agent Gateway resource name "
+        "(e.g. projects/P/locations/R/agentGateways/GATEWAY_ID)",
     )
     parser.add_argument(
         "--enable-agent-identity",
@@ -282,9 +335,9 @@ def main() -> None:
         "--ge-deploy-only",
         default=None,
         metavar="RESOURCE_NAME",
-        help="Register an existing reasoning engine in Gemini Enterprise without "
+        help="Register existing reasoning engine in Gemini Enterprise without "
         "redeploying. Pass the full resource name "
-        "(e.g. projects/PROJECT/locations/REGION/reasoningEngines/ENGINE_ID)",
+        "(e.g. projects/P/locations/R/reasoningEngines/ENGINE_ID)",
     )
     parser.add_argument(
         "--app-id",
@@ -294,74 +347,74 @@ def main() -> None:
     parser.add_argument(
         "--oauth-client-id",
         default=os.environ.get("OAUTH_CLIENT_ID"),
-        help="OAuth2 client ID (default: $OAUTH_CLIENT_ID, required with --ge-deploy)",
+        help="OAuth2 client ID (default: $OAUTH_CLIENT_ID, "
+        "required with --ge-deploy)",
     )
     parser.add_argument(
         "--oauth-client-secret",
         default=os.environ.get("OAUTH_CLIENT_SECRET"),
-        help="OAuth2 client secret (default: $OAUTH_CLIENT_SECRET, required with --ge-deploy)",
+        help="OAuth2 client secret (default: $OAUTH_CLIENT_SECRET, "
+        "required with --ge-deploy)",
     )
     parser.add_argument(
         "--model",
         default="gemini-3.1-flash-lite",
-        help="Gemini model name for the agent (default: gemini-3.1-flash-lite)",
+        help=(
+            "Gemini model name for the agent (default: gemini-3.1-flash-lite)"
+        ),
     )
     parser.add_argument(
         "--model-endpoint-location",
         default="global",
         help=(
-            "Location passed to the agent as GOOGLE_CLOUD_LOCATION; controls which "
-            "Vertex AI Gemini endpoint the model calls (default: global). Use a "
-            "specific region (e.g. us-central1) to pin to a regional endpoint."
+            "Location passed to agent as GOOGLE_CLOUD_LOCATION; controls "
+            "which Vertex AI Gemini endpoint model calls (default: global). "
+            "Use a specific region (e.g. us-central1) to pin regional."
         ),
     )
     parser.add_argument(
         "--registry-filter",
         default=None,
         help=(
-            "Optional Google API list-filter expression passed to the agent as "
-            "MCP_REGISTRY_FILTER, scoping which mcpServers the agent picks up "
-            "from the registry at startup."
+            "Optional Google API list-filter expression passed to the agent "
+            "as MCP_REGISTRY_FILTER, scoping which mcpServers the agent picks "
+            "up from the registry at startup."
         ),
     )
     parser.add_argument(
         "--registry-endpoint",
         default=None,
         help=(
-            "Override the Agent Registry base URL the agent calls. When "
-            "unset, MCP_REGISTRY_ENDPOINT is not exported and the agent "
-            "uses ADK's built-in default "
-            "(https://agentregistry.googleapis.com/v1alpha) — currently "
-            "the only endpoint that serves mcpServers. Set this to a "
-            "regional URL (e.g. https://<region>-agentregistry.googleapis.com/v1alpha) "
-            "once those endpoints exist. Passed to the agent as "
-            "MCP_REGISTRY_ENDPOINT."
+            "Override Agent Registry base URL. When unset, "
+            "MCP_REGISTRY_ENDPOINT is not exported and agent uses ADK default "
+            "(https://agentregistry.googleapis.com/v1alpha). "
+            "Passed to agent as MCP_REGISTRY_ENDPOINT."
         ),
     )
     parser.add_argument(
         "--agent-name",
         default="mortgage-agent",
-        help="Discovery Engine authorization/agent name (default: mortgage-agent)",
+        help="Discovery Engine auth/agent name (default: mortgage-agent)",
     )
     parser.add_argument(
         "--mcp-dns-domain",
         default=os.environ.get("MCP_INTERNAL_DNS_DOMAIN"),
         help=(
-            "Internal MCP DNS zone (e.g. mcp.example.com). Passed to the engine as "
-            "MCP_INTERNAL_DNS_DOMAIN so toolsets can be built from "
-            "https://<service>.<domain>/mcp when Agent Registry listing fails "
-            "through Agent Gateway. Default: $MCP_INTERNAL_DNS_DOMAIN."
+            "Internal MCP DNS zone (e.g. mcp.example.com). Passed to engine "
+            "as MCP_INTERNAL_DNS_DOMAIN so toolsets can be built from "
+            "https://<service>.<domain>/mcp when Agent Registry fails. "
+            "Default: $MCP_INTERNAL_DNS_DOMAIN."
         ),
     )
     parser.add_argument(
         "--mcp-invoker-sa",
         default=os.environ.get("MCP_INVOKER_SA_EMAIL"),
         help=(
-            "Email of the service account the deployed agent impersonates to mint "
-            "OIDC ID tokens for MCP Cloud Run calls. The agent's identity must hold "
-            "roles/iam.serviceAccountTokenCreator on this SA, and this SA must hold "
-            "roles/run.invoker on each MCP Cloud Run service. Sourced from terraform "
-            "output `agent_mcp_invoker_email`. Default: $MCP_INVOKER_SA_EMAIL."
+            "Email of SA deployed agent impersonates to mint OIDC ID tokens "
+            "for MCP Cloud Run calls. Agent identity must hold "
+            "roles/iam.serviceAccountTokenCreator on this SA, and SA must "
+            "hold roles/run.invoker on MCP services. "
+            "Default: $MCP_INVOKER_SA_EMAIL."
         ),
     )
     args = parser.parse_args()
@@ -373,23 +426,28 @@ def main() -> None:
     oauth_client_secret = None
     if ge_deploy_needed:
         if not args.app_id:
-            parser.error("--app-id is required when using --ge-deploy or --ge-deploy-only")
+            parser.error(
+                "--app-id is required when using --ge-deploy or "
+                "--ge-deploy-only"
+            )
         if not args.oauth_client_id:
             parser.error(
-                "--oauth-client-id is required when using --ge-deploy or --ge-deploy-only (or set $OAUTH_CLIENT_ID)"
+                "--oauth-client-id is required when using --ge-deploy or "
+                "--ge-deploy-only (or set $OAUTH_CLIENT_ID)"
             )
         oauth_client_secret = args.oauth_client_secret
         if not oauth_client_secret:
             parser.error(
-                "--oauth-client-secret is required when using --ge-deploy or --ge-deploy-only "
-                "(or set $OAUTH_CLIENT_SECRET)"
+                "--oauth-client-secret is required when using --ge-deploy "
+                "or --ge-deploy-only (or set $OAUTH_CLIENT_SECRET)"
             )
 
     description = (
-        "ADK mortgage assistant agent connecting to legacy DMS, income verification, and corporate email services."
+        "ADK mortgage assistant agent connecting to legacy DMS, "
+        "income verification, and corporate email services."
     )
 
-    # --ge-deploy-only: skip Agent Engine deploy, just register in Gemini Enterprise
+    # --ge-deploy-only: skip deploy, just register in Gemini Enterprise
     if args.ge_deploy_only:
         reasoning_engine_name = args.ge_deploy_only
         print("Registering existing reasoning engine in Gemini Enterprise...")
@@ -456,7 +514,9 @@ def main() -> None:
     if args.mcp_invoker_sa:
         os.environ["MCP_INVOKER_SA_EMAIL"] = args.mcp_invoker_sa
     if args.mcp_dns_domain:
-        os.environ["MCP_INTERNAL_DNS_DOMAIN"] = args.mcp_dns_domain.strip().rstrip(".")
+        os.environ["MCP_INTERNAL_DNS_DOMAIN"] = (
+            args.mcp_dns_domain.strip().rstrip(".")
+        )
 
     import vertexai
 
@@ -477,10 +537,14 @@ def main() -> None:
 
     discovered_snapshot = json.dumps(list(DISCOVERED_MCP_SERVERS))
     if DISCOVERED_MCP_SERVERS:
-        print(f"  MCP servers discovered at deploy time: {len(DISCOVERED_MCP_SERVERS)}")
+        print(
+            f"  MCP servers discovered at deploy time: "
+            f"{len(DISCOVERED_MCP_SERVERS)}"
+        )
     else:
         print(
-            "  MCP registry listing was empty at deploy time; engine will use DNS fallback if --mcp-dns-domain is set."
+            "  MCP registry listing was empty at deploy time; "
+            "engine will use DNS fallback if --mcp-dns-domain is set."
         )
 
     # Do not pass enable_tracing=True. AdkApp.set_up() uses that flag to POST
@@ -495,10 +559,11 @@ def main() -> None:
     if args.network_attachment:
         psc_config = {"network_attachment": args.network_attachment}
         if args.dns_peering_domain:
+            target_proj = args.dns_peering_target_project or args.project
             psc_config["dns_peering_configs"] = [
                 {
                     "domain": args.dns_peering_domain,
-                    "target_project": args.dns_peering_target_project or args.project,
+                    "target_project": target_proj,
                     "target_network": args.dns_peering_target_network,
                 }
             ]
@@ -506,7 +571,11 @@ def main() -> None:
     if args.enable_agent_identity:
         config["identity_type"] = "AGENT_IDENTITY"
     if args.agent_gateway:
-        config["agent_gateway_config"] = {"agent_to_anywhere_config": {"agent_gateway": args.agent_gateway}}
+        config["agent_gateway_config"] = {
+            "agent_to_anywhere_config": {
+                "agent_gateway": args.agent_gateway
+            }
+        }
 
     agent_src = os.path.join(agent_dir, "agent")
     staging_dir = tempfile.mkdtemp(prefix="agent_deploy_")
@@ -516,7 +585,9 @@ def main() -> None:
         shutil.copytree(
             agent_src,
             os.path.join(staging_dir, "agent"),
-            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".pytest_cache"),
+            ignore=shutil.ignore_patterns(
+                "__pycache__", "*.pyc", ".pytest_cache"
+            ),
         )
 
         # Create installation_scripts/ with a workaround for the
@@ -526,20 +597,33 @@ def main() -> None:
         os.makedirs(scripts_dir)
         script_path = os.path.join(scripts_dir, "create_venv.sh")
         with open(script_path, "w") as f:
+            # Workaround: create a proper .venv for compileall
+            # step (step 20/21). The base image's Dockerfile runs:
+            #   .venv/bin/python -m compileall \
+            #     "$(.venv/bin/python -c \"import site; "
+            #     "print(site.getsitepackages()[0])\")"
+            # A plain symlink causes site.getsitepackages()[0] to
+            # return /usr/local/lib/python3.12/site-packages/ which
+            # is root-owned => PermissionError as appuser.
             f.write("#!/bin/bash\n")
-            f.write("# Workaround: create a proper .venv for the compileall\n")
+            f.write("# Workaround: create a proper .venv for compileall\n")
             f.write("# step (step 20/21). The base image's Dockerfile runs:\n")
             f.write("#   .venv/bin/python -m compileall \\\n")
-            f.write('#     "$(.venv/bin/python -c \\"import site; print(site.getsitepackages()[0])\\")"\n')
-            f.write("# A plain symlink causes site.getsitepackages()[0] to\n")
-            f.write("# return /usr/local/lib/python3.12/site-packages/ which\n")
-            f.write("# is root-owned => PermissionError as appuser.\n")
+            f.write(
+                '#     "$(.venv/bin/python -c \\"import site; '
+                'print(site.getsitepackages()[0])\\")"\n'
+            )
+            f.write("# A plain symlink causes site.getsitepackages()[0]\n")
+            f.write("# to return /usr/local/lib/python3.12/site-packages/\n")
+            f.write("# which is root-owned => PermissionError as appuser.\n")
             f.write("# Fix: create pyvenv.cfg so Python treats .venv/ as a\n")
             f.write("# virtualenv with writable site-packages.\n")
             f.write("set -e\n")
             f.write("PYTHON3=$(which python3)\n")
             f.write(
-                "PY_VER=$(python3 -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")')\n"
+                "PY_VER=$(python3 -c 'import sys; "
+                'print(f"{sys.version_info.major}.'
+                '{sys.version_info.minor}")\')\n'
             )
             f.write("mkdir -p /code/.venv/bin\n")
             f.write("mkdir -p /code/.venv/lib/python${PY_VER}/site-packages\n")
@@ -549,34 +633,46 @@ def main() -> None:
             f.write("home = $(dirname $PYTHON3)\n")
             f.write("include-system-site-packages = true\n")
             f.write("PYCFG\n")
-            f.write('echo "Created .venv virtualenv (site-packages: /code/.venv/lib/python${PY_VER}/site-packages)"\n')
+            f.write(
+                'echo "Created .venv (site-packages: '
+                '/code/.venv/lib/python${PY_VER}/site-packages)"\n'
+            )
         os.chmod(script_path, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP)
 
         os.chdir(staging_dir)
 
+        env_vars_map = {
+            "ADK_ENABLE_MCP_GRACEFUL_ERROR_HANDLING": "true",
+            "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
+            "GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES": (
+                "false"
+            ),
+            "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT": "true",
+            "OTEL_TRACES_SAMPLER": "parentbased_traceidratio",
+            "OTEL_TRACES_SAMPLER_ARG": "1.0",
+            "GOOGLE_GENAI_USE_VERTEXAI": "True",
+            "GOOGLE_CLOUD_LOCATION": args.model_endpoint_location,
+            "MODEL_NAME": args.model,
+            "MCP_REGISTRY_PROJECT": args.project,
+            "MCP_REGISTRY_LOCATION": args.region,
+        }
+        if args.registry_filter:
+            env_vars_map["MCP_REGISTRY_FILTER"] = args.registry_filter
+        if args.registry_endpoint:
+            env_vars_map["MCP_REGISTRY_ENDPOINT"] = args.registry_endpoint
+        if args.mcp_invoker_sa:
+            env_vars_map["MCP_INVOKER_SA_EMAIL"] = args.mcp_invoker_sa
+        if args.mcp_dns_domain:
+            env_vars_map["MCP_INTERNAL_DNS_DOMAIN"] = (
+                args.mcp_dns_domain.strip().rstrip(".")
+            )
+        if DISCOVERED_MCP_SERVERS:
+            env_vars_map["MCP_DISCOVERED_SERVERS_JSON"] = discovered_snapshot
+
         deploy_config = dict(
             staging_bucket=staging_bucket,
             requirements=[
-                # Upper-bound pin keeps the container on a release where
-                # `vertexai.agent_engines.AdkApp` (the public import used by
-                # agent/otel_setup.py) resolves the same class the operator
-                # pickled. Unpinned, PyPI advanced to 1.153.1 which had already
-                # removed the older `vertexai.agent_engines.templates.adk` path
-                # and broke unpickle in the container. The `[adk]` extra is
-                # omitted because google-adk is pinned explicitly below; the
-                # extra would just re-declare the same dep with a looser
-                # range. Keep aligned with pyproject.toml.
                 "google-cloud-aiplatform[agent_engines]>=1.149.0,<1.154.0",
-                # Pin google-adk to a tagged PyPI release (was previously
-                # tracking adk-python@main, which started publishing 2.0.0b1
-                # and conflicted with google-cloud-aiplatform's [adk] extra).
-                # The [a2a,agent-identity] extras pull a2a-sdk and
-                # google-cloud-iamconnectorcredentials at the versions
-                # google-adk itself requires — without them registry
-                # discovery fails on `cannot import name 'TransportProtocol'`
-                # (a2a) or
-                # `No module named google.cloud.iamconnectorcredentials_v1alpha`.
-                # Keep aligned with pyproject.toml.
                 "google-adk[a2a,agent-identity]==1.34.0",
                 "google-auth>=2.0",
                 "cloudpickle",
@@ -593,26 +689,7 @@ def main() -> None:
                     "installation_scripts/create_venv.sh",
                 ],
             },
-            env_vars={
-                # Make denied MCP tool calls (gateway 403) fail fast instead of
-                # hanging the turn as a broken-stream TaskGroup/TimeoutError.
-                "ADK_ENABLE_MCP_GRACEFUL_ERROR_HANDLING": "true",
-                "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
-                "GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES": "false",
-                "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT": "true",
-                "OTEL_TRACES_SAMPLER": "parentbased_traceidratio",
-                "OTEL_TRACES_SAMPLER_ARG": "1.0",
-                "GOOGLE_GENAI_USE_VERTEXAI": "True",
-                "GOOGLE_CLOUD_LOCATION": args.model_endpoint_location,
-                "MODEL_NAME": args.model,
-                "MCP_REGISTRY_PROJECT": args.project,
-                "MCP_REGISTRY_LOCATION": args.region,
-                **({"MCP_REGISTRY_FILTER": args.registry_filter} if args.registry_filter else {}),
-                **({"MCP_REGISTRY_ENDPOINT": args.registry_endpoint} if args.registry_endpoint else {}),
-                **({"MCP_INVOKER_SA_EMAIL": args.mcp_invoker_sa} if args.mcp_invoker_sa else {}),
-                **({"MCP_INTERNAL_DNS_DOMAIN": args.mcp_dns_domain.strip().rstrip(".")} if args.mcp_dns_domain else {}),
-                **({"MCP_DISCOVERED_SERVERS_JSON": discovered_snapshot} if DISCOVERED_MCP_SERVERS else {}),
-            },
+            env_vars=env_vars_map,
             display_name=args.display_name,
             description=description,
             min_instances=2,
@@ -623,53 +700,76 @@ def main() -> None:
             deploy_config.update(config)
 
         if args.update:
-            engine = client.agent_engines.update(name=args.update, agent=app, config=deploy_config)
+            engine = client.agent_engines.update(
+                name=args.update, agent=app, config=deploy_config
+            )
         else:
             print("Creating and deploying Agent Engine...")
-            engine = client.agent_engines.create(agent=app, config=deploy_config)
+            engine = client.agent_engines.create(
+                agent=app, config=deploy_config
+            )
             reasoning_engine_name = engine.api_resource.name
             agent_id = reasoning_engine_name.split("/")[-1]
 
             if args.enable_agent_identity:
-                print("\nApplying direct egress IAM permissions via grant_agent_mcp_egress.sh...")
+                print(
+                    "\nApplying direct egress IAM permissions via "
+                    "grant_agent_mcp_egress.sh..."
+                )
                 import subprocess
 
                 tf_vars = {}
                 tfvars_path = os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)), "../../terraform/terraform.tfvars"
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "../../terraform/terraform.tfvars",
                 )
                 if os.path.exists(tfvars_path):
                     with open(tfvars_path) as f:
                         for line in f:
-                            if "=" in line and not line.strip().startswith("#"):
+                            stripped = line.strip()
+                            if "=" in line and not stripped.startswith("#"):
                                 k, v = line.split("=", 1)
-                                tf_vars[k.strip()] = v.strip().strip('"').strip("'")
+                                tf_vars[k.strip()] = (
+                                    v.strip().strip('"').strip("'")
+                                )
 
                 project_id = args.project
                 project_number = None
-                org_id = tf_vars.get("organization_id") or os.environ.get("ORG_ID")
+                org_id = tf_vars.get("organization_id") or os.environ.get(
+                    "ORG_ID"
+                )
                 if not org_id:
                     print(
-                        "Error: Could not resolve organization_id/ORG_ID. Please set it in "
-                        "terraform.tfvars or as ORG_ID environment variable.",
+                        "Error: Could not resolve organization_id/ORG_ID. "
+                        "Please set it in terraform.tfvars or as ORG_ID env.",
                         file=sys.stderr,
                     )
                     sys.exit(1)
 
                 try:
                     res = subprocess.run(
-                        ["gcloud", "projects", "describe", project_id, "--format=value(projectNumber)"],
+                        [
+                            "gcloud",
+                            "projects",
+                            "describe",
+                            project_id,
+                            "--format=value(projectNumber)",
+                        ],
                         capture_output=True,
                         text=True,
                         check=True,
                     )
                     project_number = res.stdout.strip()
                 except Exception as e:
-                    print(f"Warning: could not resolve project number via gcloud: {e}")
+                    print(
+                        f"Warning: could not resolve project number via "
+                        f"gcloud: {e}"
+                    )
                     project_number = os.environ.get("PROJECT_NUMBER")
                     if not project_number:
                         print(
-                            "Error: Could not resolve project number. Please set the PROJECT_NUMBER environment variable.",
+                            "Error: Could not resolve project number. "
+                            "Please set the PROJECT_NUMBER env variable.",
                             file=sys.stderr,
                         )
                         sys.exit(1)
@@ -681,16 +781,29 @@ def main() -> None:
                 env["REGION"] = args.region
 
                 script_path = os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)), "../../scripts/grant_agent_mcp_egress.sh"
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "../../scripts/grant_agent_mcp_egress.sh",
                 )
                 if os.path.exists(script_path):
                     try:
-                        subprocess.run([script_path, "--agent-id", agent_id], env=env, check=True)
-                        print("Direct egress IAM permissions successfully applied!")
+                        subprocess.run(
+                            [script_path, "--agent-id", agent_id],
+                            env=env,
+                            check=True,
+                        )
+                        print(
+                            "Direct egress IAM permissions "
+                            "successfully applied!"
+                        )
                     except Exception as e:
-                        print(f"Error executing grant_agent_mcp_egress.sh: {e}")
+                        print(
+                            f"Error executing grant_agent_mcp_egress.sh: {e}"
+                        )
                 else:
-                    print(f"Warning: grant_agent_mcp_egress.sh not found at {script_path}")
+                    print(
+                        f"Warning: grant_agent_mcp_egress.sh not found "
+                        f"at {script_path}"
+                    )
     finally:
         os.chdir(original_cwd)
         shutil.rmtree(staging_dir, ignore_errors=True)
@@ -706,7 +819,9 @@ def main() -> None:
         print("Set the resource name in your terraform.tfvars:")
         print(f'  agent_engine_resource_name = "{reasoning_engine_name}"')
         if args.enable_agent_identity:
-            print("\nAgent identity enabled. Grant IAM to the agent's principal shown above.")
+            print(
+                "\nAgent identity enabled. Grant IAM to agent principal above."
+            )
 
     if args.ge_deploy:
         print()

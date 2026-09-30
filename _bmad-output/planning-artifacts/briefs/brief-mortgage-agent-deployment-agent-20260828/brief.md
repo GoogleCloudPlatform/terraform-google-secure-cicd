@@ -9,7 +9,7 @@ updated: 2026-08-28
 
 ## Executive Summary
 
-The Mortgage Agent Deployment Skill is an Antigravity CLI agent designed to streamline the complex deployment process of the `mortgage-agent` example within the Secure CI/CD Pipeline repository. By combining guided user instructions with automated infrastructure and pipeline execution, this skill transforms a tedious and error-prone setup into a seamless experience. 
+The Mortgage Agent Deployment Skill is an Antigravity CLI agent designed to streamline the complex deployment process of the `mortgage-agent` example within the Secure CI/CD Pipeline repository. By combining guided user instructions with automated infrastructure and pipeline execution, this skill transforms a tedious and error-prone setup into a seamless experience.
 
 ## The Problem
 
@@ -21,14 +21,14 @@ Deploying the `mortgage-agent` example today is fraught with friction for users.
 
 ## The Solution
 
-The Mortgage Agent Deployment Skill acts as a hybrid guide and automator. 
+The Mortgage Agent Deployment Skill acts as a hybrid guide and automator.
 
-**As a Guide:** 
-It walks users through the necessary manual prerequisites, explaining what GCP resources or configurations must be established first, and waits patiently for the user to complete them. 
+**As a Guide:**
+It walks users through the necessary manual prerequisites, explaining what GCP resources or configurations must be established first, and waits patiently for the user to complete them.
 *Domain Registration:* The example mandates a public DNS domain. If the user lacks one, the agent will prompt them and offer to guide them through registering a new domain using Google Cloud Domains (which starts at ~$12/year). The agent will provide the exact steps: navigating to Cloud Domains in the console, searching/purchasing the domain, and crucially, ensuring they select the option to have Cloud DNS automatically set up a public zone.
 *Critically, it handles organizational constraints gracefully:* it informs the user that `constraints/gcp.restrictNonCmekServices` is a deployment blocker. If the user indicates they cannot resolve or bypass this constraint, the agent halts the process and clearly explains that deployment is impossible in the current environment.
 
-**As an Automator:** 
+**As an Automator:**
 Once prerequisites are met, the agent takes over the heavy lifting:
 - Automates the complex `tfvars` configuration based on user inputs.
 - Creates the 6 required GitHub repositories for the CI/CD pipelines.
@@ -40,7 +40,7 @@ Once prerequisites are met, the agent takes over the heavy lifting:
 
 ## What Makes This Different
 
-Instead of just providing a script or a static README, this skill provides an interactive, context-aware deployment companion. It bridges the gap between manual prerequisites that require human judgment (like org policies, domain registration, or billing setup) and the tedious mechanical tasks (like repo creation and terraform applies) that machines do best. 
+Instead of just providing a script or a static README, this skill provides an interactive, context-aware deployment companion. It bridges the gap between manual prerequisites that require human judgment (like org policies, domain registration, or billing setup) and the tedious mechanical tasks (like repo creation and terraform applies) that machines do best.
 
 ## Who This Serves
 

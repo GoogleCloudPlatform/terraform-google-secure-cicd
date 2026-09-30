@@ -25,10 +25,16 @@ import google.auth.transport.requests
 import grpc
 from google.auth.transport.grpc import AuthMetadataPlugin
 from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+    OTLPMetricExporter,
+)
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+    OTLPSpanExporter,
+)
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.resourcedetector.gcp_resource_detector import GoogleCloudResourceDetector
+from opentelemetry.resourcedetector.gcp_resource_detector import (
+    GoogleCloudResourceDetector,
+)
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
@@ -39,12 +45,14 @@ SERVICE_NAME = os.getenv("OTEL_SERVICE_NAME", "income-verification-api")
 
 
 def _get_channel_credentials() -> grpc.ChannelCredentials:
-    """Create gRPC channel credentials using Application Default Credentials."""
-    credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    """Create gRPC credentials using Application Default Credentials."""
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+    credentials, _ = google.auth.default(scopes=scopes)
     request = google.auth.transport.requests.Request()
+    auth_plugin = AuthMetadataPlugin(credentials=credentials, request=request)
     return grpc.composite_channel_credentials(
         grpc.ssl_channel_credentials(),
-        grpc.metadata_call_credentials(AuthMetadataPlugin(credentials=credentials, request=request)),
+        grpc.metadata_call_credentials(auth_plugin),
     )
 
 
@@ -58,7 +66,9 @@ def init_telemetry() -> trace.Tracer:
     """Initialize OpenTelemetry tracing, metrics, and auto-instrumentation."""
     project_id = _get_project_id()
     gcp_resource = GoogleCloudResourceDetector().detect()
-    resource = Resource.create({"service.name": SERVICE_NAME, "gcp.project_id": project_id}).merge(gcp_resource)
+    resource = Resource.create(
+        {"service.name": SERVICE_NAME, "gcp.project_id": project_id}
+    ).merge(gcp_resource)
     channel_creds = _get_channel_credentials()
 
     # Traces
@@ -81,7 +91,10 @@ def init_telemetry() -> trace.Tracer:
         ),
         export_interval_millis=60000,
     )
-    metrics.set_meter_provider(MeterProvider(resource=resource, metric_readers=[reader]))
+    meter_provider = MeterProvider(
+        resource=resource, metric_readers=[reader]
+    )
+    metrics.set_meter_provider(meter_provider)
 
     # Auto-instrument FastAPI (includes Starlette layer)
     FastAPIInstrumentor().instrument()
@@ -91,7 +104,9 @@ def init_telemetry() -> trace.Tracer:
 
 # Custom MCP metrics
 _meter = metrics.get_meter(SERVICE_NAME)
-tool_call_counter = _meter.create_counter("mcp.tool.calls", description="Number of MCP tool invocations")
+tool_call_counter = _meter.create_counter(
+    "mcp.tool.calls", description="Number of MCP tool invocations"
+)
 tool_duration_histogram = _meter.create_histogram(
     "mcp.tool.duration", unit="s", description="MCP tool execution duration"
 )
@@ -99,32 +114,41 @@ tool_duration_histogram = _meter.create_histogram(
 
 @contextmanager
 def trace_tool(tracer: trace.Tracer, tool_name: str):
-    """Context manager that creates a span and records metrics for an MCP tool call."""
+    """Context manager for span and metrics recording on MCP tool call."""
     attributes = {"mcp.tool.name": tool_name}
-    with tracer.start_as_current_span(f"mcp.tool.{tool_name}", attributes=attributes):
+    span_name = f"mcp.tool.{tool_name}"
+    with tracer.start_as_current_span(span_name, attributes=attributes):
         tool_call_counter.add(1, attributes)
         start = time.monotonic()
         try:
             yield
         finally:
-            tool_duration_histogram.record(time.monotonic() - start, attributes)
+            duration = time.monotonic() - start
+            tool_duration_histogram.record(duration, attributes)
 
 
 # Custom REST endpoint metrics
-endpoint_call_counter = _meter.create_counter("rest.endpoint.calls", description="Number of REST endpoint invocations")
+endpoint_call_counter = _meter.create_counter(
+    "rest.endpoint.calls",
+    description="Number of REST endpoint invocations",
+)
 endpoint_duration_histogram = _meter.create_histogram(
-    "rest.endpoint.duration", unit="s", description="REST endpoint execution duration"
+    "rest.endpoint.duration",
+    unit="s",
+    description="REST endpoint execution duration",
 )
 
 
 @contextmanager
 def trace_endpoint(tracer: trace.Tracer, endpoint_name: str):
-    """Context manager that creates a span and records metrics for a REST endpoint call."""
+    """Context manager for span and metrics recording on REST endpoint."""
     attributes = {"rest.endpoint.name": endpoint_name}
-    with tracer.start_as_current_span(f"rest.endpoint.{endpoint_name}", attributes=attributes):
+    span_name = f"rest.endpoint.{endpoint_name}"
+    with tracer.start_as_current_span(span_name, attributes=attributes):
         endpoint_call_counter.add(1, attributes)
         start = time.monotonic()
         try:
             yield
         finally:
-            endpoint_duration_histogram.record(time.monotonic() - start, attributes)
+            duration = time.monotonic() - start
+            endpoint_duration_histogram.record(duration, attributes)

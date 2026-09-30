@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Thin AdkApp subclass that relies on Agent Engine's default telemetry pipeline."""
+"""Thin AdkApp subclass relying on Agent Engine default telemetry."""
 
 from __future__ import annotations
 
@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 
 
 def _noop_telemetry_probe(*args, **kwargs):
-    logger.info("Skipping AdkApp telemetry API probe (Agent Gateway RST workaround)")
+    logger.info(
+        "Skipping AdkApp telemetry API probe (Agent Gateway RST workaround)"
+    )
     return None
 
 
@@ -39,7 +41,8 @@ class InstrumentedAdkApp(AdkApp):
     - Proper resource attributes for Agent Engine dashboard
 
     ADK already creates semantic spans (execute_tool, tools/call, call_llm)
-    for agent operations, so no additional HTTP-level instrumentation is needed.
+    for agent operations, so no additional HTTP-level instrumentation
+    is needed.
     """
 
     def project_id(self):
@@ -58,7 +61,7 @@ class InstrumentedAdkApp(AdkApp):
         return env_project or project
 
     def set_up(self):
-        # AdkApp.set_up() POSTs to https://telemetry.googleapis.com/v1/traces when
+        # AdkApp.set_up() POSTs to telemetry.googleapis.com/v1/traces when
         # enable_tracing=True. That probe has no try/except; AGENT_TO_ANYWHERE
         # can RST it and the control plane treats it as fatal.
         #
@@ -75,9 +78,15 @@ class InstrumentedAdkApp(AdkApp):
             mapping[key] = _noop_telemetry_probe
             restored.append((mapping, key, orig))
 
-        _install(getattr(AdkApp.set_up, "__globals__", None), "_warn_if_telemetry_api_disabled")
+        _install(
+            getattr(AdkApp.set_up, "__globals__", None),
+            "_warn_if_telemetry_api_disabled",
+        )
         for mod in list(sys.modules.values()):
-            _install(getattr(mod, "__dict__", None), "_warn_if_telemetry_api_disabled")
+            _install(
+                getattr(mod, "__dict__", None),
+                "_warn_if_telemetry_api_disabled",
+            )
 
         try:
             return super().set_up()

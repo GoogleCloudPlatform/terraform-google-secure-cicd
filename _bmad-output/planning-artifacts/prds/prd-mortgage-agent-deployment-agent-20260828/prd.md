@@ -20,13 +20,13 @@ Software engineers and platform operators of all experience levels who need to d
 
 > **UJ-1. Alex deploys the Mortgage Agent from scratch.**
 > Alex, a Platform Engineer, opens the terminal in the repository and invokes the Mortgage Agent Deployment Skill.
-> 
+>
 > **Phase 1: Introduction & Prerequisites**
 > The agent greets Alex and briefly explains what the `mortgage-agent` example provisions. It then initiates an interactive checklist for prerequisites: Organization, Project, IAM Permissions, Public Domain, and Org Policies. Alex realizes he hasn't set up a Public Domain yet. The agent detects this and provides the exact Cloud Domains registration instructions. (If Alex hadn't had an Organization, the agent would state it's required but *not* attempt to guide him through creating one. If his Organization enforced `restrictNonCmekServices`, the agent would halt entirely).
-> 
+>
 > **Phase 2: Configuration Gathering**
 > Once Alex confirms all prerequisites are met, the agent asks him sequentially for the values needed to populate `terraform.tfvars`, including asking for the URLs of the 6 pre-created GitHub repositories.
-> 
+>
 > **Phase 3: Execution & Status**
 > The agent runs `terraform plan`, saves the output to a file, and asks Alex for permission to proceed. After approval, the agent begins the automated deployment (Terraform apply, Repo seeding, ADK agent deployment). Mid-deployment, Alex types, "Where are we at?" The agent pauses, reads its state, and responds, "Currently running `terraform apply`. Still pending: CI repository seeding, Agent deployment, and IAM egress bindings."
 
@@ -44,7 +44,7 @@ Software engineers and platform operators of all experience levels who need to d
 **Functional Requirements:**
 
 #### FR-1: Prerequisite Interactive Checklist
-The agent must interactively step the user through required prerequisites (Org, Project, IAM, Domain, Org Policies, gcloud Auth). 
+The agent must interactively step the user through required prerequisites (Org, Project, IAM, Domain, Org Policies, gcloud Auth).
 *   **gcloud Authentication:** Check if `gcloud` is authenticated and configured with the correct active/quota project. If not, prompt the user. If they agree, the agent must automatically run `gcloud auth login`, set the active/quota project, and run `gcloud auth application-default login`.
 *   **Domain:** Provide exact Cloud Domains registration instructions if missing.
 *   **Org Policies:** If `constraints/gcp.restrictNonCmekServices` is enforced and cannot be bypassed, the agent must halt deployment. If the agent lacks `roles/orgpolicy.policyViewer` or otherwise receives a `PERMISSION_DENIED` error when checking policies, it must gracefully prompt the user to verify the policy manually rather than crashing.

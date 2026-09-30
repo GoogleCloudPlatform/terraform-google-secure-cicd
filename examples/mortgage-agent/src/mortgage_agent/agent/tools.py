@@ -24,7 +24,7 @@ def get_current_time(timezone_name: str = "UTC") -> dict:
     """Return the current time in the specified timezone.
 
     Args:
-        timezone_name: IANA timezone name (e.g. 'US/Eastern', 'Europe/London', 'UTC').
+        timezone_name: IANA timezone name (e.g. 'US/Eastern', 'UTC').
 
     Returns:
         Dictionary with the current time and timezone info.
@@ -53,7 +53,8 @@ def list_mcp_connections() -> dict:
     Returns:
         Dictionary with the list of discovered server descriptors and a count.
     """
-    # Lazy import to avoid a circular dependency: agent.agent imports this module.
+    # Lazy import to avoid circular dependency:
+    # agent.agent imports this module.
     from . import agent as _agent
 
     servers = list(_agent.DISCOVERED_MCP_SERVERS)

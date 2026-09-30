@@ -27,9 +27,9 @@ try:
 except Exception:
     pass
 
-import google.auth
+import google.auth  # noqa: E402
 
-from . import agent  # noqa: F401
+from . import agent  # noqa: E402, F401
 
 try:
     _, project_id = google.auth.default()

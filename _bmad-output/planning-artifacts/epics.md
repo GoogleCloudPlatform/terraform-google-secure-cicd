@@ -1,6 +1,6 @@
 ---
 stepsCompleted: ["step-01-validate-prerequisites", "step-02-design-epics", "step-03-create-stories", "step-04-final-validation"]
-inputDocuments: 
+inputDocuments:
   - _bmad-output/specs/spec-mortgage-agent-deployment-agent-20260828/SPEC.md
   - _bmad-output/planning-artifacts/prds/prd-mortgage-agent-deployment-agent-20260828/prd.md
   - _bmad-output/planning-artifacts/architecture/architecture-mortgage-agent-deployment-skill-2026-08-28/ARCHITECTURE-SPINE.md

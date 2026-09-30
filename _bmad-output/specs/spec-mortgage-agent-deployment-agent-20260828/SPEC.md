@@ -1,8 +1,8 @@
 ---
 id: SPEC-mortgage-agent-deployment-agent-20260828
-companions: 
+companions:
   - ../planning-artifacts/architecture/architecture-terraform-google-secure-cicd-2026-08-28/ARCHITECTURE-SPINE.md
-sources: 
+sources:
   - _bmad-output/planning-artifacts/prds/prd-mortgage-agent-deployment-agent-20260828/prd.md
 ---
 
@@ -17,7 +17,7 @@ To solve the friction and high error rate software engineers experience when att
 ## Capabilities
 
 - **CAP-1**
-  - **intent:** User is interactively guided through mandatory prerequisites (gcloud Auth, Org, Project, IAM, Domain, Org Policies). 
+  - **intent:** User is interactively guided through mandatory prerequisites (gcloud Auth, Org, Project, IAM, Domain, Org Policies).
   - **success:** Agent checks `gcloud` auth/project settings and (if user agrees) interactively runs `gcloud auth login`, sets active/quota projects, and runs `gcloud auth application-default login`. Agent correctly identifies missing Domain and provides registration instructions; Agent gracefully halts and explains if `constraints/gcp.restrictNonCmekServices` is enforced or if it receives a `PERMISSION_DENIED` reading the policy.
 
 - **CAP-2**

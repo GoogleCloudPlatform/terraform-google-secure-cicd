@@ -14,19 +14,23 @@
 
 from unittest.mock import MagicMock, patch
 
-# Patch telemetry before importing server to avoid GCP API calls during testing.
+# Patch telemetry before importing server to avoid GCP API calls.
 with patch("otel_setup.init_telemetry", return_value=MagicMock()):
     from server import _get_document, _search_documents
 
 
 def test_search_by_name_and_doc_type():
-    result = _search_documents(applicant_last_name="Sterling", document_type="tax_return")
+    result = _search_documents(
+        applicant_last_name="Sterling", document_type="tax_return"
+    )
     assert result["status"] == "success"
     assert result["total_results"] > 0
 
 
 def test_search_unknown_applicant():
-    result = _search_documents(applicant_last_name="Unknown", document_type="tax_return")
+    result = _search_documents(
+        applicant_last_name="Unknown", document_type="tax_return"
+    )
     assert result["status"] == "success"
     assert result["total_results"] == 0
 
