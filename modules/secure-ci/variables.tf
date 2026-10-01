@@ -19,6 +19,12 @@ variable "project_id" {
   description = "Project ID for CICD Pipeline Project"
 }
 
+variable "secure_pipeline_name" {
+  type        = string
+  description = "Name of the secure pipeline, used to uniquely identify resources."
+  default     = "secure-pipeline"
+}
+
 variable "primary_location" {
   type        = string
   description = "Primary Google Cloud region for deploying resources like Artifact Registry, Cloud Storage buckets, and Cloud Build triggers."

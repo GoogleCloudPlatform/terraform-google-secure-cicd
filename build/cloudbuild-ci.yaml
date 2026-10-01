@@ -41,7 +41,11 @@ steps:
     - '-xe'
     - -c
     - |
-      ./mvnw clean install
+      if [ -f "./mvnw" ]; then
+        ./mvnw clean install
+      elif [ -f "./pom.xml" ] && command -v mvn &> /dev/null; then
+        mvn clean install
+      fi
 
       skaffold config set --global local-cluster false
       skaffold build --default-repo=${_GAR_REPO_URI} --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json

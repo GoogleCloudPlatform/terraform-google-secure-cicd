@@ -42,6 +42,10 @@ spec:
         description: Project ID for CICD Pipeline Project
         varType: string
         required: true
+      - name: secure_pipeline_name
+        description: Name of the secure pipeline, used to uniquely identify resources.
+        varType: string
+        defaultValue: secure-pipeline
       - name: primary_location
         description: Primary Google Cloud region for deploying resources like Artifact Registry, Cloud Storage buckets, and Cloud Build triggers.
         varType: string

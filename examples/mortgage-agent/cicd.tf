@@ -40,6 +40,7 @@ module "ci_pipeline" {
 
 
   project_id                = var.project_id
+  secure_pipeline_name      = each.key
   repository_type           = var.repository_type
   github_auth               = var.repository_type == "GITHUB" ? var.github_auth : null
   gitlab_auth               = null

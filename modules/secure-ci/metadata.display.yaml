@@ -92,6 +92,9 @@ spec:
         runner_build_folder:
           name: runner_build_folder
           title: Runner Build Folder
+        secure_pipeline_name:
+          name: secure_pipeline_name
+          title: Secure Pipeline Name
         skip_provisioners:
           name: skip_provisioners
           title: Skip Provisioners

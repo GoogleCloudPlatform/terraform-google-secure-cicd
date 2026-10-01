@@ -95,6 +95,7 @@ The template `cloudbuild-ci.yaml` build configuration runs container structure a
 | primary\_location | Primary Google Cloud region for deploying resources like Artifact Registry, Cloud Storage buckets, and Cloud Build triggers. | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 | repository\_type | The type of the repository. Must be one of 'GITHUB' or 'GITLAB'. | `string` | n/a | yes |
+| secure\_pipeline\_name | Name of the secure pipeline, used to uniquely identify resources. | `string` | `"secure-pipeline"` | no |
 | trigger\_branch\_name | A regular expression to match one or more branches for the build trigger. | `string` | n/a | yes |
 
 ## Outputs
