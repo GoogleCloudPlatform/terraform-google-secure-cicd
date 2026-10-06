@@ -73,7 +73,7 @@ module "cd_pipeline" {
       cluster               = "prod-cluster"
       anthos_membership     = ""
       project_id            = "my-gcp-project-id"
-      location              = "us-east4"
+      location              = "us-central1"
       required_attestations = ["projects/my-gcp-project-id/attestors/qa-attestor"]
       env_attestation       = ""
       next_env              = ""
