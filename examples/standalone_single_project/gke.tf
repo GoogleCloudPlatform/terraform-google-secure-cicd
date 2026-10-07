@@ -38,7 +38,7 @@ resource "random_shuffle" "available_zones" {
 # Private GKE Clusters
 module "gke_cluster" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version = "44.0"
+  version = "44.3"
 
   for_each = toset(local.envs)
 
