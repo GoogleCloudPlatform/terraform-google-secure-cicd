@@ -163,3 +163,15 @@ variable "gitlab_auth" {
   description = "Authentication configuration for GitLab. Required only if repo_type is 'GITLABv2'."
   default     = null
 }
+
+variable "included_files" {
+  type        = list(string)
+  description = "List of glob patterns for files that should trigger a build when modified."
+  default     = null
+}
+
+variable "ignored_files" {
+  type        = list(string)
+  description = "List of glob patterns for files that should not trigger a build when modified."
+  default     = null
+}

@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -135,6 +135,12 @@ spec:
               enterprise_ca_certificate            = optional(string)
               secret_project_id                    = string
             })
+      - name: included_files
+        description: List of glob patterns for files that should trigger a build when modified.
+        varType: list(string)
+      - name: ignored_files
+        description: List of glob patterns for files that should not trigger a build when modified.
+        varType: list(string)
     outputs:
       - name: app_artifact_repo
         description: GAR Repo created to store runner images
