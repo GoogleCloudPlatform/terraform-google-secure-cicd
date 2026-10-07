@@ -20,7 +20,7 @@ locals {
 
 module "vpc" {
   source  = "terraform-google-modules/network/google"
-  version = "~> 10.0"
+  version = "~> 18.0"
 
   project_id                             = module.private_workerpool_project.project_id
   network_name                           = "secure-cicd-workerpool-network"
