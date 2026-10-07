@@ -77,6 +77,12 @@ spec:
         gitlab_auth:
           name: gitlab_auth
           title: Gitlab Auth
+        ignored_files:
+          name: ignored_files
+          title: Ignored Files
+        included_files:
+          name: included_files
+          title: Included Files
         labels:
           name: labels
           title: Labels
