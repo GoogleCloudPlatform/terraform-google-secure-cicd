@@ -79,7 +79,7 @@ resource "google_clouddeploy_target" "deploy_target" {
 }
 
 resource "google_clouddeploy_delivery_pipeline" "pipeline" {
-  name        = "gateway-pipeline-${var.secure_pipeline_name}"
+  name        = var.clouddeploy_pipeline_name
   description = "Pipeline for application" #TODO parameterize
   project     = var.project_id
   location    = var.primary_location
