@@ -48,7 +48,7 @@ module "cd_pipeline" {
   source = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-cd"
 
   project_id                 = "my-gcp-project-id"
-  primary_location           = "us-central1"
+  primary_location           = "us-east4"
   repository_type            = "GITLAB"
   gar_repo_name              = "my-app-image-repo"
   app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
