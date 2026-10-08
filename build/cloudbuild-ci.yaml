@@ -47,6 +47,10 @@ steps:
         mvn clean install
       fi
 
+      if [ -f "./skaffold.yaml" ]; then
+        skaffold fix --overwrite
+      fi
+
       skaffold config set --global local-cluster false
       skaffold build --default-repo=${_GAR_REPO_URI} --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json
       sed -i "s|:latest||g" /artifacts/build-artifacts.json # remove the "latest" tag (complicates things later)
