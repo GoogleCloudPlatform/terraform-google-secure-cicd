@@ -145,7 +145,7 @@ To register a domain via the Google Cloud Console:
    export PROJECT_ID=$(gcloud config get-value project)
    export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
    export ORG_ID=$(gcloud projects get-ancestors $PROJECT_ID | awk '$2 == "organization" {print $1}')
-   export REGION="us-central1"
+   export REGION="us-east4"
    export DOMAIN_NAME="YOUR_DOMAIN_NAME" #mortgage.example.com
    ```
 
@@ -465,9 +465,9 @@ The reasoning engine is not managed by Terraform (the ADK SDK creates it). Delet
 | proxy\_subnet\_cidr | CIDR range for the proxy-only subnet | `string` | `"10.9.0.0/24"` | no |
 | psc\_interface\_subnet\_cidr | CIDR for the PSC Interface subnet (min /28, must not overlap with psc\_subnet\_cidr) | `string` | `"10.11.0.0/28"` | no |
 | psc\_subnet\_cidr | CIDR range for the Private Service Connect subnet | `string` | `"10.10.0.0/24"` | no |
-| region | The GCP region for resources | `string` | `"us-central1"` | no |
+| region | The GCP region for resources | `string` | `"us-east4"` | no |
 | repository\_type | The type of the repository. Must be one of 'GITHUB', 'GITLAB', or 'CSR'. | `string` | `"GITHUB"` | no |
-| subnet\_name | Name of the primary subnet | `string` | `"mcp-subnet-us-central1"` | no |
+| subnet\_name | Name of the primary subnet | `string` | `"mcp-subnet-us-east4"` | no |
 | terraform\_service\_account | The email address of the service account that will run the Terraform code granted roles: discoveryengine.admin always; modelarmor.admin and modelarmor.floorSettingsAdmin when enable\_model\_armor; aiplatform.user (e.g. ["serviceAccount:your\_user@example.com"]) | `string` | n/a | yes |
 | vpc\_name | Name of the VPC network | `string` | `"gateway-vpc"` | no |
 
