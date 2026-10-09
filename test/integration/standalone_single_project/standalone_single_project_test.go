@@ -186,6 +186,8 @@ func waitForCIBuild(t *testing.T, projectID, region, ciTriggerID string) {
 			t.Logf("CI Build %s succeeded.", buildID)
 			return nil
 		} else if status == "FAILURE" || status == "CANCELLED" || status == "TIMEOUT" || status == "INTERNAL_ERROR" {
+			logOutput := gcloud.Runf(t, "builds log %s --project %s --region %s", buildID, projectID, region)
+			t.Logf("CI Build %s failed. Full build log:\n%s", buildID, logOutput.String())
 			return fmt.Errorf("CI build %s failed with terminal status: %s", buildID, status)
 		}
 		return fmt.Errorf("CI build %s still running with status: %s", buildID, status)

@@ -32,6 +32,8 @@ spec:
     description: {}
   content:
     examples:
+      - name: mortgage-agent
+        location: examples/mortgage-agent
       - name: standalone_single_project
         location: examples/standalone_single_project
   interfaces:
@@ -40,6 +42,10 @@ spec:
         description: Project ID for CICD Pipeline Project
         varType: string
         required: true
+      - name: secure_pipeline_name
+        description: Name of the secure pipeline, used to uniquely identify resources.
+        varType: string
+        defaultValue: secure-pipeline
       - name: primary_location
         description: Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines.
         varType: string

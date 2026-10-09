@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@
 variable "project_id" {
   type        = string
   description = "Project ID for CICD Pipeline Project"
+}
+
+variable "secure_pipeline_name" {
+  type        = string
+  description = "Name of the secure pipeline, used to uniquely identify resources."
+  default     = "secure-pipeline"
 }
 
 variable "primary_location" {
@@ -70,6 +76,7 @@ variable "cloudbuild_service_account_roles" {
     "roles/cloudkms.cryptoOperator",
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",
+    "roles/iam.serviceAccountUser",
     "roles/serviceusage.serviceUsageConsumer",
     "roles/storage.admin",
     "roles/cloudbuild.workerPoolUser",

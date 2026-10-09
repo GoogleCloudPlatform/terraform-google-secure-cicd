@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ module "cloudbuild_repositories" {
 resource "google_clouddeploy_target" "deploy_target" {
   for_each = { for env_obj in local.ordered_deploy_branch_clusters : env_obj.name => env_obj }
 
-  name        = each.value.target_type == "anthos_cluster" ? "${each.value.anthos_membership}-target" : each.value.target_type == "gke" ? "${each.value.cluster}-target" : "${each.value.name}-target"
+  name        = each.value.target_type == "anthos_cluster" ? "target-${each.value.anthos_membership}-${var.secure_pipeline_name}" : each.value.target_type == "gke" ? "target-${each.value.cluster}-${var.secure_pipeline_name}" : "target-${each.value.name}-${var.secure_pipeline_name}"
   description = "Target for ${each.value.name} environment"
   location    = each.value.location
   project     = var.project_id
@@ -106,7 +106,7 @@ resource "google_binary_authorization_policy" "deployment_policy" {
   global_policy_evaluation_mode = "ENABLE"
 
   dynamic "cluster_admission_rules" {
-    for_each = each.value
+    for_each = [for rule in each.value : rule if rule.cluster != null]
     content {
       cluster                 = "${cluster_admission_rules.value.location}.${cluster_admission_rules.value.cluster}"
       evaluation_mode         = "REQUIRE_ATTESTATION"
