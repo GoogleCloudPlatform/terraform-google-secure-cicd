@@ -58,7 +58,7 @@ module "cd_pipeline" {
   source           = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
 
   project_id                 = {PROJECT_ID}
-  primary_location           = "us-central1"
+  primary_location           = "us-east4"
   repository_type            = "GITHUB"
   cd_repository = {
     repository_name = "cloudbuild-cd-config"

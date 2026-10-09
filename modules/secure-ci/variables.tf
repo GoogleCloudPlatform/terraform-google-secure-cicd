@@ -44,6 +44,10 @@ variable "cache_bucket_name" {
   type        = string
   description = "Name of cloudbuild artifact and cache GCS bucket"
   default     = "bkt-cloudbuild"
+  validation {
+    condition     = length(var.cache_bucket_name) <= 58
+    error_message = "The 'cache_bucket_name' variable must be 58 characters or fewer (to allow for the 5-character '-XXXX' random suffix without exceeding the 63-character GCS bucket limit)."
+  }
 }
 
 variable "gar_repo_name_suffix" {
@@ -114,20 +118,6 @@ variable "repository_type" {
   validation {
     condition     = contains(["GITHUB", "GITLAB"], var.repository_type)
     error_message = "The repository_type must be either 'GITHUB' or 'GITLAB'."
-  }
-  validation {
-    condition = (
-      var.repository_type != "GITHUB" ||
-      (var.github_auth != null && var.gitlab_auth == null)
-    )
-    error_message = "When repository_type is 'GITHUB', the 'github_auth' variable must be set, and 'gitlab_auth' must not be set."
-  }
-  validation {
-    condition = (
-      var.repository_type != "GITLAB" ||
-      (var.gitlab_auth != null && var.github_auth == null)
-    )
-    error_message = "When repository_type is 'GITLAB', the 'gitlab_auth' variable must be set, and 'github_auth' must not be set."
   }
 }
 
