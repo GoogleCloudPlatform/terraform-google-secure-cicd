@@ -80,3 +80,6 @@ spec:
         repository_type:
           name: repository_type
           title: Repository Type
+        secure_pipeline_name:
+          name: secure_pipeline_name
+          title: Secure Pipeline Name

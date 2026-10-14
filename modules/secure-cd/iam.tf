@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,20 @@ locals {
 
   cd_sa_required_roles = [
     "roles/clouddeploy.jobRunner",
+    "roles/run.developer",
+    "roles/artifactregistry.admin",
+    "roles/iam.serviceAccountUser",
   ]
 }
 
 resource "google_service_account" "clouddeploy_execution_sa" {
   project      = var.project_id
-  account_id   = "clouddeploy-execution-sa"
+  account_id   = substr("cd-exec-sa-${var.secure_pipeline_name}", 0, 30)
   display_name = "clouddeploy-execution-sa"
 }
 
 resource "google_access_context_manager_access_level_condition" "additional_member_condition" {
+  count        = var.access_level_name != null ? 1 : 0
   access_level = var.access_level_name
 
   members = [
