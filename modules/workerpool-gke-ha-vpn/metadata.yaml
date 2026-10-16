@@ -32,6 +32,8 @@ spec:
     description: {}
   content:
     examples:
+      - name: mortgage-agent
+        location: examples/mortgage-agent
       - name: standalone_single_project
         location: examples/standalone_single_project
   interfaces:

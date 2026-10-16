@@ -48,7 +48,7 @@ module "cd_pipeline" {
   source = "GoogleCloudPlatform/terraform-google-secure-cicd//secure-cd"
 
   project_id                 = "my-gcp-project-id"
-  primary_location           = "us-east4"
+  primary_location           = "us-central1"
   repository_type            = "GITLAB"
   gar_repo_name              = "my-app-image-repo"
   app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
@@ -103,6 +103,7 @@ module "cd_pipeline" {
 | primary\_location | Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines. | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 | repository\_type | The type of the repository. Must be one of 'GITHUB' or 'GITLAB'. | `string` | n/a | yes |
+| secure\_pipeline\_name | Name of the secure pipeline, used to uniquely identify resources. | `string` | `"secure-pipeline"` | no |
 
 ## Outputs
 
