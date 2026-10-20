@@ -21,7 +21,7 @@ locals {
       cluster               = module.gke_cluster[var.env1_name].name,
       anthos_membership     = module.fleet_membership[var.env1_name].cluster_membership_id
       target_type           = "anthos_cluster"
-      network               = var.network_name == null ? module.vpc.network_name : var.network_name
+      network               = var.network_name == null ? module.vpc[0].network_name : var.network_name
       project_id            = var.project_id
       location              = var.region
       required_attestations = [module.attestors.binauth_attestor_ids["build"]]
@@ -33,7 +33,7 @@ locals {
       cluster               = module.gke_cluster[var.env2_name].name,
       anthos_membership     = module.fleet_membership[var.env2_name].cluster_membership_id
       target_type           = "anthos_cluster"
-      network               = var.network_name == null ? module.vpc.network_name : var.network_name
+      network               = var.network_name == null ? module.vpc[0].network_name : var.network_name
       project_id            = var.project_id
       location              = var.region
       required_attestations = [module.attestors.binauth_attestor_ids["security"], module.attestors.binauth_attestor_ids["build"]]
@@ -45,12 +45,22 @@ locals {
       cluster               = module.gke_cluster[var.env3_name].name,
       anthos_membership     = module.fleet_membership[var.env3_name].cluster_membership_id
       target_type           = "anthos_cluster"
-      network               = var.network_name == null ? module.vpc.network_name : var.network_name
+      network               = var.network_name == null ? module.vpc[0].network_name : var.network_name
       project_id            = var.project_id
       location              = var.region
       required_attestations = [module.attestors.binauth_attestor_ids["quality"], module.attestors.binauth_attestor_ids["security"], module.attestors.binauth_attestor_ids["build"]]
       env_attestation       = ""
       env_number            = 3
+      canary_percentages    = [10, 50]
+      runtime_config = {
+        kubernetes = {
+          service_networking = {
+            service                      = "frontend"
+            deployment                   = "frontend"
+            disable_pod_overprovisioning = true
+          }
+        }
+      }
     },
   }
 
@@ -72,7 +82,7 @@ module "ci_pipeline" {
   attestor_names_prefix     = module.attestors.binauth_attestor_names
   app_build_trigger_yaml    = "cloudbuild-ci.yaml"
   trigger_branch_name       = ".*"
-  cloudbuild_private_pool   = var.private_worker_pool_id == null ? module.cloudbuild_private_pool.workerpool_id : var.private_worker_pool_id
+  cloudbuild_private_pool   = var.private_worker_pool_id == null ? module.cloudbuild_private_pool[0].workerpool_id : var.private_worker_pool_id
   clouddeploy_pipeline_name = local.clouddeploy_pipeline_name
   labels                    = var.labels
 }
@@ -91,7 +101,7 @@ module "cd_pipeline" {
   app_deploy_trigger_yaml    = "cloudbuild-cd.yaml"
   access_level_name          = var.access_level_name
   cache_bucket_name          = module.ci_pipeline.cache_bucket_name
-  cloudbuild_private_pool    = var.private_worker_pool_id == null ? module.cloudbuild_private_pool.workerpool_id : var.private_worker_pool_id
+  cloudbuild_private_pool    = var.private_worker_pool_id == null ? module.cloudbuild_private_pool[0].workerpool_id : var.private_worker_pool_id
   clouddeploy_pipeline_name  = local.clouddeploy_pipeline_name
   cloudbuild_service_account = module.ci_pipeline.build_sa_email
   depends_on = [

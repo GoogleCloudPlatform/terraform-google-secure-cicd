@@ -111,6 +111,7 @@ To use your Git provider, push the application code and CI configuration files t
 3. Copy the required Cloud Build CI configuration and policies into the application folder:
     ```bash
     cp $BLUEPRINT_FOLDER/build/cloudbuild-ci.yaml .
+    cp $BLUEPRINT_FOLDER/build/skaffold.yaml .
     cp -R $BLUEPRINT_FOLDER/examples/app_cicd/policies ./policies
     ```
 4. Initialize a new git repository and push it to your linked external CI repository (replace `YOUR_REPO_URL` with the URL you provided in `ci_repository.repository_url` in your `terraform.tfvars`):
@@ -136,7 +137,7 @@ This will trigger the build phase of the CI/CD pipeline and result in the deploy
 1. You can see the output logs of the build by selecting the Build Log tab. <!-- <walkthrough-spotlight-pointer locator="css([track-name*='viewBuildLogTab'])"></walkthrough-spotlight-pointer> -->
 1. When the build completes, navigate to <walkthrough-menu-navigation sectionId="CLOUD_DEPLOY_SECTION">Cloud Deploy</walkthrough-menu-navigation> to view the progress of the deployment pipeline.
 1. On the Delivery pipelines page, select the pipeline in the <walkthrough-spotlight-pointer locator="css([aria-label='Delivery pipelines'])">list</walkthrough-spotlight-pointer>.
-1. On the Pipeline visualization page, you can see the progress of the deployment across your 3 environments. Containers will be automatically deployed to each environment after successfully completing the security tests at each stage.
+1. On the Pipeline visualization page, you can see the progress of the deployment across your 3 environments. Containers will be automatically deployed to each environment after successfully completing the security tests at each stage. In this example, the production environment is configured to use a progressive canary rollout (10% → 50% → 100%) with automated deployment verification.
 
 Once the application has gone through a successful rollout to all target environments, click **Next** to view the deployed application.
 

@@ -22,7 +22,9 @@ You can choose whether to deploy your solution through the console directly or d
 1. When Cloud Deploy releases the containers to the developer environment, Cloud Deploy sends a Pub/Sub message that starts the second Cloud Build trigger. This Cloud Build trigger runs post-deployment tests (which you configure) in the developer environment. To run these tests, Cloud Build worker pools communicate with the clusters using Connect Gateway.
 1. When the post-deployment checks succeed, the Cloud Build trigger requests an attestation from Binary Authorization. The attestation certifies that the required tests from the developer environment passed.
 1. Cloud Deploy promotes the release to the second Kubernetes cluster for the QA environment. Steps 7 to 9 run again with some differences: GKE checks for the two attestations before deploying, and after the tests pass, the quality attestation is created.
-1. Cloud Deploy promotes the release to the production environment, which is the third Kubernetes cluster. GKE uses a policy to check for all three attestations in Binary Authorization. When this check passes, GKE deploys the containers in the Kubernetes cluster for the production environment.
+1. Cloud Deploy promotes the release to the production environment, which is the third Kubernetes cluster. GKE uses a policy to check for all three attestations in Binary Authorization. When this check passes, GKE deploys the containers in the Kubernetes cluster using the configured deployment strategy:
+   - **Standard Deployment (Default):** Containers are deployed directly, serving 100% of production traffic immediately.
+   - **Canary Rollout (Optional):** Workloads are deployed progressively across configured traffic phases (e.g., 10% → 50% → 100%), running automated deployment verification tests at each phase before promoting to full production traffic.
 
 ## Documentation
 - [Architecture Diagram](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/assets/secure_cicd_pipeline_v2.svg)
@@ -77,33 +79,36 @@ module "cd_pipeline" {
 
   deploy_branch_clusters  = {
     dev = {
+      name                  = "dev",
       cluster               = "dev-cluster",
       anthos_membership     = "",
       project_id            = "{PROJECT_ID}",
       location              = "us-central1",
       required_attestations = ["projects/${{PROJECT_ID}}/attestors/build-attestor"]
       env_attestation       = "projects/${{PROJECT_ID}}/attestors/security-attestor"
-      next_env              = "qa"
+      env_number            = 1
       target_type           = "gke"
     },
     qa = {
+      name                  = "qa",
       cluster               = "qa-cluster",
       anthos_membership     = "",
       project_id            = "{PROJECT_ID}",
       location              = "us-central1",
       required_attestations = ["projects/${{PROJECT_ID}}/attestors/security-attestor", "projects/${{PROJECT_ID}}/attestors/build-attestor"]
       env_attestation       = "projects/${{PROJECT_ID}}/attestors/quality-attestor"
-      next_env              = "prod"
+      env_number            = 2
       target_type           = "gke"
     },
     prod = {
+      name                  = "prod",
       cluster               = "prod-cluster",
       anthos_membership     = "",
       project_id            = "{PROJECT_ID}",
       location              = "us-central1",
       required_attestations = ["projects/${{PROJECT_ID}}/attestors/quality-attestor", "projects/${{PROJECT_ID}}/attestors/security-attestor", "projects/${{PROJECT_ID}}/attestors/build-attestor"]
       env_attestation       = ""
-      next_env              = ""
+      env_number            = 3
       target_type           = "gke"
     },
   }
@@ -118,7 +123,7 @@ Functional examples are included in the
 [examples](./examples/) directory.
 
 ### Build Configuration
-Example Cloud Build configuration files are located in the [Build](./build/) folder. Push the `cloudbuild-ci.yaml` configuration to the application source code repository. Push the `cloudbuild-cd.yaml` configuration to the wet manifest repository. These build configurations offer a baseline for adhering to S3C application delivery practices within this blueprint, and are customizable as needed.
+Example Cloud Build and Skaffold configuration files are located in the [Build](./build/) folder. Push the `cloudbuild-ci.yaml` and `skaffold.yaml` configurations to the application source code repository. Push the `cloudbuild-cd.yaml` configuration to the wet manifest repository. The `skaffold.yaml` file includes a baseline deployment verification smoke test used by Cloud Deploy during canary rollouts, which can be customized with more elaborate test suites. These configurations offer a baseline for adhering to S3C application delivery practices within this blueprint, and are customizable as needed.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

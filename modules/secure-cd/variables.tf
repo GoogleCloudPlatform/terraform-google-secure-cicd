@@ -45,9 +45,39 @@ variable "deploy_branch_clusters" {
     env_attestation       = string
     env_number            = number
     target_type           = string
+    canary_percentages    = optional(list(number))
+    runtime_config = optional(object({
+      cloud_run = optional(object({
+        automatic_traffic_control = optional(bool)
+      }))
+      kubernetes = optional(object({
+        service_networking = optional(object({
+          service                      = string
+          deployment                   = string
+          disable_pod_overprovisioning = optional(bool)
+        }))
+        gateway_service_mesh = optional(object({
+          http_route             = string
+          service                = string
+          deployment             = string
+          route_update_wait_time = optional(string)
+        }))
+      }))
+    }))
   }))
   description = "A list of environment deployments, ordered by 'env_number'. target_type can be one of `gke`, `anthos_cluster`, or `run`. See [clouddeploy_target Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) for more details"
   default     = {}
+  validation {
+    condition = alltrue([
+      for _, env in var.deploy_branch_clusters :
+      env.canary_percentages == null ? true : (
+        length(env.canary_percentages) > 0 &&
+        alltrue([for p in env.canary_percentages : p > 0 && p < 100]) &&
+        alltrue([for i in range(length(env.canary_percentages) - 1) : env.canary_percentages[i] < env.canary_percentages[i + 1]])
+      )
+    ])
+    error_message = "All canary_percentages elements must be strictly between 1 and 99 and in ascending order."
+  }
 }
 
 variable "cache_bucket_name" {

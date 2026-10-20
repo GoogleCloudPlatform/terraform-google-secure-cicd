@@ -67,7 +67,7 @@ resource "google_clouddeploy_target" "deploy_target" {
   }
 
   execution_configs {
-    usages           = ["RENDER", "DEPLOY"]
+    usages           = ["RENDER", "DEPLOY", "VERIFY"]
     worker_pool      = var.cloudbuild_private_pool
     artifact_storage = "gs://${var.cache_bucket_name}/clouddeploy-artifacts"
     service_account  = google_service_account.clouddeploy_execution_sa.email
@@ -80,7 +80,7 @@ resource "google_clouddeploy_target" "deploy_target" {
 
 resource "google_clouddeploy_delivery_pipeline" "pipeline" {
   name        = var.clouddeploy_pipeline_name
-  description = "Pipeline for application" #TODO parameterize
+  description = "Pipeline for application"
   project     = var.project_id
   location    = var.primary_location
 
@@ -89,6 +89,51 @@ resource "google_clouddeploy_delivery_pipeline" "pipeline" {
       for_each = local.ordered_deploy_branch_clusters
       content {
         target_id = google_clouddeploy_target.deploy_target[stages.value.name].name
+
+        dynamic "strategy" {
+          for_each = lookup(stages.value, "canary_percentages", null) != null ? [1] : []
+          content {
+            canary {
+              runtime_config {
+                dynamic "cloud_run" {
+                  for_each = lower(stages.value.target_type) == "run" ? [1] : []
+                  content {
+                    automatic_traffic_control = try(stages.value.runtime_config.cloud_run.automatic_traffic_control, true)
+                  }
+                }
+
+                dynamic "kubernetes" {
+                  for_each = contains(["gke", "anthos_cluster"], lower(stages.value.target_type)) && try(stages.value.runtime_config.kubernetes, null) != null ? [stages.value.runtime_config.kubernetes] : []
+                  content {
+                    dynamic "gateway_service_mesh" {
+                      for_each = try(kubernetes.value.gateway_service_mesh, null) != null ? [kubernetes.value.gateway_service_mesh] : []
+                      content {
+                        http_route             = gateway_service_mesh.value.http_route
+                        service                = gateway_service_mesh.value.service
+                        deployment             = gateway_service_mesh.value.deployment
+                        route_update_wait_time = lookup(gateway_service_mesh.value, "route_update_wait_time", null)
+                      }
+                    }
+
+                    dynamic "service_networking" {
+                      for_each = try(kubernetes.value.gateway_service_mesh, null) == null && try(kubernetes.value.service_networking, null) != null ? [kubernetes.value.service_networking] : []
+                      content {
+                        service                      = service_networking.value.service
+                        deployment                   = service_networking.value.deployment
+                        disable_pod_overprovisioning = lookup(service_networking.value, "disable_pod_overprovisioning", null)
+                      }
+                    }
+                  }
+                }
+              }
+
+              canary_deployment {
+                percentages = stages.value.canary_percentages
+                verify      = true
+              }
+            }
+          }
+        }
       }
     }
   }
