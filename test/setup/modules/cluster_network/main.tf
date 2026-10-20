@@ -16,7 +16,7 @@
 
 module "cluster_vpc" {
   source  = "terraform-google-modules/network/google"
-  version = "~> 13.0"
+  version = "~> 18.0"
 
   project_id      = var.project_id
   network_name    = "vpc-${var.vpc_name}"
@@ -32,7 +32,7 @@ module "cluster_vpc" {
 module "cluster_private_service_connect" {
   count                      = var.shared_vpc_host ? 1 : 0
   source                     = "terraform-google-modules/network/google//modules/private-service-connect"
-  version                    = "~> 10.0"
+  version                    = "~> 18.0"
   project_id                 = module.cluster_vpc.project_id
   network_self_link          = module.cluster_vpc.network_self_link
   private_service_connect_ip = "10.3.0.5"
