@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ spec:
         - When Cloud Deploy releases the containers to the developer environment, Cloud Deploy sends a Pub/Sub message that starts the second Cloud Build trigger. This Cloud Build trigger runs post-deployment tests (which you configure) in the developer environment. To run these tests, Cloud Build worker pools communicate with the clusters using Connect Gateway.
         - When the post-deployment checks succeed, the Cloud Build trigger requests an attestation from Binary Authorization. The attestation certifies that the required tests from the developer environment passed.
         - "Cloud Deploy promotes the release to the second Kubernetes cluster for the QA environment. Steps 7 to 9 run again with some differences: GKE checks for the two attestations before deploying, and after the tests pass, the quality attestation is created."
-        - Cloud Deploy promotes the release to the production environment, which is the third Kubernetes cluster. GKE uses a policy to check for all three attestations in Binary Authorization. When this check passes, GKE deploys the containers in the Kubernetes cluster for the production environment.
+        - "Cloud Deploy promotes the release to the production environment, which is the third Kubernetes cluster. GKE uses a policy to check for all three attestations in Binary Authorization. When this check passes, GKE deploys the containers in the Kubernetes cluster using the configured deployment strategy:"
   content:
     documentation:
       - title: Architecture Diagram

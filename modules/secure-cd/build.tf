@@ -37,27 +37,27 @@ resource "google_cloudbuild_trigger" "deploy_trigger_unknown" {
 
   substitutions = merge(
     {
-      _GAR_REPOSITORY            = var.gar_repo_name
-      _DEFAULT_REGION            = each.value.location
-      _CLUSTER_NAME              = each.value.cluster
-      _ANTHOS_MEMBERSHIP         = each.value.anthos_membership
-      _TARGET_TYPE               = each.value.target_type
-      _CLUSTER_PROJECT           = each.value.project_id
-      _CLOUDBUILD_FILENAME       = var.app_deploy_trigger_yaml
-      _CACHE_BUCKET_NAME         = var.cache_bucket_name
-      _ATTESTOR_NAME             = each.value.env_attestation
-      _CLOUDBUILD_PRIVATE_POOL   = var.cloudbuild_private_pool
-      _CLOUDDEPLOY_PIPELINE_NAME = var.clouddeploy_pipeline_name
-      _DELIVERY_PIPELINE_ID           = var.clouddeploy_pipeline_name
-      _TARGET_ID                      = google_clouddeploy_target.deploy_target[each.key].name
-      _ENABLE_METRIC_DRIVEN_ROLLBACK  = tostring(var.enable_metric_driven_rollback)
-      _VERIFICATION_WINDOW_SECONDS    = tostring(var.rollback_metrics_config.verification_window_seconds)
-      _MAX_RESTART_COUNT              = tostring(var.rollback_metrics_config.max_restart_count)
-      _MAX_HTTP_5XX_RATE              = tostring(var.rollback_metrics_config.max_http_5xx_rate)
-      _MAX_P95_LATENCY_MS             = tostring(var.rollback_metrics_config.max_p95_latency_ms)
-      _MAX_CPU_UTILIZATION            = tostring(var.rollback_metrics_config.max_cpu_utilization)
-      _MAX_MEMORY_UTILIZATION         = tostring(var.rollback_metrics_config.max_memory_utilization)
-      _MAX_ERROR_LOG_COUNT            = tostring(var.rollback_metrics_config.max_error_log_count)
+      _GAR_REPOSITORY                = var.gar_repo_name
+      _DEFAULT_REGION                = each.value.location
+      _CLUSTER_NAME                  = each.value.cluster
+      _ANTHOS_MEMBERSHIP             = each.value.anthos_membership
+      _TARGET_TYPE                   = each.value.target_type
+      _CLUSTER_PROJECT               = each.value.project_id
+      _CLOUDBUILD_FILENAME           = var.app_deploy_trigger_yaml
+      _CACHE_BUCKET_NAME             = var.cache_bucket_name
+      _ATTESTOR_NAME                 = each.value.env_attestation
+      _CLOUDBUILD_PRIVATE_POOL       = var.cloudbuild_private_pool
+      _CLOUDDEPLOY_PIPELINE_NAME     = var.clouddeploy_pipeline_name
+      _DELIVERY_PIPELINE_ID          = var.clouddeploy_pipeline_name
+      _TARGET_ID                     = google_clouddeploy_target.deploy_target[each.key].name
+      _ENABLE_METRIC_DRIVEN_ROLLBACK = tostring(var.enable_metric_driven_rollback)
+      _VERIFICATION_WINDOW_SECONDS   = tostring(var.rollback_metrics_config.verification_window_seconds)
+      _MAX_RESTART_COUNT             = tostring(var.rollback_metrics_config.max_restart_count)
+      _MAX_HTTP_5XX_RATE             = tostring(var.rollback_metrics_config.max_http_5xx_rate)
+      _MAX_P95_LATENCY_MS            = tostring(var.rollback_metrics_config.max_p95_latency_ms)
+      _MAX_CPU_UTILIZATION           = tostring(var.rollback_metrics_config.max_cpu_utilization)
+      _MAX_MEMORY_UTILIZATION        = tostring(var.rollback_metrics_config.max_memory_utilization)
+      _MAX_ERROR_LOG_COUNT           = tostring(var.rollback_metrics_config.max_error_log_count)
     },
     var.additional_substitutions
   )
@@ -90,27 +90,27 @@ resource "google_cloudbuild_trigger" "deploy_trigger_known" {
 
   substitutions = merge(
     {
-      _GAR_REPOSITORY                 = var.gar_repo_name
-      _DEFAULT_REGION                 = each.value.location
-      _CLUSTER_NAME                   = each.value.cluster
-      _ANTHOS_MEMBERSHIP              = each.value.anthos_membership
-      _TARGET_TYPE                    = each.value.target_type
-      _CLUSTER_PROJECT                = each.value.project_id
-      _CLOUDBUILD_FILENAME            = var.app_deploy_trigger_yaml
-      _CACHE_BUCKET_NAME              = var.cache_bucket_name
-      _ATTESTOR_NAME                  = each.value.env_attestation
-      _CLOUDBUILD_PRIVATE_POOL        = var.cloudbuild_private_pool
-      _CLOUDDEPLOY_PIPELINE_NAME      = var.clouddeploy_pipeline_name
-      _DELIVERY_PIPELINE_ID           = var.clouddeploy_pipeline_name
-      _TARGET_ID                      = google_clouddeploy_target.deploy_target[each.key].name
-      _ENABLE_METRIC_DRIVEN_ROLLBACK  = tostring(var.enable_metric_driven_rollback)
-      _VERIFICATION_WINDOW_SECONDS    = tostring(var.rollback_metrics_config.verification_window_seconds)
-      _MAX_RESTART_COUNT              = tostring(var.rollback_metrics_config.max_restart_count)
-      _MAX_HTTP_5XX_RATE              = tostring(var.rollback_metrics_config.max_http_5xx_rate)
-      _MAX_P95_LATENCY_MS             = tostring(var.rollback_metrics_config.max_p95_latency_ms)
-      _MAX_CPU_UTILIZATION            = tostring(var.rollback_metrics_config.max_cpu_utilization)
-      _MAX_MEMORY_UTILIZATION         = tostring(var.rollback_metrics_config.max_memory_utilization)
-      _MAX_ERROR_LOG_COUNT            = tostring(var.rollback_metrics_config.max_error_log_count)
+      _GAR_REPOSITORY                = var.gar_repo_name
+      _DEFAULT_REGION                = each.value.location
+      _CLUSTER_NAME                  = each.value.cluster
+      _ANTHOS_MEMBERSHIP             = each.value.anthos_membership
+      _TARGET_TYPE                   = each.value.target_type
+      _CLUSTER_PROJECT               = each.value.project_id
+      _CLOUDBUILD_FILENAME           = var.app_deploy_trigger_yaml
+      _CACHE_BUCKET_NAME             = var.cache_bucket_name
+      _ATTESTOR_NAME                 = each.value.env_attestation
+      _CLOUDBUILD_PRIVATE_POOL       = var.cloudbuild_private_pool
+      _CLOUDDEPLOY_PIPELINE_NAME     = var.clouddeploy_pipeline_name
+      _DELIVERY_PIPELINE_ID          = var.clouddeploy_pipeline_name
+      _TARGET_ID                     = google_clouddeploy_target.deploy_target[each.key].name
+      _ENABLE_METRIC_DRIVEN_ROLLBACK = tostring(var.enable_metric_driven_rollback)
+      _VERIFICATION_WINDOW_SECONDS   = tostring(var.rollback_metrics_config.verification_window_seconds)
+      _MAX_RESTART_COUNT             = tostring(var.rollback_metrics_config.max_restart_count)
+      _MAX_HTTP_5XX_RATE             = tostring(var.rollback_metrics_config.max_http_5xx_rate)
+      _MAX_P95_LATENCY_MS            = tostring(var.rollback_metrics_config.max_p95_latency_ms)
+      _MAX_CPU_UTILIZATION           = tostring(var.rollback_metrics_config.max_cpu_utilization)
+      _MAX_MEMORY_UTILIZATION        = tostring(var.rollback_metrics_config.max_memory_utilization)
+      _MAX_ERROR_LOG_COUNT           = tostring(var.rollback_metrics_config.max_error_log_count)
     },
     var.additional_substitutions
   )
