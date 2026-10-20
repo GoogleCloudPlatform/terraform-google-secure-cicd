@@ -137,3 +137,31 @@ variable "gitlab_auth" {
   description = "Authentication configuration for GitLab. Required only if repo_type is 'GITLABv2'."
   default     = null
 }
+
+variable "enable_metric_driven_rollback" {
+  description = "Whether to enable metric-driven verification and automated rollback in the CD deployment pipeline."
+  type        = bool
+  default     = true
+}
+
+variable "rollback_metrics_config" {
+  description = "Metric thresholds and verification parameters for automated rollbacks across Cloud Run and GKE."
+  type = object({
+    verification_window_seconds = optional(number, 180)
+    max_restart_count           = optional(number, 0)
+    max_http_5xx_rate           = optional(number, 0.02)
+    max_p95_latency_ms          = optional(number, 2000)
+    max_cpu_utilization         = optional(number, 0.95)
+    max_memory_utilization      = optional(number, 0.95)
+    max_error_log_count         = optional(number, 5)
+  })
+  default = {
+    verification_window_seconds = 180
+    max_restart_count           = 0
+    max_http_5xx_rate           = 0.02
+    max_p95_latency_ms          = 2000
+    max_cpu_utilization         = 0.95
+    max_memory_utilization      = 0.95
+    max_error_log_count         = 5
+  }
+}
