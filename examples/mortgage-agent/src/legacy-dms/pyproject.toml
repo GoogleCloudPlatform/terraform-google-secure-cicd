@@ -30,7 +30,7 @@ dependencies = [
     "uvicorn>=0.34.0",
     "python-multipart==0.0.32",
     "authlib==1.7.2",
-    "cryptography==46.0.7",
+    "cryptography==50.0.0",
     "pygments==2.20.0",
 ]
 
