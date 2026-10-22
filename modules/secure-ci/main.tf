@@ -64,7 +64,7 @@ resource "google_storage_bucket" "cache_bucket" {
 
 resource "google_cloudbuild_trigger" "app_build_trigger" {
   project  = var.project_id
-  name     = "${local.second_gen_repo_name}-trigger"
+  name     = "${var.secure_pipeline_name}-trigger"
   location = var.primary_location
   repository_event_config {
     repository = local.second_gen_repo_id

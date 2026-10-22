@@ -9,7 +9,7 @@ updated: 2026-08-28
 
 ## Executive Summary
 
-The Mortgage Agent Deployment Skill is an Antigravity CLI agent designed to streamline the complex deployment process of the `mortgage-agent` example within the Secure CI/CD Pipeline repository. By combining guided user instructions with automated infrastructure and pipeline execution, this skill transforms a tedious and error-prone setup into a seamless experience.
+The Mortgage Agent Deployment Skill is an Antigravity CLI skills designed to streamline the complex deployment process of the `mortgage-agent` example within the Secure CI/CD Pipeline repository. By combining guided user instructions with automated infrastructure and pipeline execution, this skill transforms a tedious and error-prone setup into a seamless experience. 
 
 ## The Problem
 
@@ -23,13 +23,13 @@ Deploying the `mortgage-agent` example today is fraught with friction for users.
 
 The Mortgage Agent Deployment Skill acts as a hybrid guide and automator.
 
-**As a Guide:**
-It walks users through the necessary manual prerequisites, explaining what GCP resources or configurations must be established first, and waits patiently for the user to complete them.
-*Domain Registration:* The example mandates a public DNS domain. If the user lacks one, the agent will prompt them and offer to guide them through registering a new domain using Google Cloud Domains (which starts at ~$12/year). The agent will provide the exact steps: navigating to Cloud Domains in the console, searching/purchasing the domain, and crucially, ensuring they select the option to have Cloud DNS automatically set up a public zone.
-*Critically, it handles organizational constraints gracefully:* it informs the user that `constraints/gcp.restrictNonCmekServices` is a deployment blocker. If the user indicates they cannot resolve or bypass this constraint, the agent halts the process and clearly explains that deployment is impossible in the current environment.
+**As a Guide:** 
+It walks users through the necessary manual prerequisites, explaining what GCP resources or configurations must be established first, and waits patiently for the user to complete them. 
+*Domain Registration:* The example mandates a public DNS domain. If the user lacks one, the skill will prompt them and offer to guide them through registering a new domain using Google Cloud Domains (which starts at ~$12/year). The skill will provide the exact steps: navigating to Cloud Domains in the console, searching/purchasing the domain, and crucially, ensuring they select the option to have Cloud DNS automatically set up a public zone.
+*Critically, it handles organizational constraints gracefully:* it informs the user that `constraints/gcp.restrictNonCmekServices` is a deployment blocker. If the user indicates they cannot resolve or bypass this constraint, the skill halts the process and clearly explains that deployment is impossible in the current environment.
 
-**As an Automator:**
-Once prerequisites are met, the agent takes over the heavy lifting:
+**As an Automator:** 
+Once prerequisites are met, the skill takes over the heavy lifting:
 - Automates the complex `tfvars` configuration based on user inputs.
 - Creates the 6 required GitHub repositories for the CI/CD pipelines.
 - Runs the Terraform lifecycle (`init`, `plan`, `apply`).
@@ -70,4 +70,4 @@ Software engineers and platform operators of all experience levels who need to d
 
 ## Vision
 
-As the repository adds more complex, end-to-end examples, this deployment skill pattern can be generalized into a universal "Example Deployer" agent, making the entire `examples/` directory instantly accessible and deployable for any engineer in minutes.
+As the repository adds more complex, end-to-end examples, this deployment skill pattern can be generalized into a universal "Example Deployer" skill, making the entire `examples/` directory instantly accessible and deployable for any engineer in minutes.
