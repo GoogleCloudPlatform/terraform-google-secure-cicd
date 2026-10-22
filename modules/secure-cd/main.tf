@@ -40,7 +40,7 @@ module "cloudbuild_repositories" {
 resource "google_clouddeploy_target" "deploy_target" {
   for_each = { for env_obj in local.ordered_deploy_branch_clusters : env_obj.name => env_obj }
 
-  name        = each.value.target_type == "anthos_cluster" ? "target-${each.value.anthos_membership}-${var.secure_pipeline_name}" : each.value.target_type == "gke" ? "target-${each.value.cluster}-${var.secure_pipeline_name}" : "target-${each.value.name}-${var.secure_pipeline_name}"
+  name        = "target-${each.value.name}-${var.secure_pipeline_name}"
   description = "Target for ${each.value.name} environment"
   location    = each.value.location
   project     = var.project_id

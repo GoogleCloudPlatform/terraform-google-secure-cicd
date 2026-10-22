@@ -73,6 +73,9 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
     }
   }
 
+  included_files = var.included_files
+  ignored_files  = var.ignored_files
+
   substitutions   = local.common_substitutions
   service_account = google_service_account.build_sa.id
   filename        = var.app_build_trigger_yaml

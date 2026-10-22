@@ -142,6 +142,12 @@ spec:
               enterprise_ca_certificate            = optional(string)
               secret_project_id                    = string
             })
+      - name: included_files
+        description: List of glob patterns for files that should trigger a build when modified.
+        varType: list(string)
+      - name: ignored_files
+        description: List of glob patterns for files that should not trigger a build when modified.
+        varType: list(string)
     outputs:
       - name: app_artifact_repo
         description: GAR Repo created to store runner images

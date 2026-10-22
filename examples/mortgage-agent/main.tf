@@ -43,7 +43,7 @@ locals {
 }
 
 module "agent_observability" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/observability?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/observability?ref=feat/add-mortgage"
 
   project_id       = var.project_id
   enable_logs_sink = var.enable_logs_sink
@@ -52,7 +52,7 @@ module "agent_observability" {
 }
 
 module "networking" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/networking?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/networking?ref=feat/add-mortgage"
 
   project_id  = var.project_id
   region      = var.region
@@ -121,7 +121,7 @@ resource "google_storage_bucket_iam_member" "cloudbuild_service_agent" {
 }
 
 module "certificates" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/certificates?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/certificates?ref=feat/add-mortgage"
 
   project_id = var.project_id
   region     = var.region
@@ -133,7 +133,7 @@ module "certificates" {
 
 module "dns" {
   count  = local.provided_mcp_ssl_certificate_id == null && var.dns_zone_domain != null ? 1 : 0
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/dns?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/dns?ref=feat/add-mortgage"
 
   project_id      = var.project_id
   dns_zone_domain = var.dns_zone_domain
@@ -147,7 +147,7 @@ module "dns" {
 
 module "model_armor" {
   count  = var.enable_model_armor ? 1 : 0
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/model_armor?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/model_armor?ref=feat/add-mortgage"
 
   project_id = var.project_id
   region     = var.region
@@ -178,7 +178,7 @@ module "model_armor" {
 }
 
 module "agent_engine" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/agent_engine?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/agent_engine?ref=feat/add-mortgage"
 
   project_id     = var.project_id
   project_number = var.project_number
@@ -190,7 +190,7 @@ module "agent_engine" {
 }
 
 module "mcp_services" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/mcp_cloud_run?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/mcp_cloud_run?ref=feat/add-mortgage"
 
   project_id              = var.project_id
   region                  = var.region
@@ -225,7 +225,7 @@ check "agent_gateway_mcp_cert_prereqs" {
 }
 
 module "mcp_internal_lb" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/mcp_internal_lb?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/mcp_internal_lb?ref=feat/add-mortgage"
 
   project_id         = var.project_id
   region             = var.region
@@ -250,7 +250,7 @@ module "mcp_internal_lb" {
 }
 
 module "agent_gateway" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/agent_gateway?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/agent_gateway?ref=feat/add-mortgage"
 
   providers = {
     google      = google
@@ -308,7 +308,7 @@ resource "google_project_iam_member" "run_admin" {
 }
 
 module "agent_registry_endpoints" {
-  source = "git::https://github.com/mariammartins/terraform-google-enterprise-genai.git//modules/agent_registry?ref=feat/add-mortgage"
+  source = "github.com/mariammartins/terraform-google-enterprise-genai//modules/agent_registry?ref=feat/add-mortgage"
 
   project_id = var.project_id
   location   = var.region
