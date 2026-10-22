@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@ locals {
 
   cd_sa_required_roles = [
     "roles/clouddeploy.jobRunner",
+    "roles/run.developer",
+    "roles/artifactregistry.admin",
+    "roles/iam.serviceAccountUser",
     "roles/compute.viewer",
     "roles/monitoring.viewer",
     "roles/logging.viewer",
@@ -34,7 +37,7 @@ locals {
 
 resource "google_service_account" "clouddeploy_execution_sa" {
   project      = var.project_id
-  account_id   = "clouddeploy-execution-sa"
+  account_id   = substr("cd-exec-sa-${var.secure_pipeline_name}", 0, 30)
   display_name = "clouddeploy-execution-sa"
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,9 @@ resource "google_cloudbuild_trigger" "app_build_trigger" {
       branch = var.trigger_branch_name # Assumes the same branch for all
     }
   }
+
+  included_files = var.included_files
+  ignored_files  = var.ignored_files
 
   substitutions   = local.common_substitutions
   service_account = google_service_account.build_sa.id

@@ -28,6 +28,7 @@ spec:
       tagline: Create a CI/CD pipeline that follows security best practices.
       detailed: |-
         Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE, Anthos, or Cloud Run.
+        Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE, Anthos, or Cloud Run.
         You can choose whether to deploy your solution through the console directly or download as Terraform from GitHub to deploy later.
       architecture:
         - A developer pushes new code or a code change for a container-based application to a Source Repository (GitHub or GitLab).
@@ -57,6 +58,8 @@ spec:
       - name: workerpool-gke-ha-vpn
         location: modules/workerpool-gke-ha-vpn
     examples:
+      - name: mortgage-agent
+        location: examples/mortgage-agent
       - name: standalone_single_project
         location: examples/standalone_single_project
   interfaces: {}

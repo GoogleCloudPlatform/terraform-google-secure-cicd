@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,15 @@ steps:
     - '-xe'
     - -c
     - |
-      ./mvnw clean install
+      if [ -f "./mvnw" ]; then
+        ./mvnw clean install
+      elif [ -f "./pom.xml" ] && command -v mvn &> /dev/null; then
+        mvn clean install
+      fi
+
+      if [ -f "./skaffold.yaml" ]; then
+        skaffold fix --overwrite
+      fi
 
       skaffold config set --global local-cluster false
       skaffold build --default-repo=${_GAR_REPO_URI} --tag=$SHORT_SHA --cache-file='/.skaffold/cache' --file-output=/artifacts/build-artifacts.json

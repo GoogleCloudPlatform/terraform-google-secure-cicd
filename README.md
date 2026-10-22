@@ -9,7 +9,6 @@ Create a CI/CD pipeline that follows security best practices.
 
 ### Detailed
 Set up a secure CI/CD pipeline that follows best practices for building, scanning, storing, and deploying containers to GKE, Anthos, or Cloud Run.
-
 You can choose whether to deploy your solution through the console directly or download as Terraform from GitHub to deploy later.
 
 ### Architecture
@@ -61,7 +60,7 @@ module "cd_pipeline" {
   source           = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
 
   project_id                 = {PROJECT_ID}
-  primary_location           = "us-central1"
+  primary_location           = "us-east4"
   repository_type            = "GITHUB"
   cd_repository = {
     repository_name = "cloudbuild-cd-config"

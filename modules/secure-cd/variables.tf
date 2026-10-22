@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@
 variable "project_id" {
   type        = string
   description = "Project ID for CICD Pipeline Project"
+}
+
+variable "secure_pipeline_name" {
+  type        = string
+  description = "Name of the secure pipeline, used to uniquely identify resources."
+  default     = "secure-pipeline"
 }
 
 variable "primary_location" {
@@ -120,20 +126,6 @@ variable "repository_type" {
   validation {
     condition     = contains(["GITHUB", "GITLAB"], var.repository_type)
     error_message = "The repository_type must be either 'GITHUB' or 'GITLAB'."
-  }
-  validation {
-    condition = (
-      var.repository_type != "GITHUB" ||
-      (var.github_auth != null && var.gitlab_auth == null)
-    )
-    error_message = "When repository_type is 'GITHUB', the 'github_auth' variable must be set, and 'gitlab_auth' must not be set."
-  }
-  validation {
-    condition = (
-      var.repository_type != "GITLAB" ||
-      (var.gitlab_auth != null && var.github_auth == null)
-    )
-    error_message = "When repository_type is 'GITLAB', the 'gitlab_auth' variable must be set, and 'github_auth' must not be set."
   }
 }
 

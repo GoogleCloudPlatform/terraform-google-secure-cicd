@@ -18,7 +18,7 @@ data "google_project" "project" {
 }
 
 resource "google_service_account" "build_sa" {
-  account_id   = "build-sa"
+  account_id   = substr("build-sa-${var.secure_pipeline_name}", 0, 30)
   display_name = "Service Account for ${var.ci_repository.repository_name} Cloud Build triggers"
   project      = var.project_id
 }

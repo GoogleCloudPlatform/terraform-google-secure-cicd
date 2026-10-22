@@ -23,19 +23,19 @@ Run `make generate_docs` to generate new Inputs and Outputs tables.
 
 ## Integration Testing
 
-Integration tests are used to verify the behavior of the root module,
-submodules, and example modules. Additions, changes, and fixes should
-be accompanied with tests.
+Integration tests are crucial for verifying the behavior, correctness, and security of the root module, submodules, and example modules. All additions, changes, and fixes MUST be accompanied by comprehensive tests that pass the integration testing lifecycle.
 
-**The authoritative execution of integration tests occurs in Google Cloud Build, orchestrated by `int.cloudbuild.yaml` files located in the `build/` directory.** Local execution using `make docker_test_integration` is provided for development and debugging purposes.
+**Automated Lifecycle Execution in Cloud Build:** The authoritative execution of integration tests occurs in a Google-managed organization's Cloud Build environment, orchestrated by `int.cloudbuild.yaml` files located in the `build/` directory. These tests follow a rigorous automated lifecycle using the `cft test run` framework, which provisions and inspects real GCP resources through the following stages for each test scenario:
+-   `init`: Initializes the test environment.
+-   `apply`: Applies the infrastructure defined by the test.
+-   `verify`: Validates the deployed infrastructure against expected outcomes, covering functional correctness, security compliance (including policy enforcement from `/build/policies`), and network isolation.
+-   `teardown`: Cleans up the provisioned infrastructure.
 
-The integration tests are run using [Kitchen][kitchen],
-[Kitchen-Terraform][kitchen-terraform], and [InSpec][inspec]. These
-tools are packaged within a Docker image for convenience.
+**Mandatory for PRs:** Successful execution of these integration tests is a **mandatory step for merging Pull Requests (PRs)**. Tests are triggered in Cloud Build by a repository collaborator commenting `/gcbrun` on the PR.
 
-The general strategy for these tests is to verify the behavior of the
-[example modules](./examples/), thus ensuring that the root module,
-submodules, and example modules are all functionally correct.
+**Local Execution:** `make docker_test_integration` is provided for local development and debugging purposes. The necessary testing tools are packaged within a Docker image for convenience.
+
+The general strategy for these tests is to verify the behavior of the [example modules](./examples/), thus ensuring that the root module, submodules, and example modules are all functionally correct.
 
 ### Test Environment
 The easiest way to test the module is in an isolated test project. The setup for such a project is defined in [test/setup](./test/setup/) directory.
@@ -79,14 +79,14 @@ noninteractively, using the prepared test project.
 1. Run `make docker_run` to start the testing Docker container in
    interactive mode.
 
-1. Run `kitchen_do create <EXAMPLE_NAME>` to initialize the working
+1. Run `cft test run <EXAMPLE_NAME> --stage init` to initialize the working
    directory for an example module.
 
-1. Run `kitchen_do converge <EXAMPLE_NAME>` to apply the example module.
+1. Run `cft test run <EXAMPLE_NAME> --stage apply` to apply the example module.
 
-1. Run `kitchen_do verify <EXAMPLE_NAME>` to test the example module.
+1. Run `cft test run <EXAMPLE_NAME> --stage verify` to test the example module.
 
-1. Run `kitchen_do destroy <EXAMPLE_NAME>` to destroy the example module
+1. Run `cft test run <EXAMPLE_NAME> --stage teardown` to destroy the example module
    state.
 
 ## Terraform Module Development Guidelines
@@ -135,7 +135,6 @@ This section defines key terms, acronyms, and concepts specific to this project,
 *   **Attestation:** A verifiable record, typically cryptographic, that asserts facts about a software artifact, crucial for Binary Authorization.
 *   **VPC (Virtual Private Cloud):** A virtual network on Google Cloud that provides network isolation and connectivity for your resources.
 *   **Service Account:** A special type of Google account used by applications and services to make authorized API calls.
-*   **Kitchen/Kitchen-Terraform/InSpec:** Tools used in conjunction for integration testing Terraform modules, bundled within a Docker image.
 
 ## Code Conventions and Linting
 
@@ -158,9 +157,6 @@ Run `make docker_test_lint`.
 [gofmt]: https://golang.org/cmd/gofmt/
 [google-cloud-sdk]: https://cloud.google.com/sdk/install
 [hadolint]: https://github.com/hadolint/hadolint
-[inspec]: https://inspec.io/
-[kitchen-terraform]: https://github.com/newcontext-oss/kitchen-terraform
-[kitchen]: https://kitchen.ci/
 [make]: https://en.wikipedia.org/wiki/Make_(software)
 [shellcheck]: https://www.shellcheck.net/
 [terraform-docs]: https://github.com/segmentio/terraform-docs

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@
 variable "project_id" {
   type        = string
   description = "Project ID for CICD Pipeline Project"
+}
+
+variable "secure_pipeline_name" {
+  type        = string
+  description = "Name of the secure pipeline, used to uniquely identify resources."
+  default     = "secure-pipeline"
 }
 
 variable "primary_location" {
@@ -44,6 +50,10 @@ variable "cache_bucket_name" {
   type        = string
   description = "Name of cloudbuild artifact and cache GCS bucket"
   default     = "bkt-cloudbuild"
+  validation {
+    condition     = length(var.cache_bucket_name) <= 58
+    error_message = "The 'cache_bucket_name' variable must be 58 characters or fewer (to allow for the 5-character '-XXXX' random suffix without exceeding the 63-character GCS bucket limit)."
+  }
 }
 
 variable "gar_repo_name_suffix" {
@@ -70,6 +80,7 @@ variable "cloudbuild_service_account_roles" {
     "roles/cloudkms.cryptoOperator",
     "roles/containeranalysis.notes.attacher",
     "roles/containeranalysis.notes.occurrences.viewer",
+    "roles/iam.serviceAccountUser",
     "roles/serviceusage.serviceUsageConsumer",
     "roles/storage.admin",
     "roles/cloudbuild.workerPoolUser",
@@ -115,20 +126,6 @@ variable "repository_type" {
     condition     = contains(["GITHUB", "GITLAB"], var.repository_type)
     error_message = "The repository_type must be either 'GITHUB' or 'GITLAB'."
   }
-  validation {
-    condition = (
-      var.repository_type != "GITHUB" ||
-      (var.github_auth != null && var.gitlab_auth == null)
-    )
-    error_message = "When repository_type is 'GITHUB', the 'github_auth' variable must be set, and 'gitlab_auth' must not be set."
-  }
-  validation {
-    condition = (
-      var.repository_type != "GITLAB" ||
-      (var.gitlab_auth != null && var.github_auth == null)
-    )
-    error_message = "When repository_type is 'GITLAB', the 'gitlab_auth' variable must be set, and 'github_auth' must not be set."
-  }
 }
 
 variable "ci_repository" {
@@ -161,5 +158,17 @@ variable "gitlab_auth" {
     secret_project_id                    = string
   })
   description = "Authentication configuration for GitLab. Required only if repo_type is 'GITLABv2'."
+  default     = null
+}
+
+variable "included_files" {
+  type        = list(string)
+  description = "List of glob patterns for files that should trigger a build when modified."
+  default     = null
+}
+
+variable "ignored_files" {
+  type        = list(string)
+  description = "List of glob patterns for files that should not trigger a build when modified."
   default     = null
 }
