@@ -129,7 +129,7 @@ resource "google_clouddeploy_delivery_pipeline" "pipeline" {
 
               canary_deployment {
                 percentages = stages.value.canary_percentages
-                verify      = true
+                verify      = lookup(stages.value, "canary_verify", false)
               }
             }
           }

@@ -46,6 +46,7 @@ variable "deploy_branch_clusters" {
     env_number            = number
     target_type           = string
     canary_percentages    = optional(list(number))
+    canary_verify         = optional(bool)
     runtime_config = optional(object({
       cloud_run = optional(object({
         automatic_traffic_control = optional(bool)
