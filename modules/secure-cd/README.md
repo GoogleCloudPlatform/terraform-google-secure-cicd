@@ -8,7 +8,8 @@ To ensure only trusted artifacts are deployed, this module configures Binary Aut
 
 This module provisions the following resources:
 
-* **Cloud Deploy Pipeline & Targets**: Creates a delivery pipeline and deployment targets (GKE, Anthos, or Cloud Run) based on your environment definitions.
+* **Cloud Deploy Pipeline & Targets**: Creates a delivery pipeline and deployment targets (GKE, Anthos, or Cloud Run) based on your environment definitions, supporting progressive multi-phase canary rollouts.
+* **Canary Deployment & Guardrails**: Enables phased traffic shifting (e.g. 10%, 50%, 100%) with automated deployment verification (`verify = true`) and runtime traffic control for GKE and Cloud Run targets.
 * **Cloud Build Triggers**: Sets up Pub/Sub-driven Cloud Build triggers that execute the actual deployment manifests (e.g., `cloudbuild-cd.yaml`) when Cloud Deploy initiates a rollout.
 * **Source Code Repositories**: Supports 2nd-gen Cloud Build repository connections (GitHub/GitLab) for storing your CD configuration files.
 * **Binary Authorization Policies**: Enforces `REQUIRE_ATTESTATION` rules on the target clusters, ensuring images are signed by the required attestors before deployment.
@@ -70,13 +71,14 @@ module "cd_pipeline" {
 
   deploy_branch_clusters = {
     "prod" = {
+      name                  = "prod"
       cluster               = "prod-cluster"
       anthos_membership     = ""
       project_id            = "my-gcp-project-id"
       location              = "us-central1"
       required_attestations = ["projects/my-gcp-project-id/attestors/qa-attestor"]
       env_attestation       = ""
-      next_env              = ""
+      env_number            = 1
       target_type           = "gke"
     }
   }
@@ -96,13 +98,15 @@ module "cd_pipeline" {
 | cloudbuild\_private\_pool | Cloud Build private pool self-link | `string` | `""` | no |
 | cloudbuild\_service\_account | Cloud Build SA email address | `string` | n/a | yes |
 | clouddeploy\_pipeline\_name | Cloud Deploy pipeline name | `string` | n/a | yes |
-| deploy\_branch\_clusters | A list of environment deployments, ordered by 'env\_number'. target\_type can be one of `gke`, `anthos_cluster`, or `run`. See [clouddeploy\_target Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) for more details | <pre>map(object({<br>    name                  = string<br>    cluster               = string<br>    anthos_membership     = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    env_number            = number<br>    target_type           = string<br>  }))</pre> | `{}` | no |
+| deploy\_branch\_clusters | A list of environment deployments, ordered by 'env\_number'. target\_type can be one of `gke`, `anthos_cluster`, or `run`. See [clouddeploy\_target Terraform docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) for more details | <pre>map(object({<br>    name                  = string<br>    cluster               = string<br>    anthos_membership     = string<br>    project_id            = string<br>    location              = string<br>    required_attestations = list(string)<br>    env_attestation       = string<br>    env_number            = number<br>    target_type           = string<br>    canary_percentages    = optional(list(number))<br>    canary_verify         = optional(bool)<br>    runtime_config = optional(object({<br>      cloud_run = optional(object({<br>        automatic_traffic_control = optional(bool)<br>      }))<br>      kubernetes = optional(object({<br>        service_networking = optional(object({<br>          service                      = string<br>          deployment                   = string<br>          disable_pod_overprovisioning = optional(bool)<br>        }))<br>        gateway_service_mesh = optional(object({<br>          http_route             = string<br>          service                = string<br>          deployment             = string<br>          route_update_wait_time = optional(string)<br>        }))<br>      }))<br>    }))<br>  }))</pre> | `{}` | no |
+| enable\_metric\_driven\_rollback | Whether to enable metric-driven verification and automated rollback in the CD deployment pipeline. | `bool` | `true` | no |
 | gar\_repo\_name | Docker artifact registry repo to store app build images | `string` | n/a | yes |
 | github\_auth | Authentication configuration for GitHub. Required only if repo\_type is 'GITHUBv2'. | <pre>object({<br>    secret_id         = string<br>    app_id_secret_id  = string<br>    secret_project_id = string<br>  })</pre> | `null` | no |
 | gitlab\_auth | Authentication configuration for GitLab. Required only if repo\_type is 'GITLABv2'. | <pre>object({<br>    read_authorizer_credential_secret_id = string<br>    authorizer_credential_secret_id      = string<br>    webhook_secret_id                    = string<br>    enterprise_host_uri                  = optional(string)<br>    enterprise_service_directory         = optional(string)<br>    enterprise_ca_certificate            = optional(string)<br>    secret_project_id                    = string<br>  })</pre> | `null` | no |
 | primary\_location | Primary Google Cloud region for deploying resources like Cloud Build triggers and Cloud Deploy pipelines. | `string` | n/a | yes |
 | project\_id | Project ID for CICD Pipeline Project | `string` | n/a | yes |
 | repository\_type | The type of the repository. Must be one of 'GITHUB' or 'GITLAB'. | `string` | n/a | yes |
+| rollback\_metrics\_config | Metric thresholds and verification parameters for automated rollbacks across Cloud Run and GKE. | <pre>object({<br>    verification_window_seconds = optional(number, 180)<br>    max_restart_count           = optional(number, 0)<br>    max_http_5xx_rate           = optional(number, 0.02)<br>    max_p95_latency_ms          = optional(number, 2000)<br>    max_cpu_utilization         = optional(number, 0.95)<br>    max_memory_utilization      = optional(number, 0.95)<br>    max_error_log_count         = optional(number, 5)<br>  })</pre> | <pre>{<br>  "max_cpu_utilization": 0.95,<br>  "max_error_log_count": 5,<br>  "max_http_5xx_rate": 0.02,<br>  "max_memory_utilization": 0.95,<br>  "max_p95_latency_ms": 2000,<br>  "max_restart_count": 0,<br>  "verification_window_seconds": 180<br>}</pre> | no |
 | secure\_pipeline\_name | Name of the secure pipeline, used to uniquely identify resources. | `string` | `"secure-pipeline"` | no |
 
 ## Outputs
