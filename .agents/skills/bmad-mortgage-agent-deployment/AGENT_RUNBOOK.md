@@ -105,9 +105,9 @@ This runbook guides the agent in deploying the mortgage-agent example.
 - Run the script `.agents/skills/bmad-mortgage-agent-deployment/scripts/01-terraform-apply.sh` from the root directory.
 
 ---
- 
+
 # Stage 4: Application Deployment
- 
+
 ### 4.1: Render Skaffold and Cloud Run YAMLs
 - For every MCP service, create the definitive `skaffold.yaml` and `cloud_run/*.yaml` files out of their respective `.tmpl` templates.
 - Because `envsubst` pulls from the environment, ensure each service is processed in a single shell command that resolves the variables from Terraform beforehand. `DOMAIN_NAME` is the Public DNS Domain Name supplied by the user in Stage 2.1.
@@ -140,9 +140,9 @@ This runbook guides the agent in deploying the mortgage-agent example.
 ### 4.3: Final Status
 - Report the final status of the application deployment to the user.
 ---
- 
+
 # Stage 5: Agent Deployment and Permissions
- 
+
 ### 5.1: Allow Egress for All Agents Across Endpoints
 - **Execute this prior to deploying the agent.** The agent requires external access during deployment to pull packages from github.com and reach the essential Google APIs.
 - The script depends on `PROJECT_ID`, `PROJECT_NUMBER`, `ORG_ID`, and `REGION` being exported in the environment, and will terminate if any is absent. Resolve them all in the same shell session before running.
@@ -154,7 +154,7 @@ This runbook guides the agent in deploying the mortgage-agent example.
   export ORG_ID=$(gcloud projects get-ancestors $PROJECT_ID --format='get(id)' | tail -1)
   ./scripts/grant_agent_mcp_egress.sh --bind-all-agents --endpoints
 ```
- 
+
 ### 5.2: Deploy the Agent
 - Build and execute the `deploy_agent.py` script. By using `--enable-agent-identity`, this script calls `grant_agent_mcp_egress.sh` in the background and pulls `ORG_ID` and `PROJECT_NUMBER` from the environment (it will halt if they are missing). Resolve these variables from `examples/mortgage-agent`, and then move to the agent directory:
 ```bash
@@ -176,7 +176,7 @@ This runbook guides the agent in deploying the mortgage-agent example.
   --model-endpoint-location=global
 ```
 - Record the numeric `reasoningEngines/` ID printed on completion; it is needed in Stages 5.3 and 5.4. Then return to `examples/mortgage-agent` with `cd ../../`.
- 
+
 ### 5.3: Grant Agent Per-MCP-Server Egress
 - As in Stage 5.1, the four variables must be present in the shell session that executes the script. Run this from `examples/mortgage-agent`.
 - Provide the specific agent with unrestricted access to `legacy-dms` and `income-verification`.
@@ -204,7 +204,7 @@ This runbook guides the agent in deploying the mortgage-agent example.
      --condition-title "ReadOnlyToolsOnly" \
      --condition-description "Restrict [AGENT_ID] to read-only tools on corporate-email"
 ```
- 
+
 ### 5.4: Verify the Bindings
 - Guide the user to the [Policies tab](https://console.cloud.google.com/agent-platform/policies/iam) to double-check the policies applied to the Endpoints and MCP Servers.
 - Should the endpoints lack policies, execute the script with this configuration
@@ -215,6 +215,6 @@ This runbook guides the agent in deploying the mortgage-agent example.
   export ORG_ID=$(gcloud projects get-ancestors $PROJECT_ID --format='get(id)' | tail -1)
   ./scripts/grant_agent_mcp_egress.sh --agent-id [AGENT_ID] --endpoints
 ```
- 
+
 ### 5.5: Final Report
 - Inform the user that the agent is fully deployed and ready for testing in the Agent Platform Playground.

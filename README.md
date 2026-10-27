@@ -115,8 +115,12 @@ module "cd_pipeline" {
 }
 ```
 
-Functional examples are included in the
-[examples](./examples/) directory.
+## Examples
+
+Functional examples are included in the [examples](./examples/) directory:
+
+- **[Standalone Single Project](./examples/standalone_single_project/)**: Full secure CI/CD pipeline deploying containerized applications to GKE across multiple environments.
+- **[Mortgage Agent (Gemini Enterprise Agent Platform)](./examples/mortgage-agent/)**: Enterprise AI agent reference architecture deploying Cloud Run MCP microservices, Agent Gateway, and Model Armor via secure CI/CD. Includes a built-in **interactive Antigravity deployment skill** (`bmad-mortgage-agent-deployment`) for automated guided setup.
 
 ### Build Configuration
 Example Cloud Build configuration files are located in the [Build](./build/) folder. Push the `cloudbuild-ci.yaml` configuration to the application source code repository. Push the `cloudbuild-cd.yaml` configuration to the wet manifest repository. These build configurations offer a baseline for adhering to S3C application delivery practices within this blueprint, and are customizable as needed.

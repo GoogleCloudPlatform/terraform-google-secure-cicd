@@ -1,6 +1,6 @@
 ---
 name: "bmad-mortgage-agent-deployment"
-description: "Interactively guides a user through the 'mortgage-agent' example deployment, automating prerequisites, configuration, and infrastructure provisioning for a guided, error-proof deployment experience."
+description: "Interactively guides a user through the 'mortgage-agent' example deployment, automating prerequisites, configuration, and infrastructure provisioning for a guided, error-proof deployment experience. Use when the user requests to 'deploy the mortgage agent', 'deploy mortgage-agent', 'setup mortgage agent', or asks for guided deployment of the mortgage agent example."
 ---
 # Mortgage Agent Deployment Skill
 

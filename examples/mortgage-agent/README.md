@@ -1,5 +1,13 @@
 # Mortgage Agent on Gemini Enterprise Agent Platform
 
+> [!TIP]
+> **Guided AI Agent Deployment**:
+> If you are using **Antigravity**, you can automate the entire deployment interactively by prompting:
+> ```
+> Deploy the mortgage agent example
+> ```
+> The agent will guide you through prerequisite checks, configuration generation, Terraform provisioning, GitOps repository seeding, and MCP tool registration.
+
 ## Overview
 
 Gemini Enterprise Agent Platform is an open platform for building, scaling, governing, and optimizing enterprise-grade AI agents grounded in your data.

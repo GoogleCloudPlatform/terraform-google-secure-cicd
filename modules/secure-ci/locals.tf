@@ -18,7 +18,6 @@ locals {
   gar_name             = split("/", google_artifact_registry_repository.image_repo.name)[length(split("/", google_artifact_registry_repository.image_repo.name)) - 1]
   repos                = { for repo in [var.ci_repository] : repo.repository_name => repo }
   second_gen_repo_id   = values(module.cloudbuild_repositories.cloud_build_repositories_2nd_gen_repositories)[0].id
-  second_gen_repo_name = keys(module.cloudbuild_repositories.cloud_build_repositories_2nd_gen_repositories)[0]
   common_substitutions = merge(
     {
       _GAR_REPOSITORY            = local.gar_name
