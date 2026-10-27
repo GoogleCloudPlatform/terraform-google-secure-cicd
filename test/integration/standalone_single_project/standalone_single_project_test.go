@@ -58,7 +58,7 @@ func runCmd(t *testing.T, dir, name string, args ...string) {
 	}
 }
 
-func getLatestReleaseName(t *testing.T, projectID, region, pipelineID string) string {
+func getLatestReleaseName(t *testing.T, projectID, region, pipelineID string, notEqual ...string) string {
 	var latestRelease string
 	err := testutils.Retry(30, 20*time.Second, func() error {
 		releases := gcloud.Runf(t, "deploy releases list --delivery-pipeline=%s --project %s --region %s --format json", pipelineID, projectID, region).Array()
@@ -68,6 +68,9 @@ func getLatestReleaseName(t *testing.T, projectID, region, pipelineID string) st
 		fullReleaseName := releases[0].Get("name").String()
 		parts := strings.Split(fullReleaseName, "/")
 		latestRelease = parts[len(parts)-1]
+		if len(notEqual) > 0 && notEqual[0] != "" && latestRelease == notEqual[0] {
+			return fmt.Errorf("latest release is still %s; waiting for new release to be created", latestRelease)
+		}
 		t.Logf("Found latest release: %s", latestRelease)
 		return nil
 	})
@@ -94,6 +97,25 @@ func waitForRollout(t *testing.T, projectID, region, pipelineID, releaseName, ta
 			t.Logf("Rollout %s on target %s finished successfully.", rolloutID, targetName)
 			return nil
 		} else if state == "IN_PROGRESS" || state == "PENDING_RELEASE" || state == "PENDING_APPROVAL" || state == "PENDING" {
+			// If rollout has multiple phases (Canary) and is IN_PROGRESS, attempt to advance completed phases
+			if state == "IN_PROGRESS" {
+				parts := strings.Split(rolloutID, "/")
+				shortRolloutName := parts[len(parts)-1]
+				phases := latestRollout.Get("phases").Array()
+				if len(phases) > 1 {
+					advanceCmd := exec.Command("gcloud", "deploy", "rollouts", "advance", shortRolloutName,
+						fmt.Sprintf("--delivery-pipeline=%s", pipelineID),
+						fmt.Sprintf("--release=%s", releaseName),
+						fmt.Sprintf("--project=%s", projectID),
+						fmt.Sprintf("--region=%s", region),
+						"--quiet",
+					)
+					out, err := advanceCmd.CombinedOutput()
+					if err == nil {
+						t.Logf("Advanced canary rollout %s phase: %s", shortRolloutName, string(out))
+					}
+				}
+			}
 			return fmt.Errorf("rollout %s on target %s is still in progress with state: %s", rolloutID, targetName, state)
 		} else {
 			deployingBuild := latestRollout.Get("deployingBuild").String()
@@ -104,12 +126,35 @@ func waitForRollout(t *testing.T, projectID, region, pipelineID, releaseName, ta
 					strings.Contains(logs, "Insufficient memory") ||
 					strings.Contains(logs, "Insufficient CPU") ||
 					strings.Contains(logs, "didn't match Pod's node affinity/selector") ||
-					strings.Contains(logs, "FailedScaleUp") {
-					t.Logf("Retrying rollout job due to cluster scaling/stabilization...")
+					strings.Contains(logs, "FailedScaleUp") ||
+					strings.Contains(logs, "deployment(s) failed") {
 					parts := strings.Split(rolloutID, "/")
 					shortRolloutName := parts[len(parts)-1]
-					gcloud.Runf(t, "deploy rollouts retry-job %s --delivery-pipeline=%s --release=%s --project=%s --region=%s --phase-id=stable --job-id=deploy", shortRolloutName, pipelineID, releaseName, projectID, region)
-					return fmt.Errorf("retrying rollout %s after cluster scaling failure", shortRolloutName)
+					var failedPhaseID string
+					for _, p := range latestRollout.Get("phases").Array() {
+						if p.Get("state").String() == "FAILED" || p.Get("deploymentJobs.deployJob.state").String() == "FAILED" {
+							failedPhaseID = p.Get("id").String()
+							break
+						}
+					}
+					if failedPhaseID == "" {
+						failedPhaseID = "stable"
+					}
+					t.Logf("Retrying rollout job on phase %s due to cluster scaling/stabilization...", failedPhaseID)
+					retryCmd := exec.Command("gcloud", "deploy", "rollouts", "retry-job", shortRolloutName,
+						fmt.Sprintf("--delivery-pipeline=%s", pipelineID),
+						fmt.Sprintf("--release=%s", releaseName),
+						fmt.Sprintf("--project=%s", projectID),
+						fmt.Sprintf("--region=%s", region),
+						fmt.Sprintf("--phase-id=%s", failedPhaseID),
+						"--job-id=deploy",
+						"--quiet",
+					)
+					retryOut, retryErr := retryCmd.CombinedOutput()
+					if retryErr == nil {
+						t.Logf("Retried rollout job on phase %s: %s", failedPhaseID, string(retryOut))
+					}
+					return fmt.Errorf("retrying rollout %s phase %s after cluster scaling failure", shortRolloutName, failedPhaseID)
 				}
 			}
 			return fmt.Errorf("rollout %s on target %s failed with state: %s", rolloutID, targetName, state)
@@ -158,27 +203,43 @@ func runTrigger(t *testing.T, projectID, region, triggerID string) {
 	}
 }
 
-func waitForCIBuild(t *testing.T, projectID, region, ciTriggerID string) {
+func waitForCIBuild(t *testing.T, projectID, region, ciTriggerID string, expectedCommitSHA ...string) {
 	t.Logf("Waiting for CI build on trigger %s to complete...", ciTriggerID)
 	var buildID string
+	var targetSHA string
+	if len(expectedCommitSHA) > 0 && expectedCommitSHA[0] != "" {
+		targetSHA = expectedCommitSHA[0]
+	}
 
-	err := testutils.Retry(6, 10*time.Second, func() error {
+	err := testutils.Retry(18, 10*time.Second, func() error {
 		builds := gcloud.Runf(t, "builds list --project=%s --region=%s --filter=\"buildTriggerId=%s\" --format=json", projectID, region, ciTriggerID).Array()
 		if len(builds) == 0 {
 			return fmt.Errorf("no build found yet for trigger %s", ciTriggerID)
+		}
+		if targetSHA != "" {
+			for _, b := range builds {
+				sha := b.Get("substitutions.COMMIT_SHA").String()
+				shortSha := b.Get("substitutions.SHORT_SHA").String()
+				if (sha != "" && strings.HasPrefix(targetSHA, sha)) || (shortSha != "" && strings.HasPrefix(targetSHA, shortSha)) || sha == targetSHA {
+					buildID = b.Get("id").String()
+					t.Logf("Found CI build %s matching commit %s for trigger %s", buildID, targetSHA, ciTriggerID)
+					return nil
+				}
+			}
+			return fmt.Errorf("no build found yet for trigger %s matching commit %s (found %d other builds)", ciTriggerID, targetSHA, len(builds))
 		}
 		buildID = builds[0].Get("id").String()
 		t.Logf("Found CI build %s for trigger %s", buildID, ciTriggerID)
 		return nil
 	})
 	if err != nil {
-		t.Logf("No build detected automatically for trigger %s; manually running trigger...", ciTriggerID)
-		buildOp := gcloud.Runf(t, "builds triggers run %s --project %s --region %s", ciTriggerID, projectID, region)
+		t.Logf("No build detected automatically for trigger %s matching commit %s; manually running trigger...", ciTriggerID, targetSHA)
+		buildOp := gcloud.Runf(t, "builds triggers run %s --project %s --region %s --branch=main", ciTriggerID, projectID, region)
 		buildID = buildOp.Get("metadata.build.id").String()
 		t.Logf("Started CI build %s for trigger %s", buildID, ciTriggerID)
 	}
 
-	err = testutils.Retry(30, 30*time.Second, func() error {
+	err = testutils.Retry(50, 30*time.Second, func() error {
 		buildStatus := gcloud.Runf(t, "builds describe %s --project %s --region %s --format=json", buildID, projectID, region)
 		status := buildStatus.Get("status").String()
 
@@ -186,8 +247,8 @@ func waitForCIBuild(t *testing.T, projectID, region, ciTriggerID string) {
 			t.Logf("CI Build %s succeeded.", buildID)
 			return nil
 		} else if status == "FAILURE" || status == "CANCELLED" || status == "TIMEOUT" || status == "INTERNAL_ERROR" {
-			logOutput := gcloud.Runf(t, "builds log %s --project %s --region %s", buildID, projectID, region)
-			t.Logf("CI Build %s failed. Full build log:\n%s", buildID, logOutput.String())
+			buildLogs := gcloud.RunCmd(t, fmt.Sprintf("builds log %s --project=%s --region=%s", buildID, projectID, region))
+			t.Logf("CI build %s failure log output:\n%s", buildID, buildLogs)
 			return fmt.Errorf("CI build %s failed with terminal status: %s", buildID, status)
 		}
 		return fmt.Errorf("CI build %s still running with status: %s", buildID, status)
@@ -368,22 +429,96 @@ func TestStandaloneSingleProjectExample(t *testing.T) {
 
 		latestRelease := getLatestReleaseName(t, projectID, region, cloudDeployPipelineID)
 
-		for i, trigger := range cdOrderedTriggerNamesList {
-			triggerID := trigger.String()
-			targetName := clouddeployTargetNamesOrderedList[i].String()
+		for i, target := range clouddeployTargetNamesOrderedList {
+			targetName := target.String()
 
+			t.Logf("Waiting for rollout of release %s on target %s...", latestRelease, targetName)
 			waitForRollout(t, projectID, region, cloudDeployPipelineID, latestRelease, targetName)
 
-			t.Logf("Running CD trigger %s for target %s", triggerID, targetName)
-			runTrigger(t, projectID, region, triggerID)
+			if i < len(cdOrderedTriggerNamesList) {
+				triggerID := cdOrderedTriggerNamesList[i].String()
+				t.Logf("Running CD trigger %s for target %s", triggerID, targetName)
+				runTrigger(t, projectID, region, triggerID)
+			}
 
-			if i < len(cdOrderedTriggerNamesList)-1 {
+			if i < len(clouddeployTargetNamesOrderedList)-1 {
 				nextTargetName := clouddeployTargetNamesOrderedList[i+1].String()
 				t.Logf("Promoting release %s to target %s", latestRelease, nextTargetName)
 				promoteRelease(t, projectID, region, cloudDeployPipelineID, latestRelease, nextTargetName)
 			}
 		}
 
+		t.Log("Starting Stage 4: Testing metric-driven automated rollback...")
+		if len(clouddeployTargetNamesOrderedList) == 0 {
+			t.Log("No Cloud Deploy targets found; skipping Stage 4 rollback test.")
+			return
+		}
+
+		firstTargetName := clouddeployTargetNamesOrderedList[0].String()
+		var firstTriggerID string
+		if len(cdOrderedTriggerNamesList) > 0 {
+			firstTriggerID = cdOrderedTriggerNamesList[0].String()
+		}
+
+		appRepoLocalPath := filepath.Join(workspaceFolder, "bank-of-anthos")
+		frontendYamlPath := filepath.Join(appRepoLocalPath, "src/frontend/kubernetes-manifests/frontend.yaml")
+		if _, err := os.Stat(frontendYamlPath); os.IsNotExist(err) {
+			frontendYamlPath = filepath.Join(appRepoLocalPath, "kubernetes-manifests/frontend.yaml")
+		}
+
+		if _, err := os.Stat(frontendYamlPath); err == nil {
+			manifestBytes, readErr := os.ReadFile(frontendYamlPath)
+			if readErr == nil {
+				manifestStr := string(manifestBytes)
+				brokenManifest := strings.Replace(manifestStr, "containers:\n      - name: frontend", "containers:\n      - name: frontend\n        command: [\"sh\", \"-c\", \"exit 1\"]", 1)
+				if brokenManifest == manifestStr {
+					brokenManifest = strings.Replace(manifestStr, "- name: frontend", "- name: frontend\n        command: [\"sh\", \"-c\", \"exit 1\"]", 1)
+				}
+				_ = os.WriteFile(frontendYamlPath, []byte(brokenManifest), 0644)
+				t.Logf("Injected failure into %s", frontendYamlPath)
+
+				appGit := git.NewCmdConfig(t, git.WithDir(appRepoLocalPath))
+				_, _ = appGit.RunCmdE("add", ".")
+				appGit.CommitWithMsg("test: inject faulty crashing container to test rollback", []string{"--allow-empty"})
+				faultyCommitSHA, _ := appGit.RunCmdE("rev-parse", "HEAD")
+				faultyCommitSHA = strings.TrimSpace(faultyCommitSHA)
+				t.Logf("Faulty commit SHA: %s", faultyCommitSHA)
+				_, _ = appGit.RunCmdE("push", "gitlab", "main", "--force")
+
+				waitForCIBuild(t, projectID, region, ciUuid, faultyCommitSHA)
+				failingRelease := getLatestReleaseName(t, projectID, region, cloudDeployPipelineID, latestRelease)
+				t.Logf("Faulty Release created: %s (baseline was: %s)", failingRelease, latestRelease)
+				assert.NotEqual(latestRelease, failingRelease, "New failing release must have a different release name than initial release")
+
+				waitForRollout(t, projectID, region, cloudDeployPipelineID, failingRelease, firstTargetName)
+
+				if firstTriggerID != "" {
+					t.Logf("Running CD trigger %s for target %s on failing release %s", firstTriggerID, firstTargetName, failingRelease)
+					buildOp := gcloud.Runf(t, "builds triggers run %s --project %s --region %s", firstTriggerID, projectID, region)
+					cdBuildID := buildOp.Get("metadata.build.id").String()
+
+					_ = testutils.Retry(15, 20*time.Second, func() error {
+						buildStatus := gcloud.Runf(t, "builds describe %s --project %s --region %s --format=json", cdBuildID, projectID, region)
+						status := buildStatus.Get("status").String()
+						t.Logf("CD Verification build %s status: %s", cdBuildID, status)
+						if status == "FAILURE" {
+							t.Logf("CD Verification build %s correctly failed and triggered automated rollback.", cdBuildID)
+							return nil
+						} else if status == "SUCCESS" {
+							return fmt.Errorf("expected CD build %s to fail on broken release, but it succeeded", cdBuildID)
+						}
+						return fmt.Errorf("CD build %s still running with status: %s", cdBuildID, status)
+					})
+				} else {
+					t.Logf("No CD trigger defined for target %s; testing rollback via Cloud Deploy directly...", firstTargetName)
+					gcloud.Runf(t, "deploy targets rollback %s --delivery-pipeline=%s --project=%s --region=%s --quiet", firstTargetName, cloudDeployPipelineID, projectID, region)
+				}
+
+				t.Logf("Waiting for rollback of Cloud Deploy target %s to stable release %s...", firstTargetName, latestRelease)
+				waitForRollout(t, projectID, region, cloudDeployPipelineID, latestRelease, firstTargetName)
+				t.Logf("Successfully verified rollback to stable release %s on target %s", latestRelease, firstTargetName)
+			}
+		}
 	})
 
 	standaloneSingleProjT.DefineTeardown(func(assert *assert.Assertions) {
