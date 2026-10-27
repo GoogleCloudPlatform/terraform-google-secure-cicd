@@ -59,6 +59,9 @@ spec:
         deploy_branch_clusters:
           name: deploy_branch_clusters
           title: Deploy Branch Clusters
+        enable_metric_driven_rollback:
+          name: enable_metric_driven_rollback
+          title: Enable Metric Driven Rollback
         gar_repo_name:
           name: gar_repo_name
           title: Gar Repo Name
@@ -80,6 +83,6 @@ spec:
         repository_type:
           name: repository_type
           title: Repository Type
-        secure_pipeline_name:
-          name: secure_pipeline_name
-          title: Secure Pipeline Name
+        rollback_metrics_config:
+          name: rollback_metrics_config
+          title: Rollback Metrics Config

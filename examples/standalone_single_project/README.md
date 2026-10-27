@@ -4,7 +4,7 @@ This end-to-end example showcases the [`secure-ci`](https://github.com/GoogleClo
 
 This example also deploys the [`cloudbuild-private-pool`](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/tree/main/modules/cloudbuild-private-pool) module to enable deploying to private GKE clusters from Cloud Build.
 
-For simplified deployment and demonstration purposes, this blueprint creates GKE clusters and accompanying VPC networks for multiple sample environments (dev, qa, prod) within a single Google Cloud project.
+For simplified deployment and demonstration purposes, this blueprint creates GKE clusters and accompanying VPC networks for multiple sample environments (dev, qa, prod) within a single Google Cloud project, using a progressive canary rollout (10% → 50% → 100%) with automated deployment verification for the production environment.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs

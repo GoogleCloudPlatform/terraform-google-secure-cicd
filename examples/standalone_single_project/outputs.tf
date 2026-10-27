@@ -76,7 +76,7 @@ output "cd_repo_name" {
 
 output "gitlab_url" {
   description = "The URL of the GitLab instance."
-  value       = var.gitlab_auth.enterprise_host_uri
+  value       = var.gitlab_auth != null ? var.gitlab_auth.enterprise_host_uri : null
 }
 
 output "ci_repo_url" {
