@@ -8,6 +8,16 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [2.1.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v2.0.0...v2.1.0) (2026-10-29)
+
+
+### Features
+
+* add automated metric rollbacks ([#263](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/263)) ([f862add](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/f862add0d1c30d5f5c31e5055b1507af1dc9553b))
+* add mortgage agent sdlc example ([#249](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/249)) ([57f284c](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/57f284ca23c60ceebdedea14be297fdc0f28cbbe))
+* adding included and ignored files to trigger configuration ([#248](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/248)) ([ef2d3a9](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/ef2d3a9d03dd395b32b053cbf8f15701a64f0126))
+* bmad mortgage agent deployer ([#264](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/issues/264)) ([1dbbc29](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/commit/1dbbc29f8803f5d6ffec32724492ddb8cea8c062))
+
 ## [2.0.0](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/compare/v1.2.2...v2.0.0) (2026-09-21)
 
 
