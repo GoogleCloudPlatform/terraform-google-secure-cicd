@@ -29,6 +29,9 @@ locals {
     "roles/run.developer",
     "roles/artifactregistry.admin",
     "roles/iam.serviceAccountUser",
+    "roles/compute.viewer",
+    "roles/monitoring.viewer",
+    "roles/logging.viewer",
   ]
 }
 
@@ -114,6 +117,26 @@ resource "google_project_iam_member" "cloudbuild_gkehub_gatewayadmin" {
   project  = each.value.project_id
   role     = "roles/gkehub.gatewayAdmin"
   member   = "serviceAccount:${var.cloudbuild_service_account}"
+}
+
+resource "google_project_iam_member" "cloudbuild_monitoring_viewer" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  role     = "roles/monitoring.viewer"
+  member   = "serviceAccount:${var.cloudbuild_service_account}"
+}
+
+resource "google_project_iam_member" "cloudbuild_logging_viewer" {
+  for_each = var.deploy_branch_clusters
+  project  = each.value.project_id
+  role     = "roles/logging.viewer"
+  member   = "serviceAccount:${var.cloudbuild_service_account}"
+}
+
+resource "google_project_iam_member" "cloudbuild_clouddeploy_operator" {
+  project = var.project_id
+  role    = "roles/clouddeploy.operator"
+  member  = "serviceAccount:${var.cloudbuild_service_account}"
 }
 
 resource "google_project_service_identity" "binauth_service_agent" {

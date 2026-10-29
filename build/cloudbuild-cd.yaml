@@ -85,6 +85,151 @@ steps:
   waitFor:
     - 'get-svc-endpoints'
 
+# Metric-Driven Verification & Health Check (Cloud Run and GKE)
+- name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
+  id: "verify-deployment-metrics"
+  entrypoint: "/bin/bash"
+  args:
+    - '-xe'
+    - -c
+    - |
+      if [ "${_ENABLE_METRIC_DRIVEN_ROLLBACK}" != "true" ]; then
+        echo "Metric-driven rollback verification is disabled. Skipping."
+        exit 0
+      fi
+
+      echo "=== Starting Metric-Driven Deployment Verification ==="
+      WINDOW_SECS="${_VERIFICATION_WINDOW_SECONDS}"
+      WINDOW_STR="$${WINDOW_SECS}s"
+      MAX_RESTARTS="${_MAX_RESTART_COUNT}"
+      MAX_5XX_RATE="${_MAX_HTTP_5XX_RATE}"
+      MAX_P95_LATENCY="${_MAX_P95_LATENCY_MS}"
+      MAX_ERROR_LOGS="${_MAX_ERROR_LOG_COUNT}"
+
+      trigger_automated_rollback() {
+        echo ">>> [AUTOMATED ROLLBACK] Verification failed! Initiating automated rollback on target ${_TARGET_ID} in delivery pipeline ${_CLOUDDEPLOY_PIPELINE_NAME}..."
+        gcloud deploy targets rollback "${_TARGET_ID}" \
+          --delivery-pipeline="${_CLOUDDEPLOY_PIPELINE_NAME}" \
+          --project="${PROJECT_ID}" \
+          --region="${_DEFAULT_REGION}" \
+          --quiet || echo "WARNING: automated rollback command returned non-zero exit code"
+      }
+
+      case "${_TARGET_TYPE}" in
+        "run")
+          echo "=== Verifying Cloud Run Target Metrics ==="
+          SERVICE_NAME="${_DELIVERY_PIPELINE_ID}"
+
+          # 1. Cloud Run Ready Condition
+          READY_STATUS=$$(gcloud run services describe $${SERVICE_NAME} \
+            --project="${_CLUSTER_PROJECT}" \
+            --region="${_DEFAULT_REGION}" \
+            --format="value(status.conditions[0].status)" 2>/dev/null || echo "Unknown")
+          if [ "$$READY_STATUS" == "False" ]; then
+            echo "ERROR: Cloud Run Service $${SERVICE_NAME} Ready condition is False!"
+            trigger_automated_rollback
+            exit 1
+          fi
+
+          # 2. HTTP 5xx Error Rate
+          TOTAL_REQS=$$(gcloud monitoring time-series list \
+            --project="${_CLUSTER_PROJECT}" \
+            --filter='metric.type="run.googleapis.com/request_count" AND resource.labels.service_name="'$${SERVICE_NAME}'"' \
+            --interval="$${WINDOW_STR}" \
+            --aggregation-alignment-period="60s" \
+            --aggregation-per-series-aligner="ALIGN_SUM" \
+            --format="value(points[0].value.int64Value)" 2>/dev/null | awk '{s+=$1} END {print s+0}')
+
+          ERR_5XX_REQS=$$(gcloud monitoring time-series list \
+            --project="${_CLUSTER_PROJECT}" \
+            --filter='metric.type="run.googleapis.com/request_count" AND resource.labels.service_name="'$${SERVICE_NAME}'" AND metric.labels.response_code_class="5xx"' \
+            --interval="$${WINDOW_STR}" \
+            --aggregation-alignment-period="60s" \
+            --aggregation-per-series-aligner="ALIGN_SUM" \
+            --format="value(points[0].value.int64Value)" 2>/dev/null | awk '{s+=$1} END {print s+0}')
+
+          if [ "$$TOTAL_REQS" -gt 0 ]; then
+            RATE=$$(awk "BEGIN {print $$ERR_5XX_REQS / $$TOTAL_REQS}")
+            echo "Cloud Run Total Requests: $${TOTAL_REQS}, 5xx Errors: $${ERR_5XX_REQS}, 5xx Rate: $${RATE}"
+            EXCEEDED=$$(awk "BEGIN {print ($$RATE > $$MAX_5XX_RATE) ? 1 : 0}")
+            if [ "$$EXCEEDED" -eq 1 ]; then
+              echo "ERROR: Cloud Run 5xx rate ($${RATE}) exceeds threshold ($${MAX_5XX_RATE})!"
+              trigger_automated_rollback
+              exit 1
+            fi
+          fi
+
+          # 3. Crash / Non-zero Completed Executions
+          CRASH_COUNT=$$(gcloud monitoring time-series list \
+            --project="${_CLUSTER_PROJECT}" \
+            --filter='metric.type="run.googleapis.com/container/completed_execution_count" AND resource.labels.service_name="'$${SERVICE_NAME}'" AND metric.labels.response_code!="0"' \
+            --interval="$${WINDOW_STR}" \
+            --format="value(points[0].value.int64Value)" 2>/dev/null | awk '{s+=$1} END {print s+0}')
+          if [ "$$CRASH_COUNT" -gt 0 ]; then
+            echo "ERROR: Detected $${CRASH_COUNT} Cloud Run container execution crashes!"
+            trigger_automated_rollback
+            exit 1
+          fi
+          ;;
+
+        "anthos_cluster"|"gke")
+          echo "=== Verifying GKE / Anthos Target Metrics ==="
+          gcloud config set project "${_CLUSTER_PROJECT}"
+          if [ "${_TARGET_TYPE}" == "anthos_cluster" ]; then
+            gcloud container fleet memberships get-credentials "${_ANTHOS_MEMBERSHIP}"
+          else
+            gcloud container clusters get-credentials "${_CLUSTER_NAME}" --region="${_DEFAULT_REGION}"
+          fi
+
+          # 1. Pod Rollout & Unschedulable Status Check
+          echo "Checking deployments readiness..."
+          DEPLOYMENTS=$$(kubectl get deployments -o jsonpath='{.items[*].metadata.name}')
+          for DEP in $$DEPLOYMENTS; do
+            kubectl rollout status deployment/$$DEP --timeout=60s || {
+              echo "ERROR: Deployment $$DEP failed to stabilize or pods unschedulable!"
+              trigger_automated_rollback
+              exit 1
+            }
+          done
+
+          # 2. Container Restarts (CrashLoopBackOff)
+          CLUSTER_FILTER_NAME="${_CLUSTER_NAME}"
+          if [ -z "$$CLUSTER_FILTER_NAME" ]; then
+            CLUSTER_FILTER_NAME="${_ANTHOS_MEMBERSHIP}"
+          fi
+
+          RESTART_RATE=$$(gcloud monitoring time-series list \
+            --project="${_CLUSTER_PROJECT}" \
+            --filter='metric.type="kubernetes.io/container/restart_count" AND resource.labels.cluster_name="'$${CLUSTER_FILTER_NAME}'"' \
+            --interval="$${WINDOW_STR}" \
+            --aggregation-alignment-period="60s" \
+            --aggregation-per-series-aligner="ALIGN_RATE" \
+            --format="value(points[0].value.doubleValue)" 2>/dev/null | awk '{s+=$1} END {print s+0}')
+
+          echo "Container restart rate over verification window: $${RESTART_RATE}"
+          RESTART_EXCEEDED=$$(awk "BEGIN {print ($$RESTART_RATE > $$MAX_RESTARTS) ? 1 : 0}")
+          if [ "$$RESTART_EXCEEDED" -eq 1 ]; then
+            echo "ERROR: Detected container restarts ($${RESTART_RATE}) exceeding threshold ($${MAX_RESTARTS})!"
+            trigger_automated_rollback
+            exit 1
+          fi
+          ;;
+      esac
+
+      # Common: Error Log Count surge verification
+      ERROR_LOGS=$$(gcloud logging read 'severity>=ERROR AND timestamp >= "-'$${WINDOW_STR}'"' \
+        --project="${_CLUSTER_PROJECT}" \
+        --limit=20 \
+        --format="value(insertId)" 2>/dev/null | wc -l)
+      echo "Recent severe error logs count: $${ERROR_LOGS}"
+      if [ "$$ERROR_LOGS" -gt "$$MAX_ERROR_LOGS" ]; then
+        echo "WARNING: Detected elevated error log rate ($${ERROR_LOGS} entries). Threshold: $${MAX_ERROR_LOGS}."
+      fi
+
+      echo "=== Metric Verification Passed Successfully ==="
+  waitFor:
+    - 'zaproxy-endpoint-scan'
+
 # Binary Authorization
 - name: $_DEFAULT_REGION-docker.pkg.dev/$PROJECT_ID/$_GAR_REPOSITORY/skaffold-builder
   id: "binary-authorization-checkpoint"
@@ -122,4 +267,5 @@ steps:
         echo "_ATTESTOR_NAME not specified. No attestation to add."
       fi
   waitFor:
-    - 'zaproxy-endpoint-scan'
+    - 'verify-deployment-metrics'
+
