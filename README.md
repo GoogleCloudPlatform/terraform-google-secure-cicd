@@ -60,7 +60,7 @@ module "cd_pipeline" {
   source           = "GoogleCloudPlatform/secure-cicd/google//modules/secure-cd"
 
   project_id                 = {PROJECT_ID}
-  primary_location           = "us-east4"
+  primary_location           = "us-central1"
   repository_type            = "GITHUB"
   cd_repository = {
     repository_name = "cloudbuild-cd-config"
@@ -119,8 +119,12 @@ module "cd_pipeline" {
 }
 ```
 
-Functional examples are included in the
-[examples](./examples/) directory.
+## Examples
+
+Functional examples are included in the [examples](./examples/) directory:
+
+- **[Standalone Single Project](./examples/standalone_single_project/)**: Full secure CI/CD pipeline deploying containerized applications to GKE across multiple environments.
+- **[Mortgage Agent (Gemini Enterprise Agent Platform)](./examples/mortgage-agent/)**: Enterprise AI agent reference architecture deploying Cloud Run MCP microservices, Agent Gateway, and Model Armor via secure CI/CD. Includes a built-in **interactive Antigravity deployment skill** (`bmad-mortgage-agent-deployment`) for automated guided setup.
 
 ### Build Configuration
 Example Cloud Build and Skaffold configuration files are located in the [Build](./build/) folder. Push the `cloudbuild-ci.yaml` and `skaffold.yaml` configurations to the application source code repository. Push the `cloudbuild-cd.yaml` configuration to the wet manifest repository. The `skaffold.yaml` file includes a baseline deployment verification smoke test used by Cloud Deploy during canary rollouts, which can be customized with more elaborate test suites. These configurations offer a baseline for adhering to S3C application delivery practices within this blueprint, and are customizable as needed.

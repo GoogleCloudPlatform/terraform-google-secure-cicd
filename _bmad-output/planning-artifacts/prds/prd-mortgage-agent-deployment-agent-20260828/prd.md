@@ -9,7 +9,7 @@ updated: 2026-08-28
 
 ## 1. Vision
 
-The Mortgage Agent Deployment Skill is an Antigravity CLI agent designed to streamline the complex deployment process of the `mortgage-agent` example within the Secure CI/CD Pipeline repository. By combining guided user instructions with automated infrastructure and pipeline execution, this skill transforms a tedious and error-prone setup into a seamless experience.
+The Mortgage Agent Deployment Skill is an Antigravity CLI skill designed to streamline the complex deployment process of the `mortgage-agent` example within the Secure CI/CD Pipeline repository. By combining guided user instructions with automated infrastructure and pipeline execution, this skill transforms a tedious and error-prone setup into a seamless experience.
 
 ## 2. Target User and Journeys
 
@@ -22,49 +22,49 @@ Software engineers and platform operators of all experience levels who need to d
 > Alex, a Platform Engineer, opens the terminal in the repository and invokes the Mortgage Agent Deployment Skill.
 >
 > **Phase 1: Introduction & Prerequisites**
-> The agent greets Alex and briefly explains what the `mortgage-agent` example provisions. It then initiates an interactive checklist for prerequisites: Organization, Project, IAM Permissions, Public Domain, and Org Policies. Alex realizes he hasn't set up a Public Domain yet. The agent detects this and provides the exact Cloud Domains registration instructions. (If Alex hadn't had an Organization, the agent would state it's required but *not* attempt to guide him through creating one. If his Organization enforced `restrictNonCmekServices`, the agent would halt entirely).
+> The skill greets Alex and briefly explains what the `mortgage-agent` example provisions. It then initiates an interactive checklist for prerequisites: Organization, Project, IAM Permissions, Public Domain, and Org Policies. Alex realizes he hasn't set up a Public Domain yet. The skill detects this and provides the exact Cloud Domains registration instructions. (If Alex hadn't had an Organization, the skill would state it's required but *not* attempt to guide him through creating one. If his Organization enforced `restrictNonCmekServices`, the skill would halt entirely).
 >
 > **Phase 2: Configuration Gathering**
-> Once Alex confirms all prerequisites are met, the agent asks him sequentially for the values needed to populate `terraform.tfvars`, including asking for the URLs of the 6 pre-created GitHub repositories.
+> Once Alex confirms all prerequisites are met, the skill asks him sequentially for the values needed to populate `terraform.tfvars`, including asking for the URLs of the 6 pre-created GitHub repositories.
 >
 > **Phase 3: Execution & Status**
-> The agent runs `terraform plan`, saves the output to a file, and asks Alex for permission to proceed. After approval, the agent begins the automated deployment (Terraform apply, Repo seeding, ADK agent deployment). Mid-deployment, Alex types, "Where are we at?" The agent pauses, reads its state, and responds, "Currently running `terraform apply`. Still pending: CI repository seeding, Agent deployment, and IAM egress bindings."
+> The skill runs `terraform plan`, saves the output to a file, and asks Alex for permission to proceed. After approval, the skill begins the automated deployment (Terraform apply, Repo seeding, ADK agent deployment). Mid-deployment, Alex types, "Where are we at?" The skill pauses, reads its state, and responds, "Currently running `terraform apply`. Still pending: CI repository seeding, Agent deployment, and IAM egress bindings."
 
 ## 3. Glossary
 
 - **ADK Agent** — Agent Development Kit agent, deployed to reasoning engines.
-- **MCP Server** — Microservice Control Plane server (e.g., legacy-dms, corporate-email).
+- **MCP Server** — Model Context Protocol server (e.g., legacy-dms, corporate-email).
 - **Secure CI/CD Pipeline** — The CI/CD process running in Cloud Build/Cloud Deploy for the MCP servers.
 
 ## 4. Features
 
 ### 4.1 Guided Setup & Prerequisites
-**Description:** The agent interactively guides the user through the manual prerequisites required to deploy the mortgage-agent.
+**Description:** The skill interactively guides the user through the manual prerequisites required to deploy the mortgage-agent.
 
 **Functional Requirements:**
 
 #### FR-1: Prerequisite Interactive Checklist
-The agent must interactively step the user through required prerequisites (Org, Project, IAM, Domain, Org Policies, gcloud Auth).
-*   **gcloud Authentication:** Check if `gcloud` is authenticated and configured with the correct active/quota project. If not, prompt the user. If they agree, the agent must automatically run `gcloud auth login`, set the active/quota project, and run `gcloud auth application-default login`.
+The skill must interactively step the user through required prerequisites (Org, Project, IAM, Domain, Org Policies, gcloud Auth).
+*   **gcloud Authentication:** Check if `gcloud` is authenticated and configured with the correct active/quota project. If not, prompt the user. If they agree, the skill must automatically run `gcloud auth login`, set the active/quota project, and run `gcloud auth application-default login`.
 *   **Domain:** Provide exact Cloud Domains registration instructions if missing.
-*   **Org Policies:** If `constraints/gcp.restrictNonCmekServices` is enforced and cannot be bypassed, the agent must halt deployment. If the agent lacks `roles/orgpolicy.policyViewer` or otherwise receives a `PERMISSION_DENIED` error when checking policies, it must gracefully prompt the user to verify the policy manually rather than crashing.
+*   **Org Policies:** If `constraints/gcp.restrictNonCmekServices` is enforced and cannot be bypassed, the skill must halt deployment. If the skill lacks `roles/orgpolicy.policyViewer` or otherwise receives a `PERMISSION_DENIED` error when checking policies, it must gracefully prompt the user to verify the policy manually rather than crashing.
 *   **Organization:** If missing, state the requirement but explicitly *do not* guide the user on how to create one.
 
 #### FR-2: Interactive Configuration Gathering
-The agent must prompt the user sequentially for all required `terraform.tfvars` values, including asking for the URLs of the 6 pre-created GitHub repositories (CI and CD for the 3 services).
+The skill must prompt the user sequentially for all required `terraform.tfvars` values, including asking for the URLs of the 6 pre-created GitHub repositories (CI and CD for the 3 services).
 *   **Input Sanitization:** Automatically format strict fields (e.g., ensuring `dns_zone_domain` has a trailing dot).
 *   **Uniqueness Validation:** Ensure that the 6 provided GitHub URLs are unique and explicitly formatted correctly to prevent duplicate repo overwrites.
 
 ### 4.2 Automated Deployment Execution
-**Description:** The agent automates the execution of terraform and subsequent deployment scripts and git operations.
+**Description:** The skill automates the execution of terraform and subsequent deployment scripts and git operations.
 
 **Functional Requirements:**
 
 #### FR-3: Terraform Plan & Approval Gate
-The agent must execute `terraform init` and `terraform plan`. It must write the `plan` output to a file artifact, notify the user of its location, and pause execution to prompt for an explicit "yes/no" approval before proceeding.
+The skill must execute `terraform init` and `terraform plan`. It must write the `plan` output to a file artifact, notify the user of its location, and pause execution to prompt for an explicit "yes/no" approval before proceeding.
 
 #### FR-4: Automated Pipeline Seeding & Infrastructure Provisioning
-Upon user approval, the agent must execute `terraform apply`. Once complete, it must automatically seed the 3 CI repositories. For each MCP service (`legacy-dms`, `corporate-email`, `income-verification`), the agent must:
+Upon user approval, the skill must execute `terraform apply`. Once complete, it must automatically seed the 3 CI repositories. For each MCP service (`legacy-dms`, `corporate-email`, `income-verification`), the skill must:
 1. Run `envsubst` to template the Cloud Run and Skaffold manifests.
 2. Create a temporary staging directory.
 3. Copy the service's source code (`src/<service>`), the templated `cloud_run/<service>.yaml`, and the `skaffold.yaml` into the directory.
@@ -74,10 +74,10 @@ Upon user approval, the agent must execute `terraform apply`. Once complete, it 
 7. Execute the bash scripts to configure IAP IAM egress policies.
 
 #### FR-5: Context-Aware Status Reporting
-The agent must be able to interrupt its execution loop to respond to user inquiries about its current status (e.g., "Where are we?"), clearly stating the current running step and the remaining pending steps.
+The skill must be able to interrupt its execution loop to respond to user inquiries about its current status (e.g., "Where are we?"), clearly stating the current running step and the remaining pending steps.
 
 #### NFR-1: Idempotency & Resumability
-If the agent's execution is halted midway (e.g., internet drops, quota limit hit after `terraform apply`), running the agent again must safely resume the process. It must verify the current state (e.g., detecting if terraform state exists, checking if repos already have code) before re-executing steps to avoid errors or duplicated data.
+If the skill's execution is halted midway (e.g., internet drops, quota limit hit after `terraform apply`), running the skill again must safely resume the process. It must verify the current state (e.g., detecting if terraform state exists, checking if repos already have code) before re-executing steps to avoid errors or duplicated data.
 
 ## 5. Non-Goals (Explicit)
 - Automatically creating GitHub repositories via API.
