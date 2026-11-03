@@ -52,7 +52,7 @@ This runbook guides the agent in deploying the mortgage-agent example.
 
 ### 1.6: Check for Public DNS Zone
 - Ask the user if they have a public DNS zone.
-- If not, provide instructions on how to create one using Google Cloud Domains.
+- If not, provide instructions on how to create one using Google Cloud Domains or Cloud DNS. Note that Google-managed SSL certificates validated through Certificate Manager require a public DNS zone.
 
 ### 1.7: Check for Organization Policies
 - Run `gcloud resource-manager org-policies describe constraints/gcp.restrictNonCmekServices --project=[PROJECT_ID]`.
@@ -218,3 +218,4 @@ This runbook guides the agent in deploying the mortgage-agent example.
 
 ### 5.5: Final Report
 - Inform the user that the agent is fully deployed and ready for testing in the Agent Platform Playground.
+- Note that initial HTTPS access through the Agent Gateway Load Balancer may take a few minutes while Certificate Manager verifies DNS authorization and Google-managed SSL certificates transition to the `ACTIVE` state.
