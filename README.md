@@ -28,6 +28,17 @@ You can choose whether to deploy your solution through the console directly or d
 
 ## Documentation
 - [Architecture Diagram](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/assets/secure_cicd_pipeline_v2.svg)
+- [Shift-Left Local Security & AI Agent Workflow Guide](./docs/local-security-workflow.md)
+
+## Shift-Left AI Agent & Local Security Workflow
+
+This repository supports a **local-first shift-left security workflow** integrating AI coding assistants (such as Google Antigravity and Claude Code) with local lifecycle hooks and skills from [`h3xar0n/secure-coding-agy-config`](https://github.com/h3xar0n/secure-coding-agy-config).
+
+* **Local Skills & Rules:** Empowers developers and AI agents with interactive Threat Modeling (STRIDE), Test-Driven Development ("Prove-It" pattern), and OWASP Top 10 secure coding analysis directly in the workspace.
+* **Engine Selection (Semgrep OR CodeMender):** Supports choosing between fast rule-based static analysis (**Semgrep**) or agentic AI vulnerability repair (**CodeMender**) via local lifecycle hooks (`hooks.json`).
+* **Inner Loop Protection:** Ensures all security checks, threat modeling, and code remediations occur locally on the developer's machine *before* pushing code to the centralized Google Cloud CI/CD pipeline.
+
+For complete installation and configuration instructions, see the **[Shift-Left Local Security & AI Agent Workflow Guide](./docs/local-security-workflow.md)**.
 
 ## Usage
 

@@ -16,6 +16,9 @@
 
 set -e
 
+# Trap to securely clean up any temporary directories on script exit or interruption
+trap 'rm -rf "${CI_TEMP_DIR:-}" "${WORK_DIR:-}" 2>/dev/null || true' EXIT
+
 # This script handles the initial population of the CI repository for a specific service.
 # It uses a Personal Access Token retrieved from Secret Manager to authenticate with GitHub.
 
@@ -98,6 +101,7 @@ rm -f "$CI_TEMP_DIR/skaffold.yaml.tmpl"
 
 seed_repo "$CI_TEMP_DIR" "$AUTH_CI_REPO_URL" "Initial commit for $SERVICE_NAME CI"
 rm -rf "$CI_TEMP_DIR"
+unset GITHUB_PAT AUTH_CI_REPO_URL
 echo "The CI Repository for $SERVICE_NAME was seeded successfully."
 
 echo "Finished processing $SERVICE_NAME."
