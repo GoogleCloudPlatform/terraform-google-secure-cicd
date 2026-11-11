@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.15-buster as kritis-build
+FROM golang:1.20-buster as kritis-build
 
 WORKDIR /go/src
 RUN git clone https://github.com/grafeas/kritis
@@ -22,7 +22,7 @@ WORKDIR /go/src/app
 RUN make out/signer
 RUN cp out/signer /signer
 
-FROM alpine:3.18
+FROM alpine:3.20
 
 RUN apk update \
 && apk upgrade \
