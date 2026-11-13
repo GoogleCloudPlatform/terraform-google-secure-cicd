@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.15-buster as kritis-build
+FROM golang:1.20-buster as kritis-build
 
-WORKDIR /go/src
-RUN git clone https://github.com/grafeas/kritis
-RUN mv kritis app
-RUN go get -d -v ./...
 WORKDIR /go/src/app
+RUN git clone https://github.com/grafeas/kritis .
 RUN make out/signer
 RUN cp out/signer /signer
 
-FROM alpine:3.18
+FROM alpine:3.20
 
 RUN apk update \
 && apk upgrade \
@@ -31,13 +28,9 @@ RUN apk update \
 
 ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk"
 
-RUN apk add --no-cache python3 \
-&& python3 -m ensurepip \
-&& pip3 install --upgrade pip setuptools \
-&& rm -r /usr/lib/python*/ensurepip && \
-if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi && \
-if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
-rm -r /root/.cache
+RUN apk add --no-cache python3 py3-pip py3-setuptools \
+&& if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi \
+&& if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
 
 ENV CLOUD_SDK_VERSION="582.0.0"
 ENV CLOUDSDK_INSTALL_DIR /usr/local/gcloud/

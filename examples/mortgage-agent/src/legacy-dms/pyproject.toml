@@ -28,10 +28,10 @@ dependencies = [
     "opentelemetry-sdk>=1.25.0",
     "starlette>=1.0.1",
     "uvicorn>=0.34.0",
-    "python-multipart==0.0.32",
+    "python-multipart==0.0.33",
     "authlib==1.7.2",
-    "cryptography==46.0.7",
-    "pygments==2.20.0",
+    "cryptography==50.0.0",
+    "pygments==2.21.0",
 ]
 
 [project.optional-dependencies]
@@ -50,5 +50,5 @@ select = ["E", "F", "I", "W"]
 
 [dependency-groups]
 dev = [
-    "pytest==9.0.3",
+    "pytest==9.2.0",
 ]
