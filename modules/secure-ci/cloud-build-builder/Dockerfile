@@ -19,7 +19,7 @@ RUN git clone https://github.com/grafeas/kritis .
 RUN make out/signer
 RUN cp out/signer /signer
 
-FROM alpine:3.20
+FROM alpine:3.24
 
 RUN apk update \
 && apk upgrade \
