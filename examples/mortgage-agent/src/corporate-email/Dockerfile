@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
