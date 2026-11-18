@@ -112,7 +112,7 @@ steps:
         -alsologtostderr \
         -image="$${IMAGE}" \
         -policy=policies/container-analysis-policy.yaml \
-        -vulnz_timeout=15m \
+        -vulnz_timeout=20m \
         -mode=check-only || error=true
         if [[ $error == true ]]; then echo "Container Analysis failed due to CVE thresholds being triggered"; exit 1; fi
       done
