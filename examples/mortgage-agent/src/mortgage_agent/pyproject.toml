@@ -30,7 +30,7 @@ dependencies = [
     # path was already removed by 1.153.1, so an unpinned container deploy
     # silently broke when PyPI advanced. Keep deploy_agent.py's requirements
     # list aligned to the same upper bound.
-    "google-cloud-aiplatform>=2.7.0,<2.8.0",
+    "google-cloud-aiplatform>=2.8.0,<2.9.0",
     "opentelemetry-instrumentation-google-genai",
     "opentelemetry-instrumentation-grpc",
     "opentelemetry-instrumentation-fastapi",
