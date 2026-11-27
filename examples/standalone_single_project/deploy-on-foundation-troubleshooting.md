@@ -16,7 +16,7 @@ limitations under the License.
 
 # Troubleshooting Guide: Secure CI/CD Pipeline on Google Cloud Foundation
 
-This guide provides diagnostic procedures, verification checks, and operational troubleshooting steps for common issues encountered when operating the [Secure CI/CD Pipeline](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd) deployed on top of [Terraform Example Foundation](https://cloud.google.com/architecture/security-foundations/using-example-terraform) following the instructions in [README_SECURE_CICD_FOUNDATION.md](README_SECURE_CICD_FOUNDATION.md).
+This guide provides diagnostic procedures, verification checks, and operational troubleshooting steps for common issues encountered when operating the [Secure CI/CD Pipeline](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd) deployed on top of [Terraform Example Foundation](https://cloud.google.com/architecture/security-foundations/using-example-terraform) following the instructions in [Deploying Standalone Example on Terraform Example Foundation](./deploy-standalone-example-on-foundation.md).
 
 ---
 

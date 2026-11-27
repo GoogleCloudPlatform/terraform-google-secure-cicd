@@ -29,6 +29,8 @@ You can choose whether to deploy your solution through the console directly or d
 ## Documentation
 - [Architecture Diagram](https://github.com/GoogleCloudPlatform/terraform-google-secure-cicd/blob/main/assets/secure_cicd_pipeline_v2.svg)
 - [Shift-Left Local Security & AI Agent Workflow Guide](./docs/local-security-workflow.md)
+- [Deploying Standalone Example on Terraform Example Foundation (v7.0.0+ / v8.0)](./examples/standalone_single_project/deploy-standalone-example-on-foundation.md)
+- [Foundation Deployment Troubleshooting Guide](./examples/standalone_single_project/deploy-on-foundation-troubleshooting.md)
 
 ## Shift-Left AI Agent & Local Security Workflow
 

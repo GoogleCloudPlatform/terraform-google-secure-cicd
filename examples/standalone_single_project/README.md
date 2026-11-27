@@ -6,6 +6,11 @@ This example also deploys the [`cloudbuild-private-pool`](https://github.com/Goo
 
 For simplified deployment and demonstration purposes, this blueprint creates GKE clusters and accompanying VPC networks for multiple sample environments (dev, qa, prod) within a single Google Cloud project, using a progressive canary rollout (10% → 50% → 100%) with automated deployment verification for the production environment.
 
+### Foundation Integration
+For step-by-step instructions on deploying this standalone example on top of the **Terraform Example Foundation** (v7.0.0+ / v8.0) with Hub-and-Spoke NCC routing, multi-attestor Binary Authorization, and enforced VPC-SC perimeters, see:
+- [Deploying Standalone Example on Terraform Example Foundation](./deploy-standalone-example-on-foundation.md)
+- [Foundation Deployment Troubleshooting Guide](./deploy-on-foundation-troubleshooting.md)
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
 
