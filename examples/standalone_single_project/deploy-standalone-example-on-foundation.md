@@ -128,7 +128,7 @@ sequenceDiagram
 
 ## Zero-Trust Egress Firewall Policy & Dynamic Rules
 
-The Terraform Example Foundation enforces a **zero-trust default deny egress rule** (`65530 DENY 0.0.0.0/0`) on the hierarchical/VPC firewall policy (`fp-bu1-firewalls`). 
+The Terraform Example Foundation enforces a **zero-trust default deny egress rule** (`65530 DENY 0.0.0.0/0`) on the hierarchical/VPC firewall policy (`fp-bu1-firewalls`).
 
 To allow private GKE clusters, worker nodes, and microservices to communicate without breaking zero-trust isolation, dynamic egress firewall rules are declared using Terraform `data` sources:
 
