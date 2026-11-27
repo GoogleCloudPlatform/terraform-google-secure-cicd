@@ -43,10 +43,6 @@ RUN gcloud components install skaffold kubectl kustomize kpt nomos beta
 
 COPY --from=kritis-build /signer .
 
-RUN curl -Lo yq https://github.com/mikefarah/yq/releases/download/v4.6.1/yq_linux_amd64
-RUN chmod +x yq
-RUN mv ./yq /usr/local/bin
-
 RUN echo -e "JAVA_VERSION: $(${JAVA_HOME}/bin/java --version)"
 RUN echo -e "PYTHON: $(python --version)\nPIP: $(pip --version)"
 
