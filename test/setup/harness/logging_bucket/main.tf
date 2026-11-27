@@ -22,7 +22,7 @@ resource "random_string" "prefix" {
 
 module "logging_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 10.0"
+  version = "~> 12.0"
 
   name          = "bkt-logging-${random_string.prefix.result}"
   project_id    = var.project_id_standalone
