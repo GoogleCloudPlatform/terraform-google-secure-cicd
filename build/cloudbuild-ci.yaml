@@ -64,7 +64,7 @@ steps:
 
 ################ Securing Artifacts Before Deployment ####################
 
-### Container Struture Test
+### Container Structure Test
 - name: 'gcr.io/cloud-builders/docker'
   id: "container-structure"
   entrypoint: "/bin/bash"
@@ -72,11 +72,7 @@ steps:
     - '-xe'
     - '-c'
     - |
-      # install jq and container-structure-test
-      apt-get -y install jq
-      curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64 \
-      && chmod +x container-structure-test-linux-amd64 \
-      && mv container-structure-test-linux-amd64 /usr/bin/container-structure-test
+      apt-get update && apt-get -y install jq
 
       # remove commit hash from string (need either tag or digest, not both)
       sed "s|:$SHORT_SHA||g" /artifacts/build-artifacts.json > /artifacts/build-artifacts-notag.json
@@ -84,7 +80,7 @@ steps:
       IMAGES=( $$(jq -r '.builds[].tag' /artifacts/build-artifacts-notag.json))
       for IMAGE in "$${IMAGES[@]}"; do
         docker pull "$${IMAGE}" # pull the remote image from GAR w/ digest SHA
-        container-structure-test test --image "$${IMAGE}" --config policies/container-structure-policy.yaml
+        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v /workspace:/workspace -w /workspace ghcr.io/googlecontainertools/container-structure-test:1.22.1 test --image "$${IMAGE}" --config policies/container-structure-policy.yaml
       done
   volumes:
   - path: '/artifacts'
