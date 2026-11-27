@@ -25,7 +25,7 @@ import (
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/terraform-google-modules/terraform-google-secure-cicd/test/integration/testutils"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
 )
 
 // connects to a Google Cloud VM instance using SSH and retrieves the logs from the VM's Startup Script service
